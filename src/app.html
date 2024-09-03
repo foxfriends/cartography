@@ -5,6 +5,26 @@
     <link rel="icon" href="%sveltekit.assets%/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     %sveltekit.head%
+    <style>
+      :root {
+        font-size: 16px;
+
+        --card-size: 128px;
+      }
+
+      body {
+        min-height: 100vh;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        font-weight: 400;
+        font-size: 1rem;
+        font-family: sans-serif;
+        box-sizing: border-box;
+      }
+    </style>
   </head>
   <body data-sveltekit-preload-data="hover">
     <div style="display: contents">%sveltekit.body%</div>
