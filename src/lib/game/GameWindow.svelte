@@ -39,8 +39,8 @@
       [
         { type: "Grass" },
         { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
+        { type: "Soil" },
+        { type: "Soil" },
         { type: "Grass" },
         { type: "Grass" },
         { type: "Grass" },
@@ -49,8 +49,8 @@
       [
         { type: "Grass" },
         { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
+        { type: "Soil" },
+        { type: "Soil" },
         { type: "Grass" },
         { type: "Grass" },
         { type: "Grass" },
@@ -100,29 +100,70 @@
     resources: [],
   };
 
-  const cards: { id: string; x: number; y: number }[] = [
-    { id: "test-card", x: 0, y: 0 },
-    { id: "test-card-2", x: 3, y: 2 },
+  const hand: { id: string; type: string }[] = [
+    { id: "waterwell1", type: "water-well" },
+    { id: "bakery1", type: "bakery" },
+    { id: "wheatfarm1", type: "wheat-farm" },
+    { id: "home1", type: "home" },
+    { id: "home2", type: "home" },
   ];
 
-  let dragging = $state(false);
+  const cards: { id: string; x: number; y: number }[] = [
+    { id: "waterwell1", x: 1, y: 1 },
+    { id: "bakery1", x: 1, y: 2 },
+    { id: "wheatfarm1", x: 2, y: 2 },
+    { id: "home1", x: 3, y: 0 },
+    { id: "home2", x: 2, y: 4 },
+  ];
+
+  let mouseDragging = $state(false);
+
+  function oncontextmenu(event: MouseEvent) {
+    event.preventDefault();
+  }
 
   function onmousedown(event: MouseEvent) {
-    if (event.button === 0) {
-      dragging = true;
-    }
+    if (event.button === 2) mouseDragging = true;
   }
 
   function onmouseup(event: MouseEvent) {
-    if (event.button === 0) {
-      dragging = false;
-    }
+    if (event.button === 2) mouseDragging = false;
   }
 
   function onmousemove(event: MouseEvent) {
-    if (!dragging) return;
+    if (!mouseDragging) return;
     offsetX -= event.movementX;
     offsetY -= event.movementY;
+  }
+
+  let touchDragging: Touch | null = $state(null);
+
+  function ontouchstart(event: TouchEvent) {
+    console.log("start", event);
+    if (touchDragging === null) touchDragging = event.touches[0];
+  }
+
+  function ontouchend(event: TouchEvent) {
+    console.log("end", event);
+    if (
+      touchDragging &&
+      !Array.from(event.touches).some((touch) => touch.identifier === touchDragging!.identifier)
+    ) {
+      touchDragging = null;
+    }
+  }
+
+  function ontouchmove(event: TouchEvent) {
+    console.log("move", event);
+    if (touchDragging === null) return;
+    const previous = touchDragging;
+    const current = Array.from(event.touches).find(
+      (touch) => touch.identifier === previous.identifier,
+    );
+    if (!current) return;
+    offsetX -= current.clientX - previous.clientX;
+    offsetY -= current.clientY - previous.clientY;
+    touchDragging = current;
   }
 
   const xMin = $derived(Math.floor(offsetX / TILE_SIZE));
@@ -156,19 +197,35 @@
   bind:clientHeight
   style="--offset-x: {offsetX}px; --offset-y: {offsetY}px"
   {onmousedown}
+  {ontouchstart}
+  {oncontextmenu}
   role="presentation"
 >
   {#each terrain as tile (tile)}
-    <div class="tile" data-type={tile.type} style="--grid-x: {tile.x}; --grid-y: {tile.y}"></div>
+    <div
+      class="tile terrain"
+      data-type={tile.type}
+      style="--grid-x: {tile.x}; --grid-y: {tile.y}"
+    ></div>
   {/each}
   {#each cards.filter(onScreen) as card (card.id)}
-    <div class="card tile" style="--grid-x: {card.x}; --grid-y: {card.y}"></div>
+    {@const handcard = hand.find((hc) => hc.id === card.id)}
+    <div
+      class="card tile"
+      style="--grid-x: {card.x}; --grid-y: {card.y}"
+      data-type={handcard?.type}
+    >
+      {handcard?.type
+        .split("-")
+        .map((word) => word[0].toUpperCase())
+        .join("")}
+    </div>
   {/each}
 
   <div class="gridlines"></div>
 </div>
 
-<svelte:window {onmousemove} {onmouseup} />
+<svelte:window {onmousemove} {onmouseup} {ontouchmove} {ontouchend} ontouchcancel={ontouchend} />
 
 <style>
   .window {
@@ -177,6 +234,7 @@
     position: relative;
     overflow: hidden;
     background-color: rgb(255 255 255);
+    user-select: none;
   }
 
   .tile {
@@ -193,10 +251,24 @@
     &[data-type="Grass"] {
       background-color: rgb(63 155 11);
     }
+
+    &[data-type="Soil"] {
+      background-color: rgb(87 54 8);
+    }
   }
 
   .card {
     background-color: white;
+    display: flex;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 2rem;
+  }
+
+  .terrain {
+    pointer-events: none;
   }
 
   .gridlines {

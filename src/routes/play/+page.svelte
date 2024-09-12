@@ -11,4 +11,8 @@
     width: 100vw;
     height: 100vh;
   }
+
+  :global(html) {
+    overscroll-behavior: none;
+  }
 </style>
