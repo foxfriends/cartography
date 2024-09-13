@@ -1,4 +1,7 @@
 <script lang="ts">
+  import CardArea from "./CardArea.svelte";
+  import GridLines from "./GridLines.svelte";
+
   const TILE_SIZE = 128;
 
   let clientWidth = $state(0);
@@ -123,7 +126,7 @@
   }
 
   function onmousedown(event: MouseEvent) {
-    if (event.button === 2) mouseDragging = true;
+    if (event.buttons === 2) mouseDragging = true;
   }
 
   function onmouseup(event: MouseEvent) {
@@ -139,12 +142,12 @@
   let touchDragging: Touch | null = $state(null);
 
   function ontouchstart(event: TouchEvent) {
-    console.log("start", event);
-    if (touchDragging === null) touchDragging = event.touches[0];
+    if (touchDragging === null && event.changedTouches.length === 1) {
+      touchDragging = event.changedTouches[0];
+    }
   }
 
   function ontouchend(event: TouchEvent) {
-    console.log("end", event);
     if (
       touchDragging &&
       !Array.from(event.touches).some((touch) => touch.identifier === touchDragging!.identifier)
@@ -154,7 +157,6 @@
   }
 
   function ontouchmove(event: TouchEvent) {
-    console.log("move", event);
     if (touchDragging === null) return;
     const previous = touchDragging;
     const current = Array.from(event.touches).find(
@@ -166,12 +168,23 @@
     touchDragging = current;
   }
 
+  function onMoveCard(id: string, movementX: number, movementY: number) {
+    const card = cards.find((card) => card.id === id);
+    if (card) {
+      const destinationX = card.x + Math.round(movementX / TILE_SIZE);
+      const destinationY = card.y + Math.round(movementY / TILE_SIZE);
+      if (cards.some((card) => card.x === destinationX && card.y === destinationY)) return;
+      card.x = destinationX;
+      card.y = destinationY;
+    }
+  }
+
   const xMin = $derived(Math.floor(offsetX / TILE_SIZE));
   const yMin = $derived(Math.floor(offsetY / TILE_SIZE));
   const xMax = $derived(Math.floor((offsetX + clientWidth) / TILE_SIZE) + 1);
   const yMax = $derived(Math.floor((offsetY + clientHeight) / TILE_SIZE) + 1);
 
-  function onScreen({ x, y }: { x: number; y: number }): boolean {
+  function isOnScreen({ x, y }: { x: number; y: number }): boolean {
     if (clientWidth === 0 || clientHeight === 0) return false;
     return xMin <= x && x < xMax && yMin <= y && y < yMax;
   }
@@ -202,27 +215,11 @@
   role="presentation"
 >
   {#each terrain as tile (tile)}
-    <div
-      class="tile terrain"
-      data-type={tile.type}
-      style="--grid-x: {tile.x}; --grid-y: {tile.y}"
-    ></div>
-  {/each}
-  {#each cards.filter(onScreen) as card (card.id)}
-    {@const handcard = hand.find((hc) => hc.id === card.id)}
-    <div
-      class="card tile"
-      style="--grid-x: {card.x}; --grid-y: {card.y}"
-      data-type={handcard?.type}
-    >
-      {handcard?.type
-        .split("-")
-        .map((word) => word[0].toUpperCase())
-        .join("")}
-    </div>
+    <div class="terrain" data-type={tile.type} style="--grid-x: {tile.x}; --grid-y: {tile.y}"></div>
   {/each}
 
-  <div class="gridlines"></div>
+  <CardArea cards={cards.filter(isOnScreen)} {hand} tileSize={TILE_SIZE} {onMoveCard} />
+  <GridLines />
 </div>
 
 <svelte:window {onmousemove} {onmouseup} {ontouchmove} {ontouchend} ontouchcancel={ontouchend} />
@@ -235,9 +232,10 @@
     overflow: hidden;
     background-color: rgb(255 255 255);
     user-select: none;
+    isolation: isolate;
   }
 
-  .tile {
+  .terrain {
     position: absolute;
     top: 0;
     left: 0;
@@ -255,49 +253,7 @@
     &[data-type="Soil"] {
       background-color: rgb(87 54 8);
     }
-  }
 
-  .card {
-    background-color: white;
-    display: flex;
-    text-align: center;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 2rem;
-  }
-
-  .terrain {
     pointer-events: none;
-  }
-
-  .gridlines {
-    pointer-events: none;
-
-    position: absolute;
-    top: calc(0px - var(--card-size));
-    left: calc(0px - var(--card-size));
-    width: calc(100% + var(--card-size));
-    height: calc(100% + var(--card-size));
-
-    image-rendering: crisp-edges;
-
-    background-position: mod(0px - var(--offset-x), var(--card-size))
-      mod(0px - var(--offset-y), var(--card-size));
-    background-repeat: repeat;
-    background-size: var(--card-size) var(--card-size);
-    background-image: linear-gradient(
-        rgb(0 0 0 / 12%),
-        rgb(0 0 0 / 12%) 1px,
-        transparent 1px,
-        transparent
-      ),
-      linear-gradient(
-        to right,
-        rgb(0 0 0 / 12%),
-        rgb(0 0 0 / 12%) 1px,
-        transparent 1px,
-        transparent
-      );
   }
 </style>
