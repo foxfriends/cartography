@@ -110,6 +110,11 @@
     &.dragging {
       z-index: 1;
       box-shadow: 0 0 1rem rgb(0 0 0 / 0.25);
+      transition-duration: 0;
+    }
+
+    &:not(.dragging) {
+      transition: transform 0.1s;
     }
   }
 </style>
