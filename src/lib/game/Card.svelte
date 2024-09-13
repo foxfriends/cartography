@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { fade } from "svelte/transition";
   let {
     id,
     type: cardType,
@@ -70,7 +71,7 @@
 </script>
 
 <div
-  class="card"
+  class="griditem card"
   class:dragging={mouseDragging || touchDragging}
   style="--grid-x: {x}; --grid-y: {y}; --drag-x: {draggedX}px; --drag-y: {draggedY}px"
   data-type={cardType}
@@ -84,19 +85,30 @@
     .join("")}
 </div>
 
+{#if mouseDragging || touchDragging}
+  <div
+    class="griditem shadow"
+    style="--grid-x: {x}; --grid-y: {y};"
+    out:fade={{ duration: 50 }}
+  ></div>
+{/if}
+
 <svelte:window {onmouseup} {onmousemove} {ontouchmove} {ontouchend} ontouchcancel={ontouchend} />
 
 <style>
-  .card {
+  .griditem {
     position: absolute;
     top: 0;
     left: 0;
     width: var(--card-size);
     height: var(--card-size);
     transform: translate(
-      calc(var(--grid-x) * var(--card-size) - var(--offset-x) + var(--drag-x)),
-      calc(var(--grid-y) * var(--card-size) - var(--offset-y) + var(--drag-y))
+      calc(var(--grid-x) * var(--card-size) - var(--offset-x) + var(--drag-x, 0px)),
+      calc(var(--grid-y) * var(--card-size) - var(--offset-y) + var(--drag-y, 0px))
     );
+  }
+
+  .card {
     background-color: white;
     border: 0.125rem solid rgb(0 0 0 / 0.25);
     display: flex;
@@ -116,5 +128,9 @@
     &:not(.dragging) {
       transition: transform 0.1s;
     }
+  }
+
+  .shadow {
+    background-color: rgb(0 0 0 / 0.15);
   }
 </style>
