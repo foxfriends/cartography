@@ -9,7 +9,7 @@
     type: string;
     x: number;
     y: number;
-    onMove: (clientX: number, clientY: number) => void;
+    onMove: (deltaClientX: number, deltaClientY: number) => void;
   } = $props();
 
   let mouseDragging = $state(false);

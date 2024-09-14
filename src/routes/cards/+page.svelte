@@ -1,13 +1,7 @@
 <script lang="ts">
-  const allCardTypes = [
-    { type: "trading-centre", name: "Trading Centre", category: "trade" },
-    { type: "trading-post", name: "Trading Post", category: "trade" },
-    { type: "cat-neighbourhood", name: "Cat Neighbourhood", category: "residential" },
-    { type: "rabbit-neighbourhood", name: "Rabbit Neighbourhood", category: "residential" },
-    { type: "water-well", name: "Water Well", category: "production" },
-    { type: "wheat-farm", name: "Wheat Farm", category: "production" },
-    { type: "bakery", name: "Bakery", category: "commercial" },
-  ];
+  import { cards } from "$lib/cards/cards";
+
+  const cardsOrdered = Object.values(cards).sort((a, b) => (a.type < b.type ? -1 : 1));
 </script>
 
 <div class="layout">
@@ -18,7 +12,7 @@
     </div>
   </div>
   <div class="grid">
-    {#each allCardTypes as card}
+    {#each cardsOrdered as card}
       <div class="card">
         <div class="title">{card.name} | {card.category}</div>
         <div class="image"></div>

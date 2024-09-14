@@ -98,10 +98,13 @@
     { id: "cats1", type: "cat-neighbourhood" },
     { id: "cats2", type: "cat-neighbourhood" },
   ];
+
+  let field = $state([{ id: "cats1", x: 2, y: 2 }]);
+  $inspect(field);
 </script>
 
 <main>
-  <GameWindow {geography} {deck} />
+  <GameWindow bind:field {geography} {deck} />
 </main>
 <div>
   <Hud />

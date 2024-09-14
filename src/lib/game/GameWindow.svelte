@@ -1,5 +1,5 @@
 <script lang="ts">
-  import CardArea from "./CardArea.svelte";
+  import CardField from "./CardField.svelte";
   import GridLines from "./GridLines.svelte";
 
   const TILE_SIZE = 128;
@@ -16,9 +16,11 @@
   let {
     geography,
     deck,
+    field = $bindable(),
   }: {
     geography: Geography;
     deck: Deck;
+    field: Field;
   } = $props();
 
   let clientWidth = $state(0);
@@ -26,8 +28,6 @@
 
   let offsetX = $state(0);
   let offsetY = $state(0);
-
-  let cards: Field = $state([]);
 
   let mouseDragging = $state(false);
 
@@ -79,11 +79,11 @@
   }
 
   function onMoveCard(id: string, movementX: number, movementY: number) {
-    const card = cards.find((card) => card.id === id);
+    const card = field.find((card) => card.id === id);
     if (card) {
       const destinationX = card.x + Math.round(movementX / TILE_SIZE);
       const destinationY = card.y + Math.round(movementY / TILE_SIZE);
-      if (cards.some((card) => card.x === destinationX && card.y === destinationY)) return;
+      if (field.some((card) => card.x === destinationX && card.y === destinationY)) return;
       card.x = destinationX;
       card.y = destinationY;
     }
@@ -128,7 +128,7 @@
     <div class="terrain" data-type={tile.type} style="--grid-x: {tile.x}; --grid-y: {tile.y}"></div>
   {/each}
 
-  <CardArea cards={cards.filter(isOnScreen)} {deck} {onMoveCard} />
+  <CardField field={field.filter(isOnScreen)} {deck} {onMoveCard} />
   <GridLines />
 </div>
 
