@@ -6,7 +6,16 @@
 
   $inspect(step);
 
+  $effect.pre(() => {
+    const storedStep = window.localStorage.getItem("tutorial_step");
+    if (!storedStep) return;
+    const parsed = JSON.parse(storedStep);
+    if (typeof parsed !== "number") return;
+    step = parsed;
+  });
+
   $effect(() => {
+    window.localStorage.setItem("tutorial_step", JSON.stringify(step));
     if (step === 0) {
       window.setTimeout(() => intro!.showModal(), 1000);
       step += 1;
