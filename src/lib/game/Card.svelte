@@ -68,6 +68,13 @@
   }
 </script>
 
+{#if mouseDragging || touchDragging}
+  <div
+    class="griditem shadow"
+    style="--grid-x: {x}; --grid-y: {y};"
+    out:fade={{ duration: 50 }}
+  ></div>
+{/if}
 <div
   class="griditem card"
   class:dragging={mouseDragging || touchDragging}
@@ -82,14 +89,6 @@
     .map((word) => word[0].toUpperCase())
     .join("")}
 </div>
-
-{#if mouseDragging || touchDragging}
-  <div
-    class="griditem shadow"
-    style="--grid-x: {x}; --grid-y: {y};"
-    out:fade={{ duration: 50 }}
-  ></div>
-{/if}
 
 <svelte:window {onmouseup} {onmousemove} {ontouchmove} {ontouchend} ontouchcancel={ontouchend} />
 
