@@ -100,7 +100,6 @@
   ];
 
   let field = $state([{ id: "cats1", x: 2, y: 2 }]);
-  $inspect(field);
 </script>
 
 <main>

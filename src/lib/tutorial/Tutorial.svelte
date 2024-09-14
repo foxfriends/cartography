@@ -4,8 +4,6 @@
 
   let step = $state(0);
 
-  $inspect(step);
-
   $effect.pre(() => {
     const storedStep = window.localStorage.getItem("tutorial_step");
     if (!storedStep) return;
