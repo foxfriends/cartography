@@ -4,120 +4,30 @@
 
   const TILE_SIZE = 128;
 
+  type Deck = { id: string; type: string }[];
+  type Field = { id: string; x: number; y: number }[];
+  type Geography = {
+    biome: string;
+    origin: { x: number; y: number };
+    terrain: { type: string }[][];
+    resources: { id: string; x: number; y: number }[];
+  };
+
+  let {
+    geography,
+    deck,
+  }: {
+    geography: Geography;
+    deck: Deck;
+  } = $props();
+
   let clientWidth = $state(0);
   let clientHeight = $state(0);
 
   let offsetX = $state(0);
   let offsetY = $state(0);
 
-  const geography: {
-    biome: string;
-    origin: { x: number; y: number };
-    terrain: { type: string }[][];
-    resources: { id: string; x: number; y: number }[];
-  } = {
-    biome: "Coast",
-    origin: { x: 0, y: 0 },
-    terrain: [
-      [
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-      ],
-      [
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-      ],
-      [
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Soil" },
-        { type: "Soil" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-      ],
-      [
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Soil" },
-        { type: "Soil" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-      ],
-      [
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-      ],
-      [
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-      ],
-      [
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-      ],
-      [
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-        { type: "Grass" },
-      ],
-    ],
-    resources: [],
-  };
-
-  const hand: { id: string; type: string }[] = [
-    { id: "waterwell1", type: "water-well" },
-    { id: "bakery1", type: "bakery" },
-    { id: "wheatfarm1", type: "wheat-farm" },
-    { id: "home1", type: "home" },
-    { id: "home2", type: "home" },
-  ];
-
-  const cards: { id: string; x: number; y: number }[] = [
-    { id: "waterwell1", x: 1, y: 1 },
-    { id: "bakery1", x: 1, y: 2 },
-    { id: "wheatfarm1", x: 2, y: 2 },
-    { id: "home1", x: 3, y: 0 },
-    { id: "home2", x: 2, y: 4 },
-  ];
+  let cards: Field = $state([]);
 
   let mouseDragging = $state(false);
 
@@ -218,7 +128,7 @@
     <div class="terrain" data-type={tile.type} style="--grid-x: {tile.x}; --grid-y: {tile.y}"></div>
   {/each}
 
-  <CardArea cards={cards.filter(isOnScreen)} {hand} {onMoveCard} />
+  <CardArea cards={cards.filter(isOnScreen)} {deck} {onMoveCard} />
   <GridLines />
 </div>
 
