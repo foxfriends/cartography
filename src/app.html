@@ -9,6 +9,18 @@
     />
     %sveltekit.head%
     <style>
+      @property --grid-x {
+        syntax: "<number>";
+        inherits: false;
+        initial-value: 0;
+      }
+
+      @property --grid-y {
+        syntax: "<number>";
+        inherits: false;
+        initial-value: 0;
+      }
+
       :root {
         font-size: 16px;
 

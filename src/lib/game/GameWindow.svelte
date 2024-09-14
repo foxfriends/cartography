@@ -218,7 +218,7 @@
     <div class="terrain" data-type={tile.type} style="--grid-x: {tile.x}; --grid-y: {tile.y}"></div>
   {/each}
 
-  <CardArea cards={cards.filter(isOnScreen)} {hand} tileSize={TILE_SIZE} {onMoveCard} />
+  <CardArea cards={cards.filter(isOnScreen)} {hand} {onMoveCard} />
   <GridLines />
 </div>
 
