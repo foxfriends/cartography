@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { cards } from "$lib/cards/cards";
+  import { cards } from "$lib/data/cards";
 
   const cardsOrdered = Object.values(cards).sort((a, b) => (a.type < b.type ? -1 : 1));
 </script>
