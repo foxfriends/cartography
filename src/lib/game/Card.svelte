@@ -120,7 +120,14 @@
     &.dragging {
       z-index: 1;
       box-shadow: 0 0 1rem rgb(0 0 0 / 0.25);
-      transition-duration: 0;
+    }
+
+    &:not(.dragging) {
+      transition:
+        --grid-x 100ms,
+        --grid-y 100ms,
+        --drag-x 100ms,
+        --drag-y 100ms;
     }
   }
 
