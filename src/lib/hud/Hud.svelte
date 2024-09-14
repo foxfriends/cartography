@@ -4,6 +4,7 @@
 <div class="area">
   <div class="menu">
     <button>Cards</button>
+    <a class="button" href="/">Exit</a>
   </div>
 </div>
 
@@ -29,7 +30,11 @@
     gap: 1rem;
   }
 
-  button {
+  button,
+  a.button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     border-radius: 100%;
     width: 4rem;
     height: 4rem;
