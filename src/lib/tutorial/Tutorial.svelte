@@ -95,7 +95,7 @@
 
   dialog[open]::backdrop {
     background-color: rgb(0 0 0 / 0.25);
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(2px);
   }
 
   @starting-style {
