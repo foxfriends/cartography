@@ -3,8 +3,8 @@
 
 <div class="area">
   <div class="menu">
-    <button>Cards</button>
-    <a class="button" href="/">Exit</a>
+    <a class="button" href="/">Menu</a>
+    <button>Deck</button>
   </div>
 </div>
 

@@ -1,6 +1,7 @@
 <script lang="ts">
   import GameWindow from "$lib/game/GameWindow.svelte";
   import Hud from "$lib/hud/Hud.svelte";
+  import Tutorial from "$lib/tutorial/Tutorial.svelte";
 </script>
 
 <main>
@@ -9,6 +10,8 @@
 <div>
   <Hud />
 </div>
+
+<Tutorial />
 
 <style>
   main,
