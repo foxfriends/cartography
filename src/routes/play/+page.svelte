@@ -5,15 +5,17 @@
   import Tutorial from "$lib/tutorial/Tutorial.svelte";
 </script>
 
-<GameProvider>
-  <main>
-    <GameWindow />
-  </main>
-  <div>
-    <Hud />
-  </div>
-  <Tutorial />
-</GameProvider>
+<div role="application">
+  <GameProvider>
+    <main>
+      <GameWindow />
+    </main>
+    <div class="hud">
+      <Hud />
+    </div>
+    <Tutorial />
+  </GameProvider>
+</div>
 
 <style>
   main,
@@ -24,7 +26,7 @@
     height: 100vh;
   }
 
-  div {
+  .hud {
     pointer-events: none;
   }
 

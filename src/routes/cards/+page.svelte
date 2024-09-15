@@ -1,5 +1,6 @@
 <script lang="ts">
   import { cards } from "$lib/data/cards";
+  import CardGrid from "$lib/components/CardGrid.svelte";
 
   const cardsOrdered = Object.values(cards).sort((a, b) => (a.type < b.type ? -1 : 1));
 </script>
@@ -11,14 +12,8 @@
       <input type="search" placeholder="Search..." />
     </div>
   </div>
-  <div class="grid">
-    {#each cardsOrdered as card}
-      <div class="card">
-        <div class="title">{card.name} | {card.category}</div>
-        <div class="image"></div>
-        <div class="info">This is a card description.</div>
-      </div>
-    {/each}
+  <div class="gridarea">
+    <CardGrid cards={cardsOrdered} />
   </div>
 </div>
 
@@ -26,7 +21,6 @@
   .layout {
     display: grid;
     grid-template-columns: auto 1fr;
-    gap: 1rem;
     min-height: 100vh;
   }
 
@@ -54,43 +48,12 @@
     }
   }
 
+  .gridarea {
+    padding: 1rem;
+  }
+
   input {
     padding: 0.25rem;
     min-width: 32ch;
-  }
-
-  .grid {
-    display: grid;
-    grid-auto-flow: row;
-    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
-    grid-auto-rows: auto;
-    gap: 1rem;
-  }
-
-  .card {
-    width: 100%;
-    aspect-ratio: 2.5 / 3.5;
-    box-shadow: 0 0 1rem rgb(0 0 0 / 0.125);
-    padding: 0.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-
-    .title {
-      padding: 0.125rem;
-      border: 1px solid rgb(0 0 0 / 0.12);
-    }
-
-    .image {
-      aspect-ratio: 1 / 1;
-      width: 100%;
-      background-color: rgb(0 0 0 / 0.1);
-    }
-
-    .info {
-      border: 1px solid rgb(0 0 0 / 0.12);
-      flex-grow: 1;
-      padding: 0.125rem;
-    }
   }
 </style>

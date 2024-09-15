@@ -1,21 +1,43 @@
 <script lang="ts">
+  import CardGrid from "$lib/components/CardGrid.svelte";
+  import { cards, type Card } from "$lib/data/cards";
   import { getGameState } from "$lib/game/GameProvider.svelte";
+  import type { DeckCard } from "$lib/types";
+  import HudPanel from "./HudPanel.svelte";
 
   let { deck, field } = getGameState();
+
+  let deckDialog: HudPanel | undefined = $state();
+  let deckCards = $derived(
+    deck
+      .filter(({ id }) => !field.some((f) => f.id === id))
+      .map((deckCard) => ({ ...cards[deckCard.type], deckCard })),
+  );
 
   function onClickDeck() {
     const next = deck.find((d) => !field.some((f) => f.id === d.id));
     if (!next) return;
-    field.push({ id: next.id, x: 50, y: 50, loose: true });
+    deckDialog?.show();
+  }
+
+  function onSelectCard(card: Card & { deckCard: DeckCard }) {
+    field.push({ id: card.deckCard.id, x: 0, y: 0, loose: true });
+    deckDialog?.close();
   }
 </script>
 
 <div class="area">
-  <div class="menu">
+  <div class="menu" role="toolbar">
     <a class="button" href="/">Menu</a>
     <button onclick={onClickDeck}>Deck</button>
   </div>
 </div>
+
+<HudPanel bind:this={deckDialog}>
+  <article class="deck">
+    <CardGrid cards={deckCards} {onSelectCard} />
+  </article>
+</HudPanel>
 
 <style>
   .area {
@@ -54,5 +76,10 @@
     cursor: pointer;
     border: 1px solid rgb(0 0 0 / 0.12);
     box-shadow: 0 0 0.25rem rgb(0 0 0 / 0.25);
+  }
+
+  .deck {
+    padding: 2rem;
+    --card-grid-gap: 2rem;
   }
 </style>

@@ -1,3 +1,20 @@
+type Source = { terrain: string };
+type Output = { resource: string; quantity: number };
+type Input = { resource: string; quantity: number };
+type Population = { quantity: number; species: string };
+
+type BaseCard = { name: string; type: string };
+type ProductionCard = { category: "production"; source: Source[]; outputs: Output[] };
+type SourceCard = { category: "source"; outputs: Output[] };
+type ResidentalCard = { category: "residential"; population: Population[] };
+type CommercialCard = { category: "commercial"; outputs: Output[]; inputs: Input[] };
+type TradeCard = { category: "trade" };
+
+export type Card = BaseCard &
+  (ProductionCard | SourceCard | ResidentalCard | CommercialCard | TradeCard);
+
+export type CardType = keyof typeof cards;
+
 export const cards = {
   "trading-centre": { type: "trading-centre", name: "Trading Centre", category: "trade" },
   "trading-post": { type: "trading-post", name: "Trading Post", category: "trade" },
@@ -43,7 +60,7 @@ export const cards = {
   "flour-mill": {
     type: "flour-mill",
     name: "Flour Mill",
-    category: "production",
+    category: "commercial",
     inputs: [{ resource: "wheat", quantity: 1 }],
     outputs: [{ resource: "flour", quantity: 5 }],
   },
@@ -67,4 +84,4 @@ export const cards = {
     ],
     outputs: [{ resource: "salad", quantity: 3 }],
   },
-} as const;
+} as const satisfies Record<string, Card>;
