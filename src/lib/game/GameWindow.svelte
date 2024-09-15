@@ -1,27 +1,12 @@
 <script lang="ts">
+  import type { Deck, Geography, Field } from "$lib/types";
+  import { getGameState } from "./GameProvider.svelte";
   import CardField from "./CardField.svelte";
   import GridLines from "./GridLines.svelte";
 
   const TILE_SIZE = 128;
 
-  type Deck = { id: string; type: string }[];
-  type Field = { id: string; x: number; y: number }[];
-  type Geography = {
-    biome: string;
-    origin: { x: number; y: number };
-    terrain: { type: string }[][];
-    resources: { id: string; x: number; y: number }[];
-  };
-
-  let {
-    geography,
-    deck,
-    field = $bindable(),
-  }: {
-    geography: Geography;
-    deck: Deck;
-    field: Field;
-  } = $props();
+  let { geography, deck, field } = getGameState();
 
   let clientWidth = $state(0);
   let clientHeight = $state(0);
@@ -81,11 +66,16 @@
   function onMoveCard(id: string, movementX: number, movementY: number) {
     const card = field.find((card) => card.id === id);
     if (card) {
-      const destinationX = card.x + Math.round(movementX / TILE_SIZE);
-      const destinationY = card.y + Math.round(movementY / TILE_SIZE);
+      const destinationX = card.loose
+        ? Math.round((card.x + movementX) / TILE_SIZE)
+        : card.x + Math.round(movementX / TILE_SIZE);
+      const destinationY = card.loose
+        ? Math.round((card.y + movementY) / TILE_SIZE)
+        : card.y + Math.round(movementY / TILE_SIZE);
       if (field.some((card) => card.x === destinationX && card.y === destinationY)) return;
       card.x = destinationX;
       card.y = destinationY;
+      card.loose = false;
     }
   }
 
@@ -128,8 +118,9 @@
     <div class="terrain" data-type={tile.type} style="--grid-x: {tile.x}; --grid-y: {tile.y}"></div>
   {/each}
 
-  <CardField field={field.filter(isOnScreen)} {deck} {onMoveCard} />
   <GridLines />
+
+  <CardField field={field.filter((card) => card.loose || isOnScreen(card))} {deck} {onMoveCard} />
 </div>
 
 <svelte:window {onmousemove} {onmouseup} {ontouchmove} {ontouchend} ontouchcancel={ontouchend} />

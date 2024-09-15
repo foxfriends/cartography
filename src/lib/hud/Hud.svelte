@@ -1,10 +1,20 @@
-<script>
+<script lang="ts">
+  import { getGameState } from "$lib/game/GameProvider.svelte";
+  import type { Deck } from "$lib/types";
+
+  let { deck, field } = getGameState();
+
+  function onClickDeck() {
+    const next = deck.find((d) => !field.some((f) => f.id === d.id));
+    if (!next) return;
+    field.push({ id: next.id, x: 50, y: 50, loose: true });
+  }
 </script>
 
 <div class="area">
   <div class="menu">
     <a class="button" href="/">Menu</a>
-    <button>Deck</button>
+    <button onclick={onClickDeck}>Deck</button>
   </div>
 </div>
 
