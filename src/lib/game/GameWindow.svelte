@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { Deck, Geography, Field } from "$lib/types";
   import { getGameState } from "./GameProvider.svelte";
   import CardField from "./CardField.svelte";
   import GridLines from "./GridLines.svelte";

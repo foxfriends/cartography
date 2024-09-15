@@ -1,6 +1,5 @@
 <script lang="ts">
   import { getGameState } from "$lib/game/GameProvider.svelte";
-  import type { Deck } from "$lib/types";
 
   let { deck, field } = getGameState();
 
