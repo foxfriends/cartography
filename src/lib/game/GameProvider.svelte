@@ -105,14 +105,13 @@
   } as const satisfies Geography;
 
   const deck = [
+    { id: "cats1", type: "cat-neighbourhood" },
     { id: "waterwell1", type: "water-well" },
     { id: "bakery1", type: "bakery" },
     { id: "wheatfarm1", type: "wheat-farm" },
-    { id: "cats1", type: "cat-neighbourhood" },
-    { id: "cats2", type: "cat-neighbourhood" },
   ] as const satisfies Deck;
 
-  let field: Field = $state([{ id: "cats1", x: 2, y: 1 }]);
+  let field: Field = $state([]);
 
   setContext("gamestate", {
     get geography() {

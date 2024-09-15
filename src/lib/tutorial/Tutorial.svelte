@@ -1,8 +1,10 @@
 <script lang="ts">
+  import CardRef from "$lib/components/CardRef.svelte";
   import TutorialDialog from "./TutorialDialog.svelte";
 
   let intro: TutorialDialog | undefined = $state();
   let placeNeighbourhood: TutorialDialog | undefined = $state();
+  let deckView: TutorialDialog | undefined = $state();
 
   let step = $state(0);
 
@@ -21,13 +23,21 @@
       step += 1;
     } else if (step === 2) {
       window.setTimeout(() => placeNeighbourhood!.show(), 100);
+    } else if (step === 4) {
+      window.setTimeout(() => deckView!.show(), 500);
     }
   });
 
   function nextStep() {
     step += 1;
   }
+
+  function ondeckopen() {
+    if (step === 3) step = 4;
+  }
 </script>
+
+<svelte:window {ondeckopen} />
 
 <!-- Step 0 -->
 
@@ -47,12 +57,33 @@
 
 <!-- Step 2 -->
 <TutorialDialog bind:this={placeNeighbourhood} onDismiss={nextStep}>
-  <p>Great! I have the card for a neighbourhood right here, I'll put it into your deck.</p>
+  <p>
+    Great! I have the card for a <CardRef id="cat-neighbourhood" /> right here, I'll put it into your
+    deck.
+  </p>
   <p>
     Try opening up the deck and seeing it in there. I added a few other cards I had lying around as
     well, take a look!
   </p>
   <p class="info">The button to open the deck is at the bottom right.</p>
+
+  {#snippet actions(dismiss)}
+    <button onclick={dismiss}>Let me see...</button>
+  {/snippet}
+</TutorialDialog>
+
+<!-- Step 4 -->
+<TutorialDialog bind:this={deckView} onDismiss={nextStep}>
+  <p>This is the deck view; the cards you see here are yours!</p>
+  <p>
+    There are all sorts of cards to be collected, each one providing a different function. When
+    placed in your town, they will begin to drive your economy.
+  </p>
+  <p>
+    As I said, we need to set up a neighbourhood for your citizens to live in, select your
+    <CardRef id="cat-neighbourhood" /> now!
+  </p>
+  <p class="info">Click a card to drop it into the world.</p>
 
   {#snippet actions(dismiss)}
     <button onclick={dismiss}>Let me see...</button>

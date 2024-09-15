@@ -15,20 +15,24 @@
   );
 
   function onClickDeck() {
-    const next = deck.find((d) => !field.some((f) => f.id === d.id));
-    if (!next) return;
     deckDialog?.show();
+    window.dispatchEvent(new CustomEvent("deckopen"));
   }
 
   function onSelectCard(card: Card & { deckCard: DeckCard }) {
     field.push({ id: card.deckCard.id, x: 0, y: 0, loose: true });
     deckDialog?.close();
   }
+
+  function resetTutorial() {
+    window.localStorage.removeItem("tutorial_step");
+  }
 </script>
 
 <div class="area">
   <div class="menu" role="toolbar">
     <a class="button" href="/">Menu</a>
+    <button onclick={resetTutorial}>Help</button>
     <button onclick={onClickDeck}>Deck</button>
   </div>
 </div>
