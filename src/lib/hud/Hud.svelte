@@ -2,6 +2,7 @@
   import CardGrid from "$lib/components/CardGrid.svelte";
   import { cards, type Card } from "$lib/data/cards";
   import { getGameState } from "$lib/game/GameProvider.svelte";
+  import { TutorialNotificationEvent } from "$lib/tutorial/Tutorial.svelte";
   import type { DeckCard } from "$lib/types";
   import HudPanel from "./HudPanel.svelte";
 
@@ -16,10 +17,11 @@
 
   function onClickDeck() {
     deckDialog?.show();
-    window.dispatchEvent(new CustomEvent("deckopen"));
+    window.dispatchEvent(new TutorialNotificationEvent({ type: "deck-opened" }));
   }
 
   function onSelectCard(card: Card & { deckCard: DeckCard }) {
+    window.dispatchEvent(new TutorialNotificationEvent({ type: "card-fielded", card }));
     field.push({ id: card.deckCard.id, x: 0, y: 0, loose: true });
     deckDialog?.close();
   }

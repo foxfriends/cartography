@@ -1,5 +1,6 @@
 // See https://kit.svelte.dev/docs/types#app
 
+import type { TutorialNotificationEvent } from "$lib/tutorial/Tutorial.svelte";
 import type { EventHandler } from "svelte/elements";
 
 // for information about these interfaces
@@ -12,12 +13,12 @@ declare global {
   }
 
   declare namespace svelteHTML {
-    interface SvelteWindowAttributes {
-      ondeckopen?: EventHandler<CustomEvent<null>, Window>;
+    interface HTMLAttributes<T extends EventTarget> {
+      onnotifytutorial?: EventHandler<TutorialNotificationEvent, T> | undefined | null;
     }
 
-    interface HTMLAttributes<T> {
-      ondeckopen?: EventHandler<CustomEvent<null>, T>;
+    interface SvelteWindowAttributes {
+      onnotifytutorial?: EventHandler<TutorialNotificationEvent, Window> | undefined | null;
     }
   }
 }

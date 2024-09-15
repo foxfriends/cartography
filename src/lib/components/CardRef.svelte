@@ -1,6 +1,6 @@
 <script lang="ts">
   import { cards, type CardType } from "$lib/data/cards";
-  import Card from "$lib/components/Card.svelte";
+
   let { id }: { id: CardType } = $props();
   let card = $derived(cards[id]);
 </script>

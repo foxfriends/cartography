@@ -5,7 +5,7 @@
     onDismiss,
     children,
     actions,
-  }: { onDismiss: () => void; children: Snippet; actions: Snippet<[dismiss: () => void]> } =
+  }: { onDismiss?: () => void; children: Snippet; actions: Snippet<[dismiss: () => void]> } =
     $props();
 
   let dialog: HTMLDialogElement | undefined = $state();
