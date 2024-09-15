@@ -16,29 +16,28 @@ export const cards = {
   "water-well": {
     type: "water-well",
     name: "Water Well",
-    category: "production",
-    inputs: [],
+    category: "source",
     outputs: [{ resource: "water", quantity: 10 }],
   },
   "wheat-farm": {
     type: "wheat-farm",
     name: "Wheat Farm",
     category: "production",
-    inputs: [],
+    source: [{ terrain: "soil" }],
     outputs: [{ resource: "wheat", quantity: 4 }],
   },
   "lettuce-farm": {
     type: "lettuce-farm",
     name: "Lettuce Farm",
     category: "production",
-    inputs: [],
+    source: [{ terrain: "soil" }],
     outputs: [{ resource: "lettuce", quantity: 4 }],
   },
   "tomato-farm": {
     type: "tomato-farm",
     name: "Tomato Farm",
     category: "production",
-    inputs: [],
+    source: [{ terrain: "soil" }],
     outputs: [{ resource: "tomato", quantity: 4 }],
   },
   "flour-mill": {

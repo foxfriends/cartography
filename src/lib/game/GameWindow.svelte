@@ -116,9 +116,7 @@
   {#each terrain as tile (tile)}
     <div class="terrain" data-type={tile.type} style="--grid-x: {tile.x}; --grid-y: {tile.y}"></div>
   {/each}
-
   <GridLines />
-
   <CardField field={field.filter((card) => card.loose || isOnScreen(card))} {deck} {onMoveCard} />
 </div>
 
@@ -146,11 +144,11 @@
       calc(var(--grid-y) * var(--card-size) - var(--offset-y))
     );
 
-    &[data-type="Grass"] {
+    &[data-type="grass"] {
       background-color: rgb(63 155 11);
     }
 
-    &[data-type="Soil"] {
+    &[data-type="soil"] {
       background-color: rgb(87 54 8);
     }
 
