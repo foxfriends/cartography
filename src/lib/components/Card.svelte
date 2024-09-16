@@ -39,6 +39,7 @@
       &:focus-visible {
         transform: scale(1.05);
         box-shadow: 0 0 2rem rgb(91 200 227 / 0.5);
+        outline: 1px solid rgb(91 200 227);
       }
     }
 

@@ -26,15 +26,16 @@
     deckDialog?.close();
   }
 
-  function resetTutorial() {
-    window.localStorage.removeItem("tutorial_step");
+  function reset() {
+    window.localStorage.clear();
+    window.location.reload();
   }
 </script>
 
 <div class="area">
   <div class="menu" role="toolbar">
     <a class="button" href="/">Menu</a>
-    <button onclick={resetTutorial}>Help</button>
+    <button onclick={reset}>Reset</button>
     <button onclick={onClickDeck}>Deck</button>
   </div>
 </div>

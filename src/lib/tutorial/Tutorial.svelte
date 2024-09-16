@@ -21,6 +21,7 @@
   import SpeciesRef from "$lib/components/SpeciesRef.svelte";
   import { getGameState } from "$lib/game/GameProvider.svelte";
   import TutorialDialog from "./TutorialDialog.svelte";
+  import ResourceRef from "$lib/components/ResourceRef.svelte";
 
   const { deck } = getGameState();
 
@@ -29,6 +30,7 @@
   let deckView: TutorialDialog | undefined = $state();
   let arrangeNeighbourhood: TutorialDialog | undefined = $state();
   let aboutNeighbourhoods: TutorialDialog | undefined = $state();
+  let aboutBakery: TutorialDialog | undefined = $state();
 
   let step = $state(0);
 
@@ -46,8 +48,6 @@
       window.setTimeout(() => intro!.show(), 1000);
     } else if (step === 1) {
       window.setTimeout(() => placeNeighbourhood!.show(), 100);
-    } else if (step === 3) {
-      window.setTimeout(() => aboutNeighbourhoods!.show(), 100);
     }
   });
 
@@ -68,6 +68,15 @@
       detail.type === "card-placed" &&
       deck.find((d) => d.id === detail.card.id)?.type === "cat-neighbourhood"
     ) {
+      window.setTimeout(() => aboutNeighbourhoods!.show(), 500);
+      step += 1;
+    }
+    if (
+      step === 3 &&
+      detail.type === "card-placed" &&
+      deck.find((d) => d.id === detail.card.id)?.type === "bakery"
+    ) {
+      window.setTimeout(() => aboutBakery!.show(), 500);
       step += 1;
     }
   }
@@ -103,12 +112,12 @@
 <TutorialDialog bind:this={deckView}>
   <p>This is the deck view; the cards you see here are yours!</p>
   <p>
-    There are all sorts of cards to be collected, each one providing a different function. When
-    placed in your town, they will begin to drive your economy.
+    There are all sorts of cards to be collected, each one providing a different function. Be sure
+    to collect as many as you can to grow your town into a vibrant place to live.
   </p>
   <p>
-    As I said, we need to set up a neighbourhood for your citizens to live in, select your
-    <CardRef id="cat-neighbourhood" /> now!
+    We need to set up a neighbourhood for your citizens to live in, select your
+    <CardRef id="cat-neighbourhood" /> now.
   </p>
   <p class="info">Click a card to drop it into the world.</p>
 
@@ -131,21 +140,35 @@
 
 <TutorialDialog bind:this={aboutNeighbourhoods}>
   <p>
-    Neighbourhoods provide housing for citizens in your town. The <CardRef id="cat-neighbourhood" />
-    in particular has room for 6 <SpeciesRef id="cat" /> residents.
+    Residential cards provide housing for citizens in your town. The
+    <CardRef id="cat-neighbourhood" /> in particular has room for 6 <SpeciesRef id="cat" /> residents.
   </p>
   <p>
     Each species of citizen has different needs. When the needs of a citizen are satisfied, their
-    productivity increases and they will be willing to pay you more money in taxes.
+    productivity increases and they will be willing to pay you more taxes.
   </p>
   <p>
-    Each <SpeciesRef id="cat" /> requires 1 Bread per day to be satisfied. Your neighbourhood of 6
-    <SpeciesRef id="cat" plural /> will require 6 Bread per day in total.
-  </p>
-  <p>
-    We can produce Bread by building a <CardRef id="bakery" />.
+    Each <SpeciesRef id="cat" /> requires 1 <ResourceRef>Bread</ResourceRef> per day to be satisfied.
+    We can produce <ResourceRef>Bread</ResourceRef> by building a <CardRef id="bakery" />.
   </p>
   <p class="info">Place a <CardRef id="bakery" /> from your deck into your town.</p>
+
+  {#snippet actions(dismiss)}
+    <button onclick={dismiss}>Got it!</button>
+  {/snippet}
+</TutorialDialog>
+
+<TutorialDialog bind:this={aboutBakery}>
+  <p>
+    The <CardRef id="bakery" /> is a Production card. Production cards produce resources by consuming
+    the resources of other cards nearby. To produce 5 units of <ResourceRef>Bread</ResourceRef>, the
+    <CardRef id="bakery" /> uses 1 unit of <ResourceRef>Water</ResourceRef> and 4 units of
+    <ResourceRef>Flour</ResourceRef>.
+  </p>
+  <p>
+    If we want this <CardRef id="bakery" /> working, we'll need to get our hands on those resources.
+    Check your deck and see what else you can do.
+  </p>
 
   {#snippet actions(dismiss)}
     <button onclick={dismiss}>Got it!</button>

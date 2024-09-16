@@ -113,6 +113,16 @@
 
   let field: Field = $state([]);
 
+  $effect.pre(() => {
+    const storedState = window.localStorage.getItem("field_state");
+    if (!storedState) return;
+    try {
+      field = JSON.parse(storedState);
+    } catch {
+      /* empty */
+    }
+  });
+
   setContext("gamestate", {
     get geography() {
       return geography;
@@ -124,6 +134,10 @@
       return field;
     },
   } satisfies GameState);
+
+  $effect(() => {
+    window.localStorage.setItem("field_state", JSON.stringify(field));
+  });
 </script>
 
 {@render children()}
