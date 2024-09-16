@@ -56,7 +56,6 @@
   }
 
   function onnotifytutorial({ detail }: TutorialNotificationEvent) {
-    console.log(step, detail);
     if (step === 2 && detail.type === "deck-opened") {
       window.setTimeout(() => deckView!.show(), 500);
     }
