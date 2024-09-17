@@ -12,6 +12,14 @@ export default tsEslint.config(
   eslintConfigPrettier,
   ...svelteEslint.configs["flat/prettier"],
   {
+    rules: {
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { varsIgnorePattern: "^_.*", argsIgnorePattern: "^_.*" },
+      ],
+    },
+  },
+  {
     languageOptions: {
       ecmaVersion: 2024,
       sourceType: "module",

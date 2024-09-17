@@ -1,7 +1,6 @@
 // See https://kit.svelte.dev/docs/types#app
 
 import type { EventHandler } from "svelte/elements";
-import type { TutorialNotificationEvent } from "$lib/tutorial/Tutorial.svelte";
 import type { CardReceivedEvent } from "$lib/events/CardReceivedEvent";
 import type { CardFieldedEvent } from "$lib/events/CardFieldedEvent";
 import type { CardPlacedEvent } from "$lib/events/CardPlacedEvent";

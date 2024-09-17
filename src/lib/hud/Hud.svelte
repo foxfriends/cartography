@@ -1,13 +1,12 @@
 <script lang="ts">
-  import CardGrid from "$lib/components/CardGrid.svelte";
   import ShimmerModal from "$lib/components/ShimmerModal.svelte";
-  import { cards, type Card } from "$lib/data/cards";
+  import { type Card } from "$lib/data/cards";
   import { CardFieldedEvent } from "$lib/events/CardFieldedEvent";
   import { getGameState } from "$lib/game/GameProvider.svelte";
   import type { DeckCard } from "$lib/types";
   import DeckDialog from "./DeckDialog.svelte";
 
-  let { deck, field } = getGameState();
+  let { field } = getGameState();
 
   let deckDialog: DeckDialog | undefined = $state();
   let fanfareDialog: ShimmerModal | undefined = $state();

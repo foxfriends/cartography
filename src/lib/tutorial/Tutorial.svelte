@@ -1,6 +1,4 @@
 <script lang="ts">
-  import type { Card } from "$lib/data/cards";
-  import type { FieldCard } from "$lib/types";
   import { getGameState } from "$lib/game/GameProvider.svelte";
   import CardRef from "$lib/components/CardRef.svelte";
   import SpeciesRef from "$lib/components/SpeciesRef.svelte";
