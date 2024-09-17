@@ -2,7 +2,7 @@
   import { getGameState } from "./GameProvider.svelte";
   import CardField from "./CardField.svelte";
   import GridLines from "./GridLines.svelte";
-  import { TutorialNotificationEvent } from "$lib/tutorial/Tutorial.svelte";
+  import { CardPlacedEvent } from "$lib/events/CardPlacedEvent";
 
   const TILE_SIZE = 128;
 
@@ -77,7 +77,7 @@
       card.y = destinationY;
       card.loose = false;
 
-      window.dispatchEvent(new TutorialNotificationEvent({ type: "card-placed", card }));
+      window.dispatchEvent(new CardPlacedEvent(card));
     }
   }
 

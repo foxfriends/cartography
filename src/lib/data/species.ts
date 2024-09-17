@@ -1,4 +1,6 @@
-type Need = { type: "resource"; resource: string; quantity: number };
+import type { ResourceType } from "./resources";
+
+type Need = { type: "resource"; resource: ResourceType; quantity: number };
 
 export type Species = {
   type: string;

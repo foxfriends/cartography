@@ -1,27 +1,16 @@
-<script lang="ts" module>
-  export type TutorialNotification =
-    | { type: "deck-opened" }
-    | { type: "card-fielded"; card: Card }
-    | { type: "card-placed"; card: FieldCard };
-
-  export class TutorialNotificationEvent extends Event {
-    detail: TutorialNotification;
-
-    constructor(detail: TutorialNotification) {
-      super("notifytutorial");
-      this.detail = detail;
-    }
-  }
-</script>
-
 <script lang="ts">
   import type { Card } from "$lib/data/cards";
   import type { FieldCard } from "$lib/types";
+  import { getGameState } from "$lib/game/GameProvider.svelte";
   import CardRef from "$lib/components/CardRef.svelte";
   import SpeciesRef from "$lib/components/SpeciesRef.svelte";
-  import { getGameState } from "$lib/game/GameProvider.svelte";
   import TutorialDialog from "./TutorialDialog.svelte";
   import ResourceRef from "$lib/components/ResourceRef.svelte";
+  import TerrainRef from "$lib/components/TerrainRef.svelte";
+  import { CardReceivedEvent } from "$lib/events/CardReceivedEvent";
+  import type { DeckOpenedEvent } from "$lib/events/DeckOpenedEvent";
+  import type { CardFieldedEvent } from "$lib/events/CardFieldedEvent";
+  import type { CardPlacedEvent } from "$lib/events/CardPlacedEvent";
 
   const { deck } = getGameState();
 
@@ -31,62 +20,72 @@
   let arrangeNeighbourhood: TutorialDialog | undefined = $state();
   let aboutNeighbourhoods: TutorialDialog | undefined = $state();
   let aboutBakery: TutorialDialog | undefined = $state();
+  let aboutSources: TutorialDialog | undefined = $state();
 
-  let step = $state(0);
+  type Step = "intro" | "place-neighbourhood" | "place-bakery" | "place-sources";
+
+  let step: Step = $state("intro");
 
   $effect.pre(() => {
     const storedStep = window.localStorage.getItem("tutorial_step");
     if (!storedStep) return;
     const parsed = JSON.parse(storedStep);
-    if (typeof parsed !== "number") return;
-    step = parsed;
+    if (typeof parsed !== "string") return;
+    step = parsed as Step;
   });
 
   $effect(() => {
     window.localStorage.setItem("tutorial_step", JSON.stringify(step));
-    if (step === 0) {
-      window.setTimeout(() => intro!.show(), 1000);
-    } else if (step === 1) {
-      window.setTimeout(() => placeNeighbourhood!.show(), 100);
-    }
+    if (step === "intro") window.setTimeout(() => intro!.show(), 1000);
   });
 
-  function nextStep() {
-    step += 1;
+  function introReward() {
+    step = "place-neighbourhood";
+
+    window.dispatchEvent(
+      new CardReceivedEvent({
+        id: window.crypto.randomUUID(),
+        type: "cat-neighbourhood",
+      }),
+    );
   }
 
-  function onnotifytutorial({ detail }: TutorialNotificationEvent) {
-    if (step === 2 && detail.type === "deck-opened") {
+  function ondeckopened(_: DeckOpenedEvent) {
+    if (step === "place-neighbourhood") {
       window.setTimeout(() => deckView!.show(), 500);
     }
-    if (step === 2 && detail.type === "card-fielded" && detail.card.type === "cat-neighbourhood") {
+  }
+
+  function oncardfielded({ card }: CardFieldedEvent) {
+    if (step === "place-neighbourhood" && card.type === "cat-neighbourhood") {
       window.setTimeout(() => arrangeNeighbourhood!.show(), 500);
     }
+  }
+
+  function oncardplaced({ card }: CardPlacedEvent) {
     if (
-      step === 2 &&
-      detail.type === "card-placed" &&
-      deck.find((d) => d.id === detail.card.id)?.type === "cat-neighbourhood"
+      step === "place-neighbourhood" &&
+      deck.find((d) => d.id === card.id)?.type === "cat-neighbourhood"
     ) {
       window.setTimeout(() => aboutNeighbourhoods!.show(), 500);
-      step += 1;
+      step = "place-bakery";
     }
-    if (
-      step === 3 &&
-      detail.type === "card-placed" &&
-      deck.find((d) => d.id === detail.card.id)?.type === "bakery"
-    ) {
+    if (step === "place-bakery" && deck.find((d) => d.id === card.id)?.type === "bakery") {
       window.setTimeout(() => aboutBakery!.show(), 500);
-      step += 1;
+      step = "place-sources";
     }
   }
 </script>
 
-<svelte:window {onnotifytutorial} />
+<svelte:window {ondeckopened} {oncardfielded} {oncardplaced} />
 
-<TutorialDialog bind:this={intro} onDismiss={nextStep}>
-  <p>Hello Mayor! Welcome to the location of your new town!</p>
+<TutorialDialog
+  bind:this={intro}
+  onDismiss={() => window.setTimeout(() => placeNeighbourhood!.show(), 100)}
+>
+  <p>Hello Mayor! Welcome to the location of our new town!</p>
   <p>
-    We're actually... just getting started here ourselves. As you can see, we haven't even set up a
+    All of us are just getting started here ourselves. As you can see, we haven't even set up a
     single neighbourhood yet.
   </p>
   <p>Will you help us choose a spot for that right now?</p>
@@ -96,7 +95,7 @@
   {/snippet}
 </TutorialDialog>
 
-<TutorialDialog bind:this={placeNeighbourhood} onDismiss={nextStep}>
+<TutorialDialog bind:this={placeNeighbourhood} onDismiss={introReward}>
   <p>
     Great! I have the card for a <CardRef id="cat-neighbourhood" /> right here, I'll put it into your
     deck. Take a look and see for yourself!
@@ -147,8 +146,8 @@
     productivity increases and they will be willing to pay you more taxes.
   </p>
   <p>
-    Each <SpeciesRef id="cat" /> requires 1 <ResourceRef>Bread</ResourceRef> per day to be satisfied.
-    We can produce <ResourceRef>Bread</ResourceRef> by building a <CardRef id="bakery" />.
+    Each <SpeciesRef id="cat" /> requires 1 <ResourceRef id="bread" /> per day to be satisfied. We can
+    produce <ResourceRef id="bread" /> by building a <CardRef id="bakery" />.
   </p>
   <p class="info">Place a <CardRef id="bakery" /> from your deck into your town.</p>
 
@@ -160,9 +159,9 @@
 <TutorialDialog bind:this={aboutBakery}>
   <p>
     The <CardRef id="bakery" /> is a Production card. Production cards produce resources by consuming
-    the resources of other cards nearby. To produce 5 units of <ResourceRef>Bread</ResourceRef>, the
-    <CardRef id="bakery" /> uses 1 unit of <ResourceRef>Water</ResourceRef> and 4 units of
-    <ResourceRef>Flour</ResourceRef>.
+    the resources of other cards nearby. To produce 5 units of <ResourceRef id="bread" />, the
+    <CardRef id="bakery" /> uses 1 unit of <ResourceRef id="water" /> and 4 units of
+    <ResourceRef id="flour" />.
   </p>
   <p>
     If we want this <CardRef id="bakery" /> working, we'll need to get our hands on those resources.
@@ -170,7 +169,24 @@
   </p>
 
   {#snippet actions(dismiss)}
-    <button onclick={dismiss}>Got it!</button>
+    <button onclick={dismiss}>I'll take a look!</button>
+  {/snippet}
+</TutorialDialog>
+
+<TutorialDialog bind:this={aboutSources}>
+  <p>
+    The <CardRef id="water-well" /> and <CardRef id="wheat-farm" /> cards are both Source cards, meaning
+    they are able to produce resources without needing to consume anything first. Instead, they allow
+    you to harvest resources straight from the source.
+  </p>
+  <p>
+    While the <CardRef id="water-well" /> is able to produce water from anywhere, the
+    <CardRef id="wheat-farm" /> requires being placed on fertile <TerrainRef id="soil" /> in order to
+    grow wheat.
+  </p>
+
+  {#snippet actions(dismiss)}
+    <button onclick={dismiss}>Makes sense to me!</button>
   {/snippet}
 </TutorialDialog>
 

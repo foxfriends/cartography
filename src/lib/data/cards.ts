@@ -1,6 +1,9 @@
-type Source = { type: "terrain"; terrain: string } | { type: "any" };
-type Output = { resource: string; quantity: number };
-type Input = { resource: string; quantity: number };
+import type { ResourceType } from "./resources";
+import type { TerrainType } from "./terrains";
+
+type Source = { type: "terrain"; terrain: TerrainType } | { type: "any" };
+type Output = { resource: ResourceType; quantity: number };
+type Input = { resource: ResourceType; quantity: number };
 type Population = { quantity: number; species: string };
 
 type BaseCard = { name: string; type: string };

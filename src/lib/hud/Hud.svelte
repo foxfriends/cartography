@@ -1,27 +1,23 @@
 <script lang="ts">
   import CardGrid from "$lib/components/CardGrid.svelte";
+  import ShimmerModal from "$lib/components/ShimmerModal.svelte";
   import { cards, type Card } from "$lib/data/cards";
+  import { CardFieldedEvent } from "$lib/events/CardFieldedEvent";
   import { getGameState } from "$lib/game/GameProvider.svelte";
-  import { TutorialNotificationEvent } from "$lib/tutorial/Tutorial.svelte";
   import type { DeckCard } from "$lib/types";
-  import HudPanel from "./HudPanel.svelte";
+  import DeckDialog from "./DeckDialog.svelte";
 
   let { deck, field } = getGameState();
 
-  let deckDialog: HudPanel | undefined = $state();
-  let deckCards = $derived(
-    deck
-      .filter(({ id }) => !field.some((f) => f.id === id))
-      .map((deckCard) => ({ ...cards[deckCard.type], deckCard })),
-  );
+  let deckDialog: DeckDialog | undefined = $state();
+  let fanfareDialog: ShimmerModal | undefined = $state();
 
   function onClickDeck() {
     deckDialog?.show();
-    window.dispatchEvent(new TutorialNotificationEvent({ type: "deck-opened" }));
   }
 
   function onSelectCard(card: Card & { deckCard: DeckCard }) {
-    window.dispatchEvent(new TutorialNotificationEvent({ type: "card-fielded", card }));
+    window.dispatchEvent(new CardFieldedEvent(card.deckCard));
     field.push({ id: card.deckCard.id, x: 0, y: 0, loose: true });
     deckDialog?.close();
   }
@@ -40,11 +36,11 @@
   </div>
 </div>
 
-<HudPanel bind:this={deckDialog}>
-  <article class="deck">
-    <CardGrid cards={deckCards} {onSelectCard} />
-  </article>
-</HudPanel>
+<DeckDialog bind:this={deckDialog} {onSelectCard} />
+
+<ShimmerModal bind:this={fanfareDialog}>
+  <article class=""></article>
+</ShimmerModal>
 
 <style>
   .area {
@@ -83,10 +79,5 @@
     cursor: pointer;
     border: 1px solid rgb(0 0 0 / 0.12);
     box-shadow: 0 0 0.25rem rgb(0 0 0 / 0.25);
-  }
-
-  .deck {
-    padding: 2rem;
-    --card-grid-gap: 2rem;
   }
 </style>

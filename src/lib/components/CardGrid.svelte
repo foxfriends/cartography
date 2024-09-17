@@ -15,6 +15,12 @@
 </div>
 
 <style>
+  @property --card-grid-gap {
+    syntax: "<length>";
+    inherits: false;
+    initial-value: 0;
+  }
+
   .grid {
     display: grid;
     grid-auto-flow: row;

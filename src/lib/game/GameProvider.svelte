@@ -104,20 +104,14 @@
     resources: [],
   } as const satisfies Geography;
 
-  const deck = [
-    { id: "cats1", type: "cat-neighbourhood" },
-    { id: "waterwell1", type: "water-well" },
-    { id: "bakery1", type: "bakery" },
-    { id: "wheatfarm1", type: "wheat-farm" },
-  ] as const satisfies Deck;
-
+  let deck: Deck = $state([]);
   let field: Field = $state([]);
 
   $effect.pre(() => {
-    const storedState = window.localStorage.getItem("field_state");
+    const storedState = window.localStorage.getItem("game_state");
     if (!storedState) return;
     try {
-      field = JSON.parse(storedState);
+      ({ field, deck } = JSON.parse(storedState));
     } catch {
       /* empty */
     }
@@ -136,7 +130,7 @@
   } satisfies GameState);
 
   $effect(() => {
-    window.localStorage.setItem("field_state", JSON.stringify(field));
+    window.localStorage.setItem("game_state", JSON.stringify({ field, deck }));
   });
 </script>
 
