@@ -10,7 +10,7 @@
   import type { CardFieldedEvent } from "$lib/events/CardFieldedEvent";
   import type { CardPlacedEvent } from "$lib/events/CardPlacedEvent";
 
-  const { deck } = getGameState();
+  const { deck, field } = getGameState();
 
   let intro: TutorialDialog | undefined = $state();
   let placeNeighbourhood: TutorialDialog | undefined = $state();
@@ -38,25 +38,38 @@
   });
 
   function introReward() {
-    step = "place-neighbourhood";
+    window.setTimeout(() => {
+      window.dispatchEvent(
+        new CardsReceivedEvent([{ id: window.crypto.randomUUID(), type: "cat-neighbourhood" }]),
+      );
+      step = "place-neighbourhood";
+    }, 500);
+  }
 
-    window.setTimeout(
-      () =>
-        window.dispatchEvent(
-          new CardsReceivedEvent([
-            {
-              id: window.crypto.randomUUID(),
-              type: "cat-neighbourhood",
-            },
-          ]),
-        ),
-      500,
-    );
+  function arrangeNeighbourhoodReward() {
+    window.setTimeout(() => {
+      window.dispatchEvent(
+        new CardsReceivedEvent([{ id: window.crypto.randomUUID(), type: "bakery" }]),
+      );
+      step = "place-bakery";
+    }, 500);
+  }
+
+  function placeBakeryReward() {
+    window.setTimeout(() => {
+      window.dispatchEvent(
+        new CardsReceivedEvent([
+          { id: window.crypto.randomUUID(), type: "water-well" },
+          { id: window.crypto.randomUUID(), type: "wheat-farm" },
+        ]),
+      );
+      step = "place-sources";
+    }, 500);
   }
 
   function ondeckopened(_: DeckOpenedEvent) {
     if (step === "place-neighbourhood") {
-      window.setTimeout(() => deckView!.show(), 100);
+      window.setTimeout(() => deckView!.show(), 500);
     }
   }
 
@@ -76,7 +89,14 @@
     }
     if (step === "place-bakery" && deck.find((d) => d.id === card.id)?.type === "bakery") {
       window.setTimeout(() => aboutBakery!.show(), 500);
-      step = "place-sources";
+    }
+    if (
+      step === "place-sources" &&
+      ["wheat-farm", "water-well"].every((cardtype) =>
+        field.some((fc) => !fc.loose && deck.some((dc) => fc.id === dc.id && dc.type === cardtype)),
+      )
+    ) {
+      window.setTimeout(() => aboutSources!.show(), 500);
     }
   }
 </script>
@@ -140,7 +160,7 @@
   {/snippet}
 </TutorialDialog>
 
-<TutorialDialog bind:this={aboutNeighbourhoods}>
+<TutorialDialog bind:this={aboutNeighbourhoods} onDismiss={arrangeNeighbourhoodReward}>
   <p>
     Residential cards provide housing for citizens in your town. The
     <CardRef id="cat-neighbourhood" /> in particular has room for 6 <SpeciesRef id="cat" /> residents.
@@ -151,7 +171,8 @@
   </p>
   <p>
     Each <SpeciesRef id="cat" /> requires 1 <ResourceRef id="bread" /> per day to be satisfied. We can
-    produce <ResourceRef id="bread" /> by building a <CardRef id="bakery" />.
+    produce <ResourceRef id="bread" /> by building a <CardRef id="bakery" />. I have a
+    <CardRef id="bakery" /> card for you right here.
   </p>
   <p class="info">Place a <CardRef id="bakery" /> from your deck into your town.</p>
 
@@ -160,7 +181,7 @@
   {/snippet}
 </TutorialDialog>
 
-<TutorialDialog bind:this={aboutBakery}>
+<TutorialDialog bind:this={aboutBakery} onDismiss={placeBakeryReward}>
   <p>
     The <CardRef id="bakery" /> is a Production card. Production cards produce resources by consuming
     the resources of other cards nearby. To produce 5 units of <ResourceRef id="bread" />, the
@@ -169,11 +190,11 @@
   </p>
   <p>
     If we want this <CardRef id="bakery" /> working, we'll need to get our hands on those resources.
-    Check your deck and see what else you can do.
+    I think I have a few more cards that might help with that right here, take a look!
   </p>
 
   {#snippet actions(dismiss)}
-    <button onclick={dismiss}>I'll take a look!</button>
+    <button onclick={dismiss}>Ok!</button>
   {/snippet}
 </TutorialDialog>
 

@@ -18,10 +18,11 @@
   @property --card-grid-gap {
     syntax: "<length>";
     inherits: false;
-    initial-value: 0;
+    initial-value: 1rem;
   }
 
   .grid {
+    width: 100%;
     display: grid;
     grid-auto-flow: row;
     grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));

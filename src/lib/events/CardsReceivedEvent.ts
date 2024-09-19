@@ -4,7 +4,7 @@ export class CardsReceivedEvent extends Event {
   cards: DeckCard[];
 
   constructor(cards: DeckCard[]) {
-    super("cardreceived");
+    super("cardsreceived");
     this.cards = cards;
   }
 }

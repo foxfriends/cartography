@@ -11,7 +11,7 @@
   onclick={onSelect}
   onkeydown={opt(enter)(onSelect)}
   role="button"
-  tabindex={0}
+  tabindex={onSelect ? 0 : undefined}
 >
   <div class="title">{card.name} | {card.category}</div>
   <div class="image"></div>

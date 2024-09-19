@@ -27,7 +27,7 @@
 
     color: transparent;
     background-image: linear-gradient(
-      45deg,
+      to right,
       var(--shimmer-color) calc(0% - var(--shimmer-offset)),
       oklch(from var(--shimmer-color) calc(l + 0.15) c calc(h + 15))
         calc(50% - var(--shimmer-offset)),
@@ -39,7 +39,7 @@
     background-repeat: repeat-x;
     background-clip: text;
 
-    animation: shimmer 4s linear infinite;
+    animation: shimmer 8s ease-in-out alternate infinite;
   }
 
   @keyframes shimmer {
