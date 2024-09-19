@@ -1,15 +1,16 @@
 <script lang="ts">
-  import ShimmerModal from "$lib/components/ShimmerModal.svelte";
-  import { type Card } from "$lib/data/cards";
+  import { cards, type Card } from "$lib/data/cards";
   import { CardFieldedEvent } from "$lib/events/CardFieldedEvent";
+  import type { CardReceivedEvent } from "$lib/events/CardReceivedEvent";
   import { getGameState } from "$lib/game/GameProvider.svelte";
   import type { DeckCard } from "$lib/types";
+  import CardRewardDialog from "./CardRewardDialog.svelte";
   import DeckDialog from "./DeckDialog.svelte";
 
   let { field } = getGameState();
 
   let deckDialog: DeckDialog | undefined = $state();
-  let fanfareDialog: ShimmerModal | undefined = $state();
+  let cardRewardDialog: CardRewardDialog | undefined = $state();
 
   function onClickDeck() {
     deckDialog?.show();
@@ -25,6 +26,11 @@
     window.localStorage.clear();
     window.location.reload();
   }
+
+  function oncardreceived(event: CardReceivedEvent) {
+    const card = cards[event.card.type];
+    cardRewardDialog?.show([card]);
+  }
 </script>
 
 <div class="area">
@@ -36,10 +42,9 @@
 </div>
 
 <DeckDialog bind:this={deckDialog} {onSelectCard} />
+<CardRewardDialog bind:this={cardRewardDialog} />
 
-<ShimmerModal bind:this={fanfareDialog}>
-  <article class=""></article>
-</ShimmerModal>
+<svelte:window {oncardreceived} />
 
 <style>
   .area {

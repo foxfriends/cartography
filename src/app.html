@@ -82,6 +82,19 @@
         font-size: 2rem;
         font-weight: bold;
       }
+
+      button {
+        padding: 0.5rem 1rem;
+        border: 1px solid rgb(0 0 0 / 0.25);
+        border-radius: 0.25rem;
+        background: rgb(0 0 0 / 0);
+        cursor: pointer;
+
+        &:hover,
+        &:focus-visible {
+          background-color: rgb(0 0 0 / 0.05);
+        }
+      }
     </style>
   </head>
   <body data-sveltekit-preload-data="hover">

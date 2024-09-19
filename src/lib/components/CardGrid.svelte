@@ -1,11 +1,11 @@
-<script lang="ts" generics="T extends unknown">
+<script lang="ts" generics="T extends CardT = CardT">
   /* global T */
-  import type { Card as CardT } from "$lib/data/cards.ts";
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  import type { Card as CardT } from "$lib/data/cards";
   import { apply, opt } from "$lib/events";
   import Card from "./Card.svelte";
 
-  let { cards, onSelectCard }: { cards: (CardT & T)[]; onSelectCard?: (card: CardT & T) => void } =
-    $props();
+  let { cards, onSelectCard }: { cards: T[]; onSelectCard?: (card: T) => void } = $props();
 </script>
 
 <div class="grid">

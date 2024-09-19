@@ -34,23 +34,27 @@
 
   $effect(() => {
     window.localStorage.setItem("tutorial_step", JSON.stringify(step));
-    if (step === "intro") window.setTimeout(() => intro!.show(), 1000);
+    if (step === "intro") window.setTimeout(() => intro!.show(), 500);
   });
 
   function introReward() {
     step = "place-neighbourhood";
 
-    window.dispatchEvent(
-      new CardReceivedEvent({
-        id: window.crypto.randomUUID(),
-        type: "cat-neighbourhood",
-      }),
+    window.setTimeout(
+      () =>
+        window.dispatchEvent(
+          new CardReceivedEvent({
+            id: window.crypto.randomUUID(),
+            type: "cat-neighbourhood",
+          }),
+        ),
+      500,
     );
   }
 
   function ondeckopened(_: DeckOpenedEvent) {
     if (step === "place-neighbourhood") {
-      window.setTimeout(() => deckView!.show(), 500);
+      window.setTimeout(() => deckView!.show(), 100);
     }
   }
 
@@ -189,19 +193,6 @@
 </TutorialDialog>
 
 <style>
-  button {
-    padding: 0.5rem 1rem;
-    border: 1px solid rgb(0 0 0 / 0.25);
-    border-radius: 0.25rem;
-    background: rgb(0 0 0 / 0);
-    cursor: pointer;
-
-    &:hover,
-    &:focus-visible {
-      background-color: rgb(0 0 0 / 0.05);
-    }
-  }
-
   .info {
     font-style: italic;
     font-weight: 600;

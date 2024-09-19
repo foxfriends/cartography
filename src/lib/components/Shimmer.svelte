@@ -39,10 +39,10 @@
     background-repeat: repeat-x;
     background-clip: text;
 
-    animation: resource-name-pulse 4s linear infinite;
+    animation: shimmer 4s linear infinite;
   }
 
-  @keyframes resource-name-pulse {
+  @keyframes shimmer {
     from {
       --shimmer-offset: 0%;
     }

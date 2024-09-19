@@ -18,8 +18,12 @@
   let dialog: Modal | undefined = $state();
 
   export function show() {
-    dialog!.show();
+    dialog?.show();
     window.dispatchEvent(new DeckOpenedEvent());
+  }
+
+  export function close() {
+    dialog?.close();
   }
 </script>
 

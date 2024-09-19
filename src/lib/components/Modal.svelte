@@ -14,7 +14,6 @@
   }
 </script>
 
-<!-- Step 2 -->
 <dialog bind:this={dialog}>
   {@render children()}
 </dialog>
