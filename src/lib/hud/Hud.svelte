@@ -1,8 +1,8 @@
 <script lang="ts">
   import { cards, type Card } from "$lib/data/cards";
-  import { CardFieldedEvent } from "$lib/events/CardFieldedEvent";
-  import type { CardReceivedEvent } from "$lib/events/CardReceivedEvent";
   import { getGameState } from "$lib/game/GameProvider.svelte";
+  import { CardFieldedEvent } from "$lib/events/CardFieldedEvent";
+  import type { CardsReceivedEvent } from "$lib/events/CardsReceivedEvent";
   import type { DeckCard } from "$lib/types";
   import CardRewardDialog from "./CardRewardDialog.svelte";
   import DeckDialog from "./DeckDialog.svelte";
@@ -27,9 +27,8 @@
     window.location.reload();
   }
 
-  function oncardreceived(event: CardReceivedEvent) {
-    const card = cards[event.card.type];
-    cardRewardDialog?.show([card]);
+  function oncardsreceived(event: CardsReceivedEvent) {
+    cardRewardDialog?.show(event.cards.map((card) => cards[card.type]));
   }
 </script>
 
@@ -44,7 +43,7 @@
 <DeckDialog bind:this={deckDialog} {onSelectCard} />
 <CardRewardDialog bind:this={cardRewardDialog} />
 
-<svelte:window {oncardreceived} />
+<svelte:window {oncardsreceived} />
 
 <style>
   .area {

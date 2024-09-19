@@ -1,7 +1,7 @@
 <script lang="ts" module>
   import { getContext, setContext, type Snippet } from "svelte";
   import type { Deck, Field, Geography } from "$lib/types";
-  import type { CardReceivedEvent } from "$lib/events/CardReceivedEvent";
+  import type { CardsReceivedEvent } from "$lib/events/CardsReceivedEvent";
 
   type GameState = {
     deck: Deck;
@@ -134,11 +134,11 @@
     window.localStorage.setItem("game_state", JSON.stringify({ field, deck }));
   });
 
-  function oncardreceived(event: CardReceivedEvent) {
-    deck.push(event.card);
+  function oncardsreceived(event: CardsReceivedEvent) {
+    deck.push(...event.cards);
   }
 </script>
 
-<svelte:window {oncardreceived} />
+<svelte:window {oncardsreceived} />
 
 {@render children()}

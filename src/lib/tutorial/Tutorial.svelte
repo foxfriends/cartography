@@ -5,7 +5,7 @@
   import TutorialDialog from "./TutorialDialog.svelte";
   import ResourceRef from "$lib/components/ResourceRef.svelte";
   import TerrainRef from "$lib/components/TerrainRef.svelte";
-  import { CardReceivedEvent } from "$lib/events/CardReceivedEvent";
+  import { CardsReceivedEvent } from "$lib/events/CardsReceivedEvent";
   import type { DeckOpenedEvent } from "$lib/events/DeckOpenedEvent";
   import type { CardFieldedEvent } from "$lib/events/CardFieldedEvent";
   import type { CardPlacedEvent } from "$lib/events/CardPlacedEvent";
@@ -43,10 +43,12 @@
     window.setTimeout(
       () =>
         window.dispatchEvent(
-          new CardReceivedEvent({
-            id: window.crypto.randomUUID(),
-            type: "cat-neighbourhood",
-          }),
+          new CardsReceivedEvent([
+            {
+              id: window.crypto.randomUUID(),
+              type: "cat-neighbourhood",
+            },
+          ]),
         ),
       500,
     );
