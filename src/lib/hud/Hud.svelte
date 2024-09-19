@@ -6,8 +6,9 @@
   import type { DeckCard } from "$lib/types";
   import CardRewardDialog from "./CardRewardDialog.svelte";
   import DeckDialog from "./DeckDialog.svelte";
+  import { resources, type ResourceType } from "$lib/data/resources";
 
-  let { field } = getGameState();
+  let { deck, field, geography } = getGameState();
 
   let deckDialog: DeckDialog | undefined = $state();
   let cardRewardDialog: CardRewardDialog | undefined = $state();
@@ -30,9 +31,76 @@
   function oncardsreceived(event: CardsReceivedEvent) {
     cardRewardDialog?.show(event.cards.map((card) => cards[card.type]));
   }
+
+  let excess: { resource: ResourceType; quantity: number }[] = $derived.by(() => {
+    const cardsOnField = field
+      .filter((fc) => !fc.loose)
+      .map((fc) => ({ field: fc, deck: deck.find((dc) => dc.id === fc.id)! }))
+      .map((fdc) => ({ ...fdc, card: cards[fdc.deck.type] }));
+
+    const produced: Partial<Record<ResourceType, { x: number; y: number; quantity: number }[]>> =
+      {};
+
+    const producing = cardsOnField.filter(({ card }) => card.category === "source");
+    const remaining = cardsOnField.filter(({ card }) => card.category === "production");
+    checkCard: while (producing.length > 0) {
+      const current = producing.shift()!;
+      switch (current.card.category) {
+        case "production":
+          break;
+        case "source":
+          checkSource: {
+            for (const source of current.card.source) {
+              switch (source.type) {
+                case "terrain":
+                  if (
+                    geography.terrain[current.field.y]?.[current.field.x].type === source.terrain
+                  ) {
+                    break checkSource;
+                  }
+                case "any":
+                  break checkSource;
+              }
+            }
+            continue checkCard;
+          }
+          for (const output of current.card.outputs) {
+            produced[output.resource] ??= [];
+            produced[output.resource]!.push({
+              x: current.field.x,
+              y: current.field.y,
+              quantity: output.quantity,
+            });
+          }
+          break;
+        case "residential":
+        case "trade":
+          break;
+        default:
+          current.card satisfies never;
+          throw new Error("Unreachable");
+      }
+    }
+
+    return [];
+  });
+  let income = $derived(
+    Math.floor(
+      excess.map((res) => resources[res.resource].value * res.quantity).reduce((a, b) => a + b, 0) /
+        10,
+    ),
+  );
 </script>
 
 <div class="area">
+  <div class="status">
+    <div class="title-area">
+      <span class="title">Your Town</span>
+      <span>${income} / day</span>
+    </div>
+    <div>Resource Display</div>
+  </div>
+
   <div class="menu" role="toolbar">
     <a class="button" href="/">Menu</a>
     <button onclick={reset}>Reset</button>
@@ -54,6 +122,7 @@
     display: grid;
 
     grid-template:
+      "status status" auto
       ". ." 1fr
       ". menu" auto
       / 1fr auto;
@@ -65,6 +134,30 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
+  }
+
+  .status {
+    pointer-events: auto;
+    grid-area: status;
+    padding: 0.4rem;
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    justify-content: space-between;
+    background-color: rgb(255 255 255 / 0.8);
+    backdrop-filter: blur(1rem);
+    border-bottom: 1px solid rgb(0 0 0 / 0.12);
+    font-size: 0.8rem;
+  }
+
+  .title-area {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+  }
+
+  .title {
+    font-weight: 600;
   }
 
   button,
@@ -82,5 +175,6 @@
     cursor: pointer;
     border: 1px solid rgb(0 0 0 / 0.12);
     box-shadow: 0 0 0.25rem rgb(0 0 0 / 0.25);
+    font-size: 1rem;
   }
 </style>
