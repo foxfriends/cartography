@@ -1,6 +1,5 @@
 <script lang="ts">
   import { fade } from "svelte/transition";
-  import type { MouseEventHandler } from "svelte/elements";
   import { CardFocusEvent } from "$lib/events/CardFocusEvent";
 
   let {

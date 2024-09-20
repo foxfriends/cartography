@@ -1,7 +1,6 @@
 <script lang="ts">
   import Card from "$lib/components/Card.svelte";
   import type { Card as CardT } from "$lib/data/cards";
-  import type { Snippet } from "svelte";
 
   let dialog: HTMLDialogElement | undefined = $state();
   let card: CardT | undefined = $state();
