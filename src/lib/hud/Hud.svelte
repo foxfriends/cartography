@@ -38,47 +38,47 @@
       .map((fc) => ({ field: fc, deck: deck.find((dc) => dc.id === fc.id)! }))
       .map((fdc) => ({ ...fdc, card: cards[fdc.deck.type] }));
 
-    const produced: Partial<Record<ResourceType, { x: number; y: number; quantity: number }[]>> =
-      {};
+    const produced: Partial<
+      Record<ResourceType, { producerId: string; x: number; y: number; quantity: number }[]>
+    > = {};
 
     const producing = cardsOnField.filter(({ card }) => card.category === "source");
     const remaining = cardsOnField.filter(({ card }) => card.category === "production");
-    checkCard: while (producing.length > 0) {
+    nextCard: while (producing.length > 0) {
       const current = producing.shift()!;
       switch (current.card.category) {
         case "production":
           break;
-        case "source":
-          checkSource: {
-            for (const source of current.card.source) {
-              switch (source.type) {
-                case "terrain":
-                  if (
-                    geography.terrain[current.field.y]?.[current.field.x].type === source.terrain
-                  ) {
-                    break checkSource;
-                  }
-                case "any":
-                  break checkSource;
-              }
+        case "source": {
+          const isValidSource = current.card.source.some((source) => {
+            switch (source.type) {
+              case "terrain":
+                if (geography.terrain[current.field.y]?.[current.field.x].type === source.terrain) {
+                  return true;
+                }
+                break;
+              case "any":
+                return true;
             }
-            continue checkCard;
-          }
-          for (const output of current.card.outputs) {
-            produced[output.resource] ??= [];
-            produced[output.resource]!.push({
-              x: current.field.x,
-              y: current.field.y,
-              quantity: output.quantity,
-            });
-          }
+          });
+          if (!isValidSource) continue nextCard;
           break;
+        }
         case "residential":
         case "trade":
-          break;
+          continue nextCard;
         default:
           current.card satisfies never;
           throw new Error("Unreachable");
+      }
+      for (const output of current.card.outputs) {
+        produced[output.resource] ??= [];
+        produced[output.resource]!.push({
+          producerId: current.deck.id,
+          x: current.field.x,
+          y: current.field.y,
+          quantity: output.quantity,
+        });
       }
     }
 

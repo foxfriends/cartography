@@ -1,10 +1,11 @@
 import type { ResourceType } from "./resources";
+import type { SpeciesType } from "./species";
 import type { TerrainType } from "./terrains";
 
 type Source = { type: "terrain"; terrain: TerrainType } | { type: "any" };
 type Output = { resource: ResourceType; quantity: number };
 type Input = { resource: ResourceType; quantity: number };
-type Population = { quantity: number; species: string };
+type Population = { quantity: number; species: SpeciesType };
 
 type BaseCard = { name: string; type: string };
 type SourceCard = { category: "source"; source: Source[]; outputs: Output[] };

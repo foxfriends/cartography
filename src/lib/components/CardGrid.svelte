@@ -2,15 +2,19 @@
   /* global T */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   import type { Card as CardT } from "$lib/data/cards";
-  import { apply, opt } from "$lib/events";
+  import type { Snippet } from "svelte";
   import Card from "./Card.svelte";
 
-  let { cards, onSelectCard }: { cards: T[]; onSelectCard?: (card: T) => void } = $props();
+  let { cards, card }: { cards: T[]; card?: Snippet<[T]> } = $props();
 </script>
 
 <div class="grid">
-  {#each cards as card}
-    <Card onSelect={opt(apply(card))(onSelectCard)} {card} />
+  {#each cards as data}
+    {#if card}
+      {@render card(data)}
+    {:else}
+      <Card card={data} />
+    {/if}
   {/each}
 </div>
 
