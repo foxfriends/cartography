@@ -43,7 +43,9 @@ jobs:
       - name: Install node_modules
         run: npm ci
       - name: Run check
-        run: npm run check
+        run: |
+          npx svelte-kit sync
+          npx svelte-check --tsconfig ./tsconfig.json
   build:
     runs-on: ubuntu-latest
     steps:
@@ -57,7 +59,8 @@ jobs:
       - name: Install node_modules
         run: npm ci
       - name: Run build
-        run: npm run build
+        run: npx vite build
+
   test:
     runs-on: ubuntu-latest
     steps:
