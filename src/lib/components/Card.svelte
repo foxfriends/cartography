@@ -98,7 +98,7 @@
     }
 
     .title {
-      padding: 0.125rem;
+      padding: 0.25rem;
       border: 1px solid rgb(0 0 0 / 0.12);
     }
 
@@ -111,7 +111,7 @@
     .info {
       border: 1px solid rgb(0 0 0 / 0.12);
       flex-grow: 1;
-      padding: 0.125rem;
+      padding: 0.25rem;
     }
   }
 </style>

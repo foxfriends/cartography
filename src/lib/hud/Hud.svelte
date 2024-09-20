@@ -7,11 +7,14 @@
   import CardRewardDialog from "./CardRewardDialog.svelte";
   import DeckDialog from "./DeckDialog.svelte";
   import { resources, type ResourceType } from "$lib/data/resources";
+  import CardFocusDialog from "./CardFocusDialog.svelte";
+  import type { CardFocusEvent } from "$lib/events/CardFocusEvent";
 
   let { deck, field, geography } = getGameState();
 
   let deckDialog: DeckDialog | undefined = $state();
   let cardRewardDialog: CardRewardDialog | undefined = $state();
+  let cardFocusDialog: CardFocusDialog | undefined = $state();
 
   function onClickDeck() {
     deckDialog?.show();
@@ -32,6 +35,13 @@
     cardRewardDialog?.show(event.cards.map((card) => cards[card.type]));
   }
 
+  function oncardfocus(event: CardFocusEvent) {
+    const deckCard = deck.find((card) => card.id === event.cardId);
+    if (!deckCard) return;
+    const card = cards[deckCard.type];
+    window.setTimeout(() => cardFocusDialog?.show(card), 0);
+  }
+
   let excess: { resource: ResourceType; quantity: number }[] = $derived.by(() => {
     const cardsOnField = field
       .filter((fc) => !fc.loose)
@@ -43,7 +53,7 @@
     > = {};
 
     const producing = cardsOnField.filter(({ card }) => card.category === "source");
-    const remaining = cardsOnField.filter(({ card }) => card.category === "production");
+    const _remaining = cardsOnField.filter(({ card }) => card.category === "production");
     nextCard: while (producing.length > 0) {
       const current = producing.shift()!;
       switch (current.card.category) {
@@ -110,8 +120,9 @@
 
 <DeckDialog bind:this={deckDialog} {onSelectCard} />
 <CardRewardDialog bind:this={cardRewardDialog} />
+<CardFocusDialog bind:this={cardFocusDialog} />
 
-<svelte:window {oncardsreceived} />
+<svelte:window {oncardsreceived} {oncardfocus} />
 
 <style>
   .area {

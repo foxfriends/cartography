@@ -5,6 +5,7 @@ import type { CardsReceivedEvent } from "$lib/events/CardsReceivedEvent";
 import type { CardFieldedEvent } from "$lib/events/CardFieldedEvent";
 import type { CardPlacedEvent } from "$lib/events/CardPlacedEvent";
 import type { DeckOpenedEvent } from "$lib/events/DeckOpenedEvent";
+import type { CardFocusEvent } from "$lib/events/CardFocusEvent";
 
 // for information about these interfaces
 declare global {
@@ -21,6 +22,7 @@ declare global {
       oncardfielded?: EventHandler<CardFieldedEvent, T> | undefined | null;
       oncardplaced?: EventHandler<CardPlacedEvent, T> | undefined | null;
       ondeckopened?: EventHandler<DeckOpenedEvent, T> | undefined | null;
+      oncardfocus?: EventHandler<CardFocusEvent, T> | undefined | null;
     }
 
     interface SvelteWindowAttributes {
@@ -28,6 +30,7 @@ declare global {
       oncardfielded?: EventHandler<CardFieldedEvent, Window> | undefined | null;
       oncardplaced?: EventHandler<CardPlacedEvent, Window> | undefined | null;
       ondeckopened?: EventHandler<DeckOpenedEvent, Window> | undefined | null;
+      oncardfocus?: EventHandler<CardFocusEvent, Window> | undefined | null;
     }
   }
 }

@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Field } from "$lib/types";
-  import Card from "./Card.svelte";
+  import CardTile from "./CardTile.svelte";
 
   let {
     field = $bindable(),
@@ -16,7 +16,8 @@
 {#each field as card (card)}
   {@const handcard = deck.find((hc) => hc.id === card.id)}
   {#if handcard}
-    <Card
+    <CardTile
+      id={card.id}
       x={card.x}
       y={card.y}
       type={handcard.type}

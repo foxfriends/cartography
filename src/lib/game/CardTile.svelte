@@ -1,12 +1,17 @@
 <script lang="ts">
   import { fade } from "svelte/transition";
+  import type { MouseEventHandler } from "svelte/elements";
+  import { CardFocusEvent } from "$lib/events/CardFocusEvent";
+
   let {
+    id,
     type: cardType,
     x,
     y,
     loose = false,
     onMove,
   }: {
+    id: string;
     type: string;
     x: number;
     y: number;
@@ -18,11 +23,15 @@
   let touchDragging: Touch | null = $state(null);
   let draggedX = $state(0);
   let draggedY = $state(0);
+  let unmoved = $state(false);
 
   const looseRotation = Math.sign(Math.random() - 0.5) * (Math.round(Math.random() * 10) + 5);
 
   function onmousedown(event: MouseEvent) {
-    if (event.buttons === 1) mouseDragging = true;
+    if (event.buttons === 1) {
+      mouseDragging = true;
+      unmoved = true;
+    }
   }
 
   function onmouseup(event: MouseEvent) {
@@ -36,6 +45,7 @@
 
   function onmousemove(event: MouseEvent) {
     if (!mouseDragging) return;
+    unmoved = false;
     draggedX += event.movementX;
     draggedY += event.movementY;
   }
@@ -43,6 +53,7 @@
   function ontouchstart(event: TouchEvent) {
     if (touchDragging === null && event.changedTouches.length === 1) {
       touchDragging = event.changedTouches[0];
+      unmoved = false;
     }
     event.stopPropagation();
   }
@@ -61,6 +72,7 @@
 
   function ontouchmove(event: TouchEvent) {
     if (touchDragging === null) return;
+    unmoved = false;
     const previous = touchDragging;
     const current = Array.from(event.touches).find(
       (touch) => touch.identifier === previous.identifier,
@@ -69,6 +81,10 @@
     draggedX += current.clientX - previous.clientX;
     draggedY += current.clientY - previous.clientY;
     touchDragging = current;
+  }
+
+  function onclick() {
+    if (unmoved) window.dispatchEvent(new CardFocusEvent(id));
   }
 
   const dragging = $derived(mouseDragging || touchDragging);
@@ -95,6 +111,7 @@
     --loose-rotation: {loose && !dragging ? looseRotation : 0}deg;
   "
   data-type={cardType}
+  {onclick}
   {onmousedown}
   {ontouchstart}
   role="presentation"
@@ -127,8 +144,8 @@
 
   .card {
     background-color: white;
-    border: 0.125rem solid rgb(0 0 0 / 0.25);
     display: flex;
+    border: 1px solid rgb(0 0 0 / 0.25);
     text-align: center;
     align-items: center;
     justify-content: center;
@@ -142,11 +159,6 @@
       --loose-x 100ms,
       --loose-y 100ms;
 
-    &.dragging {
-      z-index: 1;
-      box-shadow: 0 0 1rem rgb(0 0 0 / 0.25);
-    }
-
     &:not(.dragging) {
       transition:
         --grid-x 100ms,
@@ -156,6 +168,12 @@
         --loose-rotation 150ms,
         --loose-x 100ms,
         --loose-y 100ms;
+    }
+
+    &:hover {
+      box-shadow: 0 0 1rem rgb(0 0 0 /0.25);
+      border: 1px solid rgb(91 200 227);
+      z-index: 1;
     }
   }
 
