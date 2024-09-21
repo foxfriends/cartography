@@ -8,9 +8,14 @@ type Input = { resource: ResourceType; quantity: number };
 type Population = { quantity: number; species: SpeciesType };
 
 type BaseCard = { name: string; type: string };
-type SourceCard = { category: "source"; source: Source[]; outputs: Output[] };
+type SourceCard = { category: "source"; source: Source[]; outputs: Output[]; employees: number };
 type ResidentalCard = { category: "residential"; population: Population[] };
-type ProductionCard = { category: "production"; outputs: Output[]; inputs: Input[] };
+type ProductionCard = {
+  category: "production";
+  outputs: Output[];
+  inputs: Input[];
+  employees: number;
+};
 type TradeCard = { category: "trade" };
 
 export type Card = BaseCard & (ProductionCard | SourceCard | ResidentalCard | TradeCard);
@@ -36,6 +41,7 @@ export const cards = {
     type: "water-well",
     name: "Water Well",
     category: "source",
+    employees: 1,
     source: [{ type: "any" }],
     outputs: [{ resource: "water", quantity: 10 }],
   },
@@ -43,6 +49,7 @@ export const cards = {
     type: "wheat-farm",
     name: "Wheat Farm",
     category: "source",
+    employees: 4,
     source: [{ type: "terrain", terrain: "soil" }],
     outputs: [{ resource: "wheat", quantity: 4 }],
   },
@@ -50,6 +57,7 @@ export const cards = {
     type: "lettuce-farm",
     name: "Lettuce Farm",
     category: "source",
+    employees: 4,
     source: [{ type: "terrain", terrain: "soil" }],
     outputs: [{ resource: "lettuce", quantity: 4 }],
   },
@@ -57,6 +65,7 @@ export const cards = {
     type: "tomato-farm",
     name: "Tomato Farm",
     category: "source",
+    employees: 4,
     source: [{ type: "terrain", terrain: "soil" }],
     outputs: [{ resource: "tomato", quantity: 4 }],
   },
@@ -64,6 +73,7 @@ export const cards = {
     type: "flour-mill",
     name: "Flour Mill",
     category: "production",
+    employees: 2,
     inputs: [{ resource: "wheat", quantity: 1 }],
     outputs: [{ resource: "flour", quantity: 5 }],
   },
@@ -71,6 +81,7 @@ export const cards = {
     type: "bakery",
     name: "Bakery",
     category: "production",
+    employees: 2,
     inputs: [
       { resource: "water", quantity: 1 },
       { resource: "flour", quantity: 4 },
@@ -81,6 +92,7 @@ export const cards = {
     type: "salad-shop",
     name: "Salad Shop",
     category: "production",
+    employees: 2,
     inputs: [
       { resource: "tomato", quantity: 1 },
       { resource: "lettuce", quantity: 2 },
