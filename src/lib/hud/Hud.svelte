@@ -3,17 +3,16 @@
   import { getGameState } from "$lib/game/GameProvider.svelte";
   import { CardFieldedEvent } from "$lib/events/CardFieldedEvent";
   import type { CardsReceivedEvent } from "$lib/events/CardsReceivedEvent";
-  import type { DeckCard } from "$lib/types";
   import CardRewardDialog from "./CardRewardDialog.svelte";
   import DeckDialog from "./DeckDialog.svelte";
   import { resources, type ResourceType } from "$lib/data/resources";
   import CardFocusDialog from "./CardFocusDialog.svelte";
   import type { CardFocusEvent } from "$lib/events/CardFocusEvent";
-  import { nearestEdgeDistance } from "$lib/algorithm/nearestEdge";
-  import { rangeInclusive } from "$lib/algorithm/range";
   import ResourceRef from "$lib/components/ResourceRef.svelte";
+  import { type DeckCard } from "$lib/engine/DeckCard";
+  import { getResourceState } from "$lib/game/ResourceStateProvider.svelte";
 
-  let { deck, field, geography } = getGameState();
+  const { deck, field, money } = getGameState();
 
   let deckDialog: DeckDialog | undefined = $state();
   let cardRewardDialog: CardRewardDialog | undefined = $state();
@@ -45,135 +44,7 @@
     window.setTimeout(() => cardFocusDialog?.show(card), 0);
   }
 
-  function isDependent(consumer: Card, producer: Card) {
-    if (consumer.category !== "production") return false;
-    if (producer.category !== "production" && producer.category !== "source") return false;
-    return consumer.inputs.some((input) =>
-      producer.outputs.some((output) => output.resource === input.resource),
-    );
-  }
-
-  const PRODUCTION_ACCESS_RANGE = 2;
-
-  let cardsOnField = $derived(
-    field
-      .filter((fc) => !fc.loose)
-      .map((fc) => ({ field: fc, deck: deck.find((dc) => dc.id === fc.id)! }))
-      .map((fdc) => ({ ...fdc, card: cards[fdc.deck.type] })),
-  );
-
-  let produced = $derived.by(() => {
-    const produced: {
-      cardId: string;
-      resource: ResourceType;
-      quantity: number;
-      consumed?: number;
-    }[][][] = geography.terrain.map((row) => row.map(() => []));
-
-    const producers = cardsOnField.filter(
-      (card) => card.card.category === "source" || card.card.category === "production",
-    );
-
-    const remaining = new Map(
-      producers.map((self) => {
-        const nearby = producers
-          .filter(
-            (other) => nearestEdgeDistance(self.field, other.field) <= PRODUCTION_ACCESS_RANGE,
-          )
-          .filter((other) => isDependent(self.card, other.card));
-        return [self, new Set(nearby)];
-      }),
-    );
-
-    const producing = Array.from(remaining)
-      .filter(([, dependencies]) => dependencies.size === 0)
-      .map(([card]) => card);
-
-    nextCard: while (producing.length > 0) {
-      const current = producing.shift()!;
-
-      for (const [key, value] of remaining.entries()) {
-        if (value.delete(current) && value.size === 0) producing.push(key);
-      }
-
-      switch (current.card.category) {
-        case "production": {
-          const inputs = current.card.inputs.map((input) => {
-            const producedInRange = Array.from(
-              rangeInclusive(
-                current.field.y - PRODUCTION_ACCESS_RANGE,
-                current.field.y + PRODUCTION_ACCESS_RANGE,
-              ),
-              (y) =>
-                Array.from(
-                  rangeInclusive(
-                    current.field.x - PRODUCTION_ACCESS_RANGE,
-                    current.field.x + PRODUCTION_ACCESS_RANGE,
-                  ),
-                  (x) => [x, y],
-                ),
-            )
-              .flat()
-              .flatMap(([x, y]) => produced[y][x])
-              .filter((output) => input.resource === output.resource);
-
-            let requirement: number = input.quantity;
-            const consumeFrom = [];
-            for (const output of producedInRange) {
-              const outputLeft = output.quantity - (output.consumed ?? 0);
-              if (requirement <= outputLeft) {
-                consumeFrom.push({ output, consume: requirement });
-                requirement = 0;
-                break;
-              } else {
-                consumeFrom.push({ output, consume: outputLeft });
-                requirement -= outputLeft;
-              }
-            }
-            return { input, requirement, consumeFrom };
-          });
-          if (!inputs.every((input) => input.requirement === 0)) {
-            continue nextCard;
-          }
-          for (const input of inputs) {
-            for (const { output, consume } of input.consumeFrom) {
-              output.consumed = (output.consumed ?? 0) + consume;
-            }
-          }
-          break;
-        }
-        case "source": {
-          const isValidSource = current.card.source.some((source) => {
-            switch (source.type) {
-              case "terrain":
-                if (geography.terrain[current.field.y]?.[current.field.x].type === source.terrain) {
-                  return true;
-                }
-                break;
-              case "any":
-                return true;
-            }
-          });
-          if (!isValidSource) continue nextCard;
-          break;
-        }
-        case "residential":
-        case "trade":
-          continue nextCard;
-        default:
-          current.card satisfies never;
-          throw new Error("Unreachable");
-      }
-      for (const output of current.card.outputs) {
-        produced[current.field.y][current.field.x].push({
-          cardId: current.deck.id,
-          quantity: output.quantity,
-          resource: output.resource,
-        });
-      }
-    }
-    return produced;
-  });
+  const { produced } = getResourceState();
 
   let summary = $derived(
     produced
@@ -181,7 +52,7 @@
       .flat()
       .reduce<Map<ResourceType, { produced: number; consumed: number }>>((summary, production) => {
         const total = summary.get(production.resource) ?? { produced: 0, consumed: 0 };
-        total.produced += production.quantity;
+        total.produced += production.produced;
         if (production.consumed) total.consumed += production.consumed;
         return summary.set(production.resource, total);
       }, new Map()),
@@ -192,7 +63,7 @@
       .map(
         ([resource, { produced, consumed }]) => resources[resource].value * (produced - consumed),
       )
-      .reduce((a, b) => a + b, 0) / 10,
+      .reduce((a, b) => a + b, 0),
   );
 </script>
 
@@ -200,7 +71,8 @@
   <div class="status">
     <div class="title-area">
       <span class="title">Your Town</span>
-      <span>${income.toFixed(2)} / day</span>
+      <span>${money}</span>
+      <span>${income} / day</span>
     </div>
     <div class="resource-area">
       {#each summary.entries() as [resource, { produced, consumed }] (resource)}

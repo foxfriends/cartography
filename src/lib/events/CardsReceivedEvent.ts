@@ -1,4 +1,4 @@
-import type { DeckCard } from "$lib/types";
+import type { DeckCard } from "$lib/engine/DeckCard";
 
 export class CardsReceivedEvent extends Event {
   cards: DeckCard[];

@@ -9,6 +9,7 @@
   import type { DeckOpenedEvent } from "$lib/events/DeckOpenedEvent";
   import type { CardFieldedEvent } from "$lib/events/CardFieldedEvent";
   import type { CardPlacedEvent } from "$lib/events/CardPlacedEvent";
+  import { generateCardId } from "$lib/engine/Card";
 
   const { deck, field } = getGameState();
 
@@ -40,7 +41,7 @@
   function introReward() {
     window.setTimeout(() => {
       window.dispatchEvent(
-        new CardsReceivedEvent([{ id: window.crypto.randomUUID(), type: "cat-neighbourhood" }]),
+        new CardsReceivedEvent([{ id: generateCardId(), type: "cat-neighbourhood" }]),
       );
       step = "place-neighbourhood";
     }, 500);
@@ -48,9 +49,7 @@
 
   function arrangeNeighbourhoodReward() {
     window.setTimeout(() => {
-      window.dispatchEvent(
-        new CardsReceivedEvent([{ id: window.crypto.randomUUID(), type: "bakery" }]),
-      );
+      window.dispatchEvent(new CardsReceivedEvent([{ id: generateCardId(), type: "bakery" }]));
       step = "place-bakery";
     }, 500);
   }
@@ -59,8 +58,8 @@
     window.setTimeout(() => {
       window.dispatchEvent(
         new CardsReceivedEvent([
-          { id: window.crypto.randomUUID(), type: "water-well" },
-          { id: window.crypto.randomUUID(), type: "wheat-farm" },
+          { id: generateCardId(), type: "water-well" },
+          { id: generateCardId(), type: "wheat-farm" },
         ]),
       );
       step = "place-sources";

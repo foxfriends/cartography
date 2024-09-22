@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Field } from "$lib/types";
+  import type { Field } from "$lib/engine/FieldCard";
   import CardTile from "./CardTile.svelte";
 
   let {

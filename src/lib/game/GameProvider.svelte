@@ -1,16 +1,21 @@
 <script lang="ts" module>
   import { getContext, setContext, type Snippet } from "svelte";
-  import type { Deck, Field, Geography } from "$lib/types";
+  import type { Geography } from "$lib/types";
   import type { CardsReceivedEvent } from "$lib/events/CardsReceivedEvent";
+  import type { Deck } from "$lib/engine/DeckCard";
+  import type { Field } from "$lib/engine/FieldCard";
 
   type GameState = {
-    deck: Deck;
-    geography: Geography;
-    field: Field;
+    readonly deck: Deck;
+    readonly geography: Geography;
+    readonly field: Field;
+    readonly money: number;
   };
 
+  const GAME_STATE = Symbol("GAME_STATE");
+
   export function getGameState(): GameState {
-    return getContext("gamestate");
+    return getContext(GAME_STATE);
   }
 </script>
 
@@ -107,18 +112,19 @@
 
   let deck: Deck = $state([]);
   let field: Field = $state([]);
+  let money: number = $state(0);
 
   $effect.pre(() => {
     const storedState = window.localStorage.getItem("game_state");
     if (!storedState) return;
     try {
-      ({ field, deck } = JSON.parse(storedState));
+      ({ field, deck, money } = JSON.parse(storedState));
     } catch {
       /* empty */
     }
   });
 
-  setContext("gamestate", {
+  setContext(GAME_STATE, {
     get geography() {
       return geography;
     },
@@ -128,10 +134,13 @@
     get field() {
       return field;
     },
+    get money() {
+      return money;
+    },
   } satisfies GameState);
 
   $effect(() => {
-    window.localStorage.setItem("game_state", JSON.stringify({ field, deck }));
+    window.localStorage.setItem("game_state", JSON.stringify({ field, deck, money }));
   });
 
   function oncardsreceived(event: CardsReceivedEvent) {

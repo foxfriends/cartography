@@ -7,18 +7,35 @@ type Output = { resource: ResourceType; quantity: number };
 type Input = { resource: ResourceType; quantity: number };
 type Population = { quantity: number; species: SpeciesType };
 
-type BaseCard = { name: string; type: string };
-type SourceCard = { category: "source"; source: Source[]; outputs: Output[]; employees: number };
-type ResidentalCard = { category: "residential"; population: Population[] };
-type ProductionCard = {
+export interface BaseCard {
+  name: string;
+  type: string;
+}
+
+export interface SourceCard extends BaseCard {
+  category: "source";
+  source: Source[];
+  outputs: Output[];
+  employees: number;
+}
+
+export interface ResidentalCard extends BaseCard {
+  category: "residential";
+  population: Population[];
+}
+
+export interface ProductionCard extends BaseCard {
   category: "production";
   outputs: Output[];
   inputs: Input[];
   employees: number;
-};
-type TradeCard = { category: "trade" };
+}
 
-export type Card = BaseCard & (ProductionCard | SourceCard | ResidentalCard | TradeCard);
+export interface TradeCard extends BaseCard {
+  category: "trade";
+}
+
+export type Card = ProductionCard | SourceCard | ResidentalCard | TradeCard;
 
 export type CardType = keyof typeof cards;
 

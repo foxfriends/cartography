@@ -1,5 +1,6 @@
 <script lang="ts">
   import GameProvider from "$lib/game/GameProvider.svelte";
+  import ResourceStateProvider from "$lib/game/ResourceStateProvider.svelte";
   import GameWindow from "$lib/game/GameWindow.svelte";
   import Hud from "$lib/hud/Hud.svelte";
   import Tutorial from "$lib/tutorial/Tutorial.svelte";
@@ -7,13 +8,15 @@
 
 <div role="application">
   <GameProvider>
-    <main>
-      <GameWindow />
-    </main>
-    <div class="hud">
-      <Hud />
-    </div>
-    <Tutorial />
+    <ResourceStateProvider>
+      <main>
+        <GameWindow />
+      </main>
+      <div class="hud">
+        <Hud />
+      </div>
+      <Tutorial />
+    </ResourceStateProvider>
   </GameProvider>
 </div>
 

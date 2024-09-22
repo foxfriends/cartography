@@ -2,15 +2,15 @@
   import CardGrid from "$lib/components/CardGrid.svelte";
   import { cards, type Card as CardT } from "$lib/data/cards";
   import { getGameState } from "$lib/game/GameProvider.svelte";
-  import type { DeckCard } from "$lib/types";
   import Modal from "$lib/components/Modal.svelte";
   import { DeckOpenedEvent } from "$lib/events/DeckOpenedEvent";
   import Card from "$lib/components/Card.svelte";
   import { apply } from "$lib/events";
+  import type { DeckCard } from "$lib/engine/DeckCard";
 
   let { onSelectCard }: { onSelectCard: (card: CardT & { deckCard: DeckCard }) => void } = $props();
 
-  let { deck, field } = getGameState();
+  const { deck, field } = getGameState();
   let deckCards = $derived(
     deck.map((deckCard) => ({
       ...cards[deckCard.type],
@@ -63,9 +63,13 @@
   }
 
   .close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border: 1px solid rgb(0 0 0 / 0.12);
     background: none;
     width: 2rem;
-    height: 2rem;
+    aspect-ratio: 1 / 1;
+    font-size: 1rem;
   }
 </style>

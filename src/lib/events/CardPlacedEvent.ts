@@ -1,4 +1,4 @@
-import type { FieldCard } from "$lib/types";
+import type { FieldCard } from "$lib/engine/FieldCard";
 
 export class CardPlacedEvent extends Event {
   card: FieldCard;
