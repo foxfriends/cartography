@@ -1,6 +1,6 @@
 <script lang="ts" module>
   import { getContext, setContext, type Snippet } from "svelte";
-  import { getGameState } from "./GameProvider.svelte";
+  import { getGameState } from "./GameStateProvider.svelte";
   import { type ResourceType } from "$lib/data/resources";
   import type { CardId } from "$lib/engine/Card";
   import { type DeckCard, indexById as indexDeckById } from "$lib/engine/DeckCard";

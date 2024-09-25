@@ -1,5 +1,5 @@
 <script lang="ts">
-  import GameProvider from "$lib/game/GameProvider.svelte";
+  import GameStateProvider from "$lib/game/GameStateProvider.svelte";
   import ResourceStateProvider from "$lib/game/ResourceStateProvider.svelte";
   import GameWindow from "$lib/game/GameWindow.svelte";
   import Hud from "$lib/hud/Hud.svelte";
@@ -7,7 +7,7 @@
 </script>
 
 <div role="application">
-  <GameProvider>
+  <GameStateProvider>
     <ResourceStateProvider>
       <main>
         <GameWindow />
@@ -17,7 +17,7 @@
       </div>
       <Tutorial />
     </ResourceStateProvider>
-  </GameProvider>
+  </GameStateProvider>
 </div>
 
 <style>

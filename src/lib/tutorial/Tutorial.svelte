@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getGameState } from "$lib/game/GameProvider.svelte";
+  import { getGameState } from "$lib/game/GameStateProvider.svelte";
   import CardRef from "$lib/components/CardRef.svelte";
   import SpeciesRef from "$lib/components/SpeciesRef.svelte";
   import TutorialDialog from "./TutorialDialog.svelte";

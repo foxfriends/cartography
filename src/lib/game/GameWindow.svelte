@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getGameState } from "./GameProvider.svelte";
+  import { getGameState } from "./GameStateProvider.svelte";
   import CardField from "./CardField.svelte";
   import GridLines from "./GridLines.svelte";
   import { CardPlacedEvent } from "$lib/events/CardPlacedEvent";

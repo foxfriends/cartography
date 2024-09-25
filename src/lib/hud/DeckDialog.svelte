@@ -1,7 +1,7 @@
 <script lang="ts">
   import CardGrid from "$lib/components/CardGrid.svelte";
   import { cards, type Card as CardT } from "$lib/data/cards";
-  import { getGameState } from "$lib/game/GameProvider.svelte";
+  import { getGameState } from "$lib/game/GameStateProvider.svelte";
   import Modal from "$lib/components/Modal.svelte";
   import { DeckOpenedEvent } from "$lib/events/DeckOpenedEvent";
   import Card from "$lib/components/Card.svelte";

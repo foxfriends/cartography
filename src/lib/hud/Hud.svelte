@@ -1,6 +1,6 @@
 <script lang="ts">
   import { cards, type Card } from "$lib/data/cards";
-  import { getGameState } from "$lib/game/GameProvider.svelte";
+  import { getGameState } from "$lib/game/GameStateProvider.svelte";
   import { CardFieldedEvent } from "$lib/events/CardFieldedEvent";
   import type { CardsReceivedEvent } from "$lib/events/CardsReceivedEvent";
   import CardRewardDialog from "./CardRewardDialog.svelte";
