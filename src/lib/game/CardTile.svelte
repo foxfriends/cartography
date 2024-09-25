@@ -1,6 +1,7 @@
 <script lang="ts">
   import { fade } from "svelte/transition";
   import { CardFocusEvent } from "$lib/events/CardFocusEvent";
+  import { cards, type CardType } from "$lib/data/cards";
 
   let {
     id,
@@ -11,7 +12,7 @@
     onMove,
   }: {
     id: string;
-    type: string;
+    type: CardType;
     x: number;
     y: number;
     loose?: boolean;
@@ -51,7 +52,7 @@
 
   function ontouchstart(event: TouchEvent) {
     if (touchDragging === null && event.changedTouches.length === 1) {
-      touchDragging = event.changedTouches[0];
+      touchDragging = event.changedTouches[0]!;
       unmoved = false;
     }
     event.stopPropagation();
@@ -87,6 +88,12 @@
   }
 
   const dragging = $derived(mouseDragging || touchDragging);
+  const cardSymbol = $derived(
+    cards[cardType].name
+      .split(" ")
+      .map((word) => word[0])
+      .join(""),
+  );
 </script>
 
 {#if dragging && !loose}
@@ -115,10 +122,7 @@
   {ontouchstart}
   role="presentation"
 >
-  {cardType
-    .split("-")
-    .map((word) => word[0].toUpperCase())
-    .join("")}
+  {cardSymbol}
 </div>
 
 <svelte:window {onmouseup} {onmousemove} {ontouchmove} {ontouchend} ontouchcancel={ontouchend} />

@@ -17,7 +17,7 @@ export function sourceIsProducing(
   return card.source.some((source) => {
     switch (source.type) {
       case "terrain":
-        if (geography.terrain[field.y]?.[field.x].type === source.terrain) {
+        if (geography.terrain[field.y]?.[field.x]?.type === source.terrain) {
           return true;
         }
         break;

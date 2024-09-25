@@ -3,6 +3,7 @@
   import CardField from "./CardField.svelte";
   import GridLines from "./GridLines.svelte";
   import { CardPlacedEvent } from "$lib/events/CardPlacedEvent";
+  import type { CardId } from "$lib/engine/Card";
 
   const TILE_SIZE = 128;
 
@@ -38,7 +39,7 @@
 
   function ontouchstart(event: TouchEvent) {
     if (touchDragging === null && event.changedTouches.length === 1) {
-      touchDragging = event.changedTouches[0];
+      touchDragging = event.changedTouches[0]!;
     }
   }
 
@@ -63,7 +64,7 @@
     touchDragging = current;
   }
 
-  function onMoveCard(id: string, movementX: number, movementY: number) {
+  function onMoveCard(id: CardId, movementX: number, movementY: number) {
     const card = field.find((card) => card.id === id);
     if (card) {
       const destinationX = card.loose

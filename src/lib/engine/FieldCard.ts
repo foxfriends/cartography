@@ -13,7 +13,7 @@ export function indexByPosition(field: Field) {
   const index: FieldCard[][] = [];
   for (const card of field) {
     index[card.y] ??= [];
-    index[card.y][card.x] = card;
+    index[card.y]![card.x] = card;
   }
   return {
     get(x: number, y: number) {

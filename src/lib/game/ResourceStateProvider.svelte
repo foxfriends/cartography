@@ -91,7 +91,7 @@
         case "production": {
           const inputs = current.card.inputs.map((input) => {
             const producedInRange = Array.from(coordinatesInRange(current.field))
-              .flatMap(([x, y]) => produced[y][x])
+              .flatMap(([x, y]) => produced[y]![x]!)
               .filter((output) => input.resource === output.resource);
 
             let requirement = input.quantity;
@@ -129,7 +129,7 @@
           throw new Error("Unreachable");
       }
       for (const output of current.card.outputs) {
-        produced[current.field.y][current.field.x].push({
+        produced[current.field.y]![current.field.x]!.push({
           cardId: current.deck.id,
           produced: output.quantity,
           resource: output.resource,

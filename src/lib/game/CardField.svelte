@@ -1,4 +1,6 @@
 <script lang="ts">
+  import type { CardId } from "$lib/engine/Card";
+  import type { DeckCard } from "$lib/engine/DeckCard";
   import type { Field } from "$lib/engine/FieldCard";
   import CardTile from "./CardTile.svelte";
 
@@ -8,8 +10,8 @@
     onMoveCard,
   }: {
     field: Field[number][];
-    deck: { id: string; type: string }[];
-    onMoveCard: (id: string, deltaClientX: number, deltaClientY: number) => void;
+    deck: DeckCard[];
+    onMoveCard: (id: CardId, deltaClientX: number, deltaClientY: number) => void;
   } = $props();
 </script>
 

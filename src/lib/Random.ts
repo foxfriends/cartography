@@ -12,6 +12,6 @@ export class Random {
   }
 
   choose<T>(options: T[]): T {
-    return options[this.int(options.length)];
+    return options[this.int(options.length)]!;
   }
 }
