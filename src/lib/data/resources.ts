@@ -1,8 +1,8 @@
-export type Resource = {
+export interface Resource {
   type: string;
   name: string;
   value: number;
-};
+}
 
 export const resources = {
   water: {

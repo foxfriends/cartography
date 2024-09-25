@@ -4,7 +4,7 @@
   import type { Field } from "$lib/engine/FieldCard";
   import CardTile from "./CardTile.svelte";
 
-  let {
+  const {
     field = $bindable(),
     deck,
     onMoveCard,

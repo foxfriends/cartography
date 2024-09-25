@@ -16,28 +16,28 @@
 
   const RESOURCE_STATE = Symbol("RESOURCE_STATE");
 
-  type Input = {
+  interface Input {
     cardId: CardId;
     resource: ResourceType;
     quantity: number;
-  };
+  }
 
-  type Consumer = { id: CardId; quantity: number };
+  interface Consumer { id: CardId; quantity: number }
 
-  type Output = {
+  interface Output {
     resource: ResourceType;
     quantity: number;
     consumedBy: Consumer[];
-  };
+  }
 
-  type Production = {
+  interface Production {
     inputs: Input[];
     outputs: Output[];
-  };
+  }
 
-  export type ResourceState = {
+  export interface ResourceState {
     readonly production: Record<CardId, Production>;
-  };
+  }
 
   export function getResourceState(): ResourceState {
     return getContext(RESOURCE_STATE);
@@ -45,7 +45,7 @@
 </script>
 
 <script lang="ts">
-  type Producer = { card: ProducingCard; field: FieldCard; deck: DeckCard };
+  interface Producer { card: ProducingCard; field: FieldCard; deck: DeckCard }
 
   const { children }: { children: Snippet } = $props();
   const { deck, field, geography } = getGameState();
@@ -84,7 +84,7 @@
         if (value.delete(current) && value.size === 0) producing.push(key);
       }
 
-      let inputs: Input[] = [];
+      const inputs: Input[] = [];
       switch (current.card.category) {
         case "production": {
           const tentativeInputs = current.card.inputs.map((input) => {

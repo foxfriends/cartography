@@ -5,7 +5,7 @@
   import SpeciesRef from "./SpeciesRef.svelte";
   import TerrainRef from "./TerrainRef.svelte";
 
-  let {
+  const {
     card,
     onSelect,
     disabled = false,

@@ -1,13 +1,13 @@
 import type { ResourceType } from "./resources";
 
-type Need = { type: "resource"; resource: ResourceType; quantity: number };
+interface Need { type: "resource"; resource: ResourceType; quantity: number }
 
-export type Species = {
+export interface Species {
   type: string;
   name: string;
   namePlural: string;
   needs: Need[];
-};
+}
 
 export const species = {
   cat: {

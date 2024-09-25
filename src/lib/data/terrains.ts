@@ -1,7 +1,7 @@
-export type Terrain = {
+export interface Terrain {
   type: string;
   name: string;
-};
+}
 
 export const terrains = {
   soil: {

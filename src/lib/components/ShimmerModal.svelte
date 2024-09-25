@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
 
-  let { children, style }: { style: string | null | undefined; children: Snippet } = $props();
+  const { children, style }: { style: string | null | undefined; children: Snippet } = $props();
 
   let dialog: HTMLDialogElement | undefined = $state();
 

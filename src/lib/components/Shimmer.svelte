@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
 
-  let {
+  const {
     style,
     children,
   }: { style?: string | null | undefined; children?: Snippet | null | undefined } = $props();

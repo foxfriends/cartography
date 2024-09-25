@@ -8,10 +8,10 @@
   import { apply } from "$lib/events";
   import type { DeckCard } from "$lib/engine/DeckCard";
 
-  let { onSelectCard }: { onSelectCard: (card: CardT & { deckCard: DeckCard }) => void } = $props();
+  const { onSelectCard }: { onSelectCard: (card: CardT & { deckCard: DeckCard }) => void } = $props();
 
   const { deck, field } = getGameState();
-  let deckCards = $derived(
+  const deckCards = $derived(
     deck.map((deckCard) => ({
       ...cards[deckCard.type],
       deckCard,

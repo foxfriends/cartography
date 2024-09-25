@@ -3,7 +3,7 @@
   import { CardFocusEvent } from "$lib/events/CardFocusEvent";
   import { cards, type CardType } from "$lib/data/cards";
 
-  let {
+  const {
     id,
     type: cardType,
     x,

@@ -3,9 +3,9 @@ import type { SpeciesType } from "./species";
 import type { TerrainType } from "./terrains";
 
 type Source = { type: "terrain"; terrain: TerrainType } | { type: "any" };
-type Output = { resource: ResourceType; quantity: number };
-type Input = { resource: ResourceType; quantity: number };
-type Population = { quantity: number; species: SpeciesType };
+interface Output { resource: ResourceType; quantity: number }
+interface Input { resource: ResourceType; quantity: number }
+interface Population { quantity: number; species: SpeciesType }
 
 export interface BaseCard {
   name: string;

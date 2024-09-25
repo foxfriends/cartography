@@ -17,6 +17,7 @@ declare global {
   }
 
   declare namespace svelteHTML {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     interface HTMLAttributes<T extends EventTarget> {
       oncardsreceived?: EventHandler<CardsReceivedEvent, T> | undefined | null;
       oncardfielded?: EventHandler<CardFieldedEvent, T> | undefined | null;

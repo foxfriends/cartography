@@ -5,7 +5,7 @@
   import type { Snippet } from "svelte";
   import Card from "./Card.svelte";
 
-  let { cards, card }: { cards: T[]; card?: Snippet<[T]> } = $props();
+  const { cards, card }: { cards: T[]; card?: Snippet<[T]> } = $props();
 </script>
 
 <div class="grid">

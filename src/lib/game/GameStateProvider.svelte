@@ -5,12 +5,12 @@
   import type { Deck } from "$lib/engine/DeckCard";
   import type { Field } from "$lib/engine/FieldCard";
 
-  type GameState = {
+  interface GameState {
     readonly deck: Deck;
     readonly geography: Geography;
     readonly field: Field;
     readonly money: number;
-  };
+  }
 
   const GAME_STATE = Symbol("GAME_STATE");
 
@@ -20,7 +20,7 @@
 </script>
 
 <script lang="ts">
-  let { children }: { children: Snippet } = $props();
+  const { children }: { children: Snippet } = $props();
 
   const geography = {
     biome: "Coast",
