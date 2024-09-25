@@ -22,7 +22,10 @@
     quantity: number;
   }
 
-  interface Consumer { id: CardId; quantity: number }
+  interface Consumer {
+    id: CardId;
+    quantity: number;
+  }
 
   interface Output {
     resource: ResourceType;
@@ -45,7 +48,11 @@
 </script>
 
 <script lang="ts">
-  interface Producer { card: ProducingCard; field: FieldCard; deck: DeckCard }
+  interface Producer {
+    card: ProducingCard;
+    field: FieldCard;
+    deck: DeckCard;
+  }
 
   const { children }: { children: Snippet } = $props();
   const { deck, field, geography } = getGameState();

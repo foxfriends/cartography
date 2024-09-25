@@ -1,6 +1,10 @@
 import type { ResourceType } from "./resources";
 
-interface Need { type: "resource"; resource: ResourceType; quantity: number }
+interface Need {
+  type: "resource";
+  resource: ResourceType;
+  quantity: number;
+}
 
 export interface Species {
   type: string;

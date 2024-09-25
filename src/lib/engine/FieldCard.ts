@@ -2,7 +2,12 @@ import { nearestEdgeDistance } from "$lib/algorithm/nearestEdge";
 import { rangeInclusive } from "$lib/algorithm/range";
 import type { CardId } from "./Card";
 
-export interface FieldCard { id: CardId; x: number; y: number; loose?: boolean }
+export interface FieldCard {
+  id: CardId;
+  x: number;
+  y: number;
+  loose?: boolean;
+}
 export type Field = FieldCard[];
 
 export function indexById(field: Field): Map<string, FieldCard> {

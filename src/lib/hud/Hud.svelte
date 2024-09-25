@@ -49,7 +49,10 @@
     window.setTimeout(() => cardFocusDialog?.show(card), 0);
   }
 
-  interface Summary { produced: number; consumed: number }
+  interface Summary {
+    produced: number;
+    consumed: number;
+  }
 
   const summary = $derived(
     Object.values(production)
