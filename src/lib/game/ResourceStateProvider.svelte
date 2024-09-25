@@ -55,7 +55,8 @@
   }
 
   const { children }: { children: Snippet } = $props();
-  const { deck, field, geography } = getGameState();
+  const gameState = getGameState();
+  const { deck, field, geography } = $derived(gameState);
 
   const deckById = $derived(indexDeckById(deck));
   const cardsOnField = $derived(

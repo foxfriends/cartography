@@ -11,7 +11,8 @@
   import type { CardPlacedEvent } from "$lib/events/CardPlacedEvent";
   import { generateCardId } from "$lib/engine/Card";
 
-  const { deck, field } = getGameState();
+  const gameState = getGameState();
+  const { deck, field } = $derived(gameState);
 
   let intro: TutorialDialog | undefined = $state();
   let placeNeighbourhood: TutorialDialog | undefined = $state();

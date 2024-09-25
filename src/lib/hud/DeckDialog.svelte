@@ -11,7 +11,9 @@
   const { onSelectCard }: { onSelectCard: (card: CardT & { deckCard: DeckCard }) => void } =
     $props();
 
-  const { deck, field } = getGameState();
+  const gameState = getGameState();
+  const { deck, field } = $derived(gameState);
+
   const deckCards = $derived(
     deck.map((deckCard) => ({
       ...cards[deckCard.type],

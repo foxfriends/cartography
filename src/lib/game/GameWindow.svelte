@@ -7,7 +7,8 @@
 
   const TILE_SIZE = 128;
 
-  const { geography, deck, field } = getGameState();
+  const gameState = getGameState();
+  const { geography, deck, field } = $derived(gameState);
 
   let clientWidth = $state(0);
   let clientHeight = $state(0);
