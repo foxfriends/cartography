@@ -13,8 +13,11 @@
   import { getResourceState } from "$lib/game/ResourceStateProvider.svelte";
   import { add } from "$lib/algorithm/reducer";
 
-  const { deck, field, money } = getGameState();
-  const { production } = getResourceState();
+  const gameState = getGameState();
+  const { deck, field, money } = $derived(gameState);
+
+  const resourceState = getResourceState();
+  const { production } = $derived(resourceState);
 
   let deckDialog: DeckDialog | undefined = $state();
   let cardRewardDialog: CardRewardDialog | undefined = $state();
