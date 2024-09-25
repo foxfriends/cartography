@@ -11,8 +11,10 @@
   import ResourceRef from "$lib/components/ResourceRef.svelte";
   import { type DeckCard } from "$lib/engine/DeckCard";
   import { getResourceState } from "$lib/game/ResourceStateProvider.svelte";
+  import { add } from "$lib/algorithm/reducer";
 
   const { deck, field, money } = getGameState();
+  const { production } = getResourceState();
 
   let deckDialog: DeckDialog | undefined = $state();
   let cardRewardDialog: CardRewardDialog | undefined = $state();
@@ -44,26 +46,25 @@
     window.setTimeout(() => cardFocusDialog?.show(card), 0);
   }
 
-  const { produced } = getResourceState();
+  type Summary = { produced: number; consumed: number };
 
-  let summary = $derived(
-    produced
-      .flat()
-      .flat()
-      .reduce<Map<ResourceType, { produced: number; consumed: number }>>((summary, production) => {
-        const total = summary.get(production.resource) ?? { produced: 0, consumed: 0 };
-        total.produced += production.produced;
-        if (production.consumed) total.consumed += production.consumed;
-        return summary.set(production.resource, total);
+  const summary = $derived(
+    Object.values(production)
+      .flatMap((production) => production.outputs)
+      .reduce<Map<ResourceType, Summary>>((summary, output) => {
+        const total = summary.get(output.resource) ?? { produced: 0, consumed: 0 };
+        total.produced += output.quantity;
+        for (const { quantity } of output.consumedBy) total.consumed += quantity;
+        return summary.set(output.resource, total);
       }, new Map()),
   );
 
-  let income = $derived(
+  const income = $derived(
     Array.from(summary)
       .map(
         ([resource, { produced, consumed }]) => resources[resource].value * (produced - consumed),
       )
-      .reduce((a, b) => a + b, 0),
+      .reduce(add, 0),
   );
 </script>
 

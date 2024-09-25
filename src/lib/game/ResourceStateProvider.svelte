@@ -5,8 +5,14 @@
   import type { CardId } from "$lib/engine/Card";
   import { type DeckCard, indexById as indexDeckById } from "$lib/engine/DeckCard";
   import { canProduce, isDependent, sourceIsProducing, type ProducingCard } from "$lib/engine/Card";
-  import { coordinatesInRange, isInRange, type FieldCard } from "$lib/engine/FieldCard";
+  import {
+    coordinatesInRange,
+    indexByPosition,
+    isInRange,
+    type FieldCard,
+  } from "$lib/engine/FieldCard";
   import { cards, type Card } from "$lib/data/cards";
+  import { add } from "$lib/algorithm/reducer";
 
   const RESOURCE_STATE = Symbol("RESOURCE_STATE");
 
@@ -16,10 +22,12 @@
     quantity: number;
   };
 
+  type Consumer = { id: CardId; quantity: number };
+
   type Output = {
     resource: ResourceType;
     quantity: number;
-    consumedBy: CardId[];
+    consumedBy: Consumer[];
   };
 
   type Production = {
@@ -31,16 +39,7 @@
     readonly production: Record<CardId, Production>;
   };
 
-  export type Legacy = {
-    readonly produced: {
-      cardId: CardId;
-      resource: ResourceType;
-      produced: number;
-      consumed?: number;
-    }[][][];
-  };
-
-  export function getResourceState(): Legacy {
+  export function getResourceState(): ResourceState {
     return getContext(RESOURCE_STATE);
   }
 </script>
@@ -48,25 +47,23 @@
 <script lang="ts">
   type Producer = { card: ProducingCard; field: FieldCard; deck: DeckCard };
 
-  let { children }: { children: Snippet } = $props();
+  const { children }: { children: Snippet } = $props();
   const { deck, field, geography } = getGameState();
 
-  let deckById = $derived(indexDeckById(deck));
-  let cardsOnField = $derived(
+  const deckById = $derived(indexDeckById(deck));
+  const cardsOnField = $derived(
     field
       .filter((fc) => !fc.loose)
       .map((fc) => ({ field: fc, deck: deckById.get(fc.id)! }))
       .map((fdc) => ({ ...fdc, card: cards[fdc.deck.type] as Card })),
   );
-  let producers = $derived(cardsOnField.filter((card): card is Producer => canProduce(card.card)));
+  const producers = $derived(
+    cardsOnField.filter((card): card is Producer => canProduce(card.card)),
+  );
+  const cardLayout = $derived(indexByPosition(field));
 
-  let produced = $derived.by(() => {
-    const produced: {
-      cardId: CardId;
-      resource: ResourceType;
-      produced: number;
-      consumed?: number;
-    }[][][] = geography.terrain.map((row) => row.map(() => []));
+  const production = $derived.by(() => {
+    const production: Record<CardId, Production> = {};
 
     const remaining = new Map(
       producers.map((self) => {
@@ -87,34 +84,43 @@
         if (value.delete(current) && value.size === 0) producing.push(key);
       }
 
+      let inputs: Input[] = [];
       switch (current.card.category) {
         case "production": {
-          const inputs = current.card.inputs.map((input) => {
-            const producedInRange = Array.from(coordinatesInRange(current.field))
-              .flatMap(([x, y]) => produced[y]![x]!)
-              .filter((output) => input.resource === output.resource);
+          const tentativeInputs = current.card.inputs.map((input) => {
+            const cardsInRange = Array.from(coordinatesInRange(current.field))
+              .map((pos) => cardLayout.get(...pos))
+              .filter((card) => card !== undefined);
 
-            let requirement = input.quantity;
+            let remaining = input.quantity;
             const consumeFrom = [];
-            for (const output of producedInRange) {
-              const outputLeft = output.produced - (output.consumed ?? 0);
-              if (requirement <= outputLeft) {
-                consumeFrom.push({ output, consume: requirement });
-                requirement = 0;
-                break;
-              } else {
-                consumeFrom.push({ output, consume: outputLeft });
-                requirement -= outputLeft;
+            for (const producer of cardsInRange) {
+              const producerOutput = production[producer.id]?.outputs;
+              if (!producerOutput) continue;
+              for (const output of producerOutput) {
+                if (output.resource !== input.resource) continue;
+                const outputLeft =
+                  output.quantity -
+                  output.consumedBy.map((consumer) => consumer.quantity).reduce(add, 0);
+                if (remaining <= outputLeft) {
+                  consumeFrom.push({ producer, output, quantity: remaining });
+                  remaining = 0;
+                  break;
+                } else {
+                  consumeFrom.push({ producer, output, quantity: outputLeft });
+                  remaining -= outputLeft;
+                }
               }
             }
-            return { input, requirement, consumeFrom };
+            return { input, remaining, consumeFrom };
           });
-          if (!inputs.every((input) => input.requirement === 0)) {
+          if (!tentativeInputs.every((input) => input.remaining === 0)) {
             continue nextCard;
           }
-          for (const input of inputs) {
-            for (const { output, consume } of input.consumeFrom) {
-              output.consumed = (output.consumed ?? 0) + consume;
+          for (const input of tentativeInputs) {
+            for (const { producer, output, quantity } of input.consumeFrom) {
+              output.consumedBy.push({ id: current.deck.id, quantity });
+              inputs.push({ cardId: producer.id, resource: output.resource, quantity });
             }
           }
           break;
@@ -128,22 +134,19 @@
           current.card satisfies never;
           throw new Error("Unreachable");
       }
-      for (const output of current.card.outputs) {
-        produced[current.field.y]![current.field.x]!.push({
-          cardId: current.deck.id,
-          produced: output.quantity,
-          resource: output.resource,
-        });
-      }
+      production[current.deck.id] = {
+        inputs,
+        outputs: current.card.outputs.map((output) => ({ ...output, consumedBy: [] })),
+      };
     }
-    return produced;
+    return production;
   });
 
   setContext(RESOURCE_STATE, {
-    get produced() {
-      return produced;
+    get production() {
+      return production;
     },
-  } satisfies Legacy);
+  } satisfies ResourceState);
 </script>
 
 {@render children()}
