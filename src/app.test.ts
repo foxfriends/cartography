@@ -1,4 +1,4 @@
 import test from "node:test";
 import assert from "node:assert";
 
-test("it works", () => assert(true));
+void test("it works", () => assert(true));
