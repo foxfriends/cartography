@@ -5,26 +5,31 @@
   import type { CardsReceivedEvent } from "$lib/events/CardsReceivedEvent";
   import CardRewardDialog from "./CardRewardDialog.svelte";
   import DeckDialog from "./DeckDialog.svelte";
-  import { resources, type ResourceType } from "$lib/data/resources";
+  import { type ResourceType } from "$lib/data/resources";
   import CardFocusDialog from "./CardFocusDialog.svelte";
   import type { CardFocusEvent } from "$lib/events/CardFocusEvent";
   import ResourceRef from "$lib/components/ResourceRef.svelte";
   import { type DeckCard } from "$lib/engine/DeckCard";
   import { getResourceState } from "$lib/game/ResourceStateProvider.svelte";
-  import { add } from "$lib/algorithm/reducer";
+  import ProductionReportDialog from "./ProductionReportDialog.svelte";
 
   const gameState = getGameState();
   const { deck, field, money } = $derived(gameState);
 
   const resourceState = getResourceState();
-  const { resourceProduction } = $derived(resourceState);
+  const { resourceProduction, income } = $derived(resourceState);
 
   let deckDialog: DeckDialog | undefined = $state();
   let cardRewardDialog: CardRewardDialog | undefined = $state();
   let cardFocusDialog: CardFocusDialog | undefined = $state();
+  let productionReportDialog: ProductionReportDialog | undefined = $state();
 
   function onClickDeck() {
     deckDialog?.show();
+  }
+
+  function onClickProduction() {
+    productionReportDialog?.show();
   }
 
   function onSelectCard(card: Card & { deckCard: DeckCard }) {
@@ -48,15 +53,6 @@
     const card = cards[deckCard.type];
     window.setTimeout(() => cardFocusDialog?.show(card), 0);
   }
-
-  const income = $derived(
-    Object.entries(resourceProduction)
-      .map(
-        ([resource, { produced, consumed }]) =>
-          resources[resource as ResourceType].value * (produced - consumed),
-      )
-      .reduce(add, 0),
-  );
 </script>
 
 <div class="area">
@@ -83,10 +79,12 @@
   <div class="menu" role="toolbar">
     <a class="button" href="/">Menu</a>
     <button onclick={reset}>Reset</button>
+    <button onclick={onClickProduction}>Prod</button>
     <button onclick={onClickDeck}>Deck</button>
   </div>
 </div>
 
+<ProductionReportDialog bind:this={productionReportDialog} />
 <DeckDialog bind:this={deckDialog} {onSelectCard} />
 <CardRewardDialog bind:this={cardRewardDialog} />
 <CardFocusDialog bind:this={cardFocusDialog} />

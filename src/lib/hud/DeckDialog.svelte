@@ -34,7 +34,7 @@
   }
 </script>
 
-<Modal bind:this={dialog}>
+<Modal bind:this={dialog} sizing="fill">
   <article>
     <header>
       <h1>Deck</h1>

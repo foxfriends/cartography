@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
 
-  const { children }: { children: Snippet } = $props();
+  const { children, sizing = "fit" }: { children: Snippet; sizing?: "fit" | "fill" } = $props();
 
   let dialog: HTMLDialogElement | undefined = $state();
 
@@ -14,27 +14,43 @@
   }
 </script>
 
-<dialog bind:this={dialog}>
+<dialog bind:this={dialog} class={sizing}>
   {@render children()}
 </dialog>
 
 <style>
+  @property --modal-scale {
+    syntax: "<number>";
+    inherits: false;
+    initial-value: 1;
+  }
+
   dialog[open] {
     pointer-events: auto;
     opacity: 1;
-    transform: scale(1);
+    --modal-scale: 1;
   }
 
   dialog {
     position: absolute;
-    inset: 4rem;
-    width: auto;
-    height: auto;
     transform: scale(0.75);
     border: none;
     box-shadow: 0 0 2rem rgb(0 0 0 / 0.25);
-
     opacity: 0;
+    transform: scale(var(--modal-scale));
+    --modal-scale: 0.75;
+
+    &.fill {
+      inset: 4rem;
+      width: auto;
+      height: auto;
+    }
+
+    &.fit {
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) scale(var(--modal-scale));
+    }
 
     transition:
       backdrop-filter 100ms ease-out,
@@ -63,7 +79,7 @@
   @starting-style {
     dialog[open] {
       opacity: 0;
-      transform: scale(0.75);
+      --modal-scale: 0.75;
     }
 
     dialog[open]::backdrop {

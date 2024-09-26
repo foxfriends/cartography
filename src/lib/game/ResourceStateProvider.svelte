@@ -1,7 +1,7 @@
 <script lang="ts" module>
   import { getContext, setContext, type Snippet } from "svelte";
   import { getGameState } from "./GameStateProvider.svelte";
-  import { type ResourceType } from "$lib/data/resources";
+  import { resources, type ResourceType } from "$lib/data/resources";
   import type { CardId } from "$lib/engine/Card";
   import { type DeckCard, indexById as indexDeckById } from "$lib/engine/DeckCard";
   import { canProduce, isDependent, sourceIsProducing, type ProducingCard } from "$lib/engine/Card";
@@ -39,7 +39,7 @@
     outputs: Output[];
   }
 
-  interface ResourceProduction {
+  export interface ResourceProduction {
     produced: number;
     consumed: number;
     demand: number;
@@ -53,6 +53,7 @@
     readonly population: Partial<Record<SpeciesType, Population>>;
     readonly cardProduction: Record<CardId, CardProduction>;
     readonly resourceProduction: Partial<Record<ResourceType, ResourceProduction>>;
+    readonly income: number;
   }
 
   export function getResourceState(): ResourceState {
@@ -204,6 +205,18 @@
     return resourceProduction;
   });
 
+  const income = $derived(
+    Object.entries(resourceProduction)
+      .map(([resource, { produced, consumed, demand }]) => {
+        const value = resources[resource as ResourceType].value;
+        return (
+          value * Math.max(0, produced - consumed - demand) +
+          value * 10 * Math.min(demand, Math.max(0, produced - consumed))
+        );
+      })
+      .reduce(add, 0),
+  );
+
   setContext(RESOURCE_STATE, {
     get population() {
       return population;
@@ -213,6 +226,9 @@
     },
     get resourceProduction() {
       return resourceProduction;
+    },
+    get income() {
+      return income;
     },
   } satisfies ResourceState);
 </script>

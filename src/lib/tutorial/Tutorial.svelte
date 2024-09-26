@@ -290,7 +290,7 @@
   {/snippet}
 </TutorialDialog>
 
-<TutorialDialog bind:this={aboutPacks} onDismiss={aboutIncomeReward}>
+<TutorialDialog bind:this={aboutPacks}>
   <p>
     The other thing the <CardRef id="trading-centre" /> allows you to trade for is more cards. For a
     little bit of <MoneyRef />, you can buy a pack containing a few common cards which you can add

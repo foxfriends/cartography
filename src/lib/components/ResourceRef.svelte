@@ -6,4 +6,4 @@
   const resource = $derived(resources[id]);
 </script>
 
-<Shimmer style="--shimmer-color: rgb(227 73 52)">{resource.name}</Shimmer>
+<Shimmer style="--shimmer-color: rgb(199 73 52)">{resource.name}</Shimmer>
