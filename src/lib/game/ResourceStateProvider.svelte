@@ -11,8 +11,9 @@
     isInRange,
     type FieldCard,
   } from "$lib/engine/FieldCard";
-  import { cards, type Card } from "$lib/data/cards";
+  import { cards, type Card, type ResidentialCard } from "$lib/data/cards";
   import { add } from "$lib/algorithm/reducer";
+  import { species, type SpeciesType } from "$lib/data/species";
 
   const RESOURCE_STATE = Symbol("RESOURCE_STATE");
 
@@ -33,13 +34,25 @@
     consumedBy: Consumer[];
   }
 
-  interface Production {
+  interface CardProduction {
     inputs: Input[];
     outputs: Output[];
   }
 
+  interface ResourceProduction {
+    produced: number;
+    consumed: number;
+    demand: number;
+  }
+
+  interface Population {
+    quantity: number;
+  }
+
   export interface ResourceState {
-    readonly production: Record<CardId, Production>;
+    readonly population: Partial<Record<SpeciesType, Population>>;
+    readonly cardProduction: Record<CardId, CardProduction>;
+    readonly resourceProduction: Partial<Record<ResourceType, ResourceProduction>>;
   }
 
   export function getResourceState(): ResourceState {
@@ -50,6 +63,12 @@
 <script lang="ts">
   interface Producer {
     card: ProducingCard;
+    field: FieldCard;
+    deck: DeckCard;
+  }
+
+  interface Residential {
+    card: ResidentialCard;
     field: FieldCard;
     deck: DeckCard;
   }
@@ -70,8 +89,19 @@
   );
   const cardLayout = $derived(indexByPosition(field));
 
-  const production = $derived.by(() => {
-    const production: Record<CardId, Production> = {};
+  const population = $derived(
+    cardsOnField
+      .filter((card): card is Residential => card.card.category === "residential")
+      .flatMap((card) => card.card.population)
+      .reduce<Partial<Record<SpeciesType, Population>>>((population, residence) => {
+        population[residence.species] ??= { quantity: 0 };
+        population[residence.species]!.quantity += residence.quantity;
+        return population;
+      }, {}),
+  );
+
+  const cardProduction = $derived.by(() => {
+    const cardProduction: Record<CardId, CardProduction> = {};
 
     const remaining = new Map(
       producers.map((self) => {
@@ -103,7 +133,7 @@
             let remaining = input.quantity;
             const consumeFrom = [];
             for (const producer of cardsInRange) {
-              const producerOutput = production[producer.id]?.outputs;
+              const producerOutput = cardProduction[producer.id]?.outputs;
               if (!producerOutput) continue;
               for (const output of producerOutput) {
                 if (output.resource !== input.resource) continue;
@@ -142,17 +172,47 @@
           current.card satisfies never;
           throw new Error("Unreachable");
       }
-      production[current.deck.id] = {
+      cardProduction[current.deck.id] = {
         inputs,
         outputs: current.card.outputs.map((output) => ({ ...output, consumedBy: [] })),
       };
     }
-    return production;
+
+    return cardProduction;
+  });
+
+  const resourceProduction = $derived.by(() => {
+    const resourceProduction = Object.values(cardProduction)
+      .flatMap((card) => card.outputs)
+      .reduce<Partial<Record<ResourceType, ResourceProduction>>>((resourceProduction, output) => {
+        resourceProduction[output.resource] ??= { produced: 0, consumed: 0, demand: 0 };
+        resourceProduction[output.resource]!.produced += output.quantity;
+        for (const { quantity } of output.consumedBy) {
+          resourceProduction[output.resource]!.consumed += quantity;
+        }
+        return resourceProduction;
+      }, {});
+
+    for (const [specie, { quantity }] of Object.entries(population)) {
+      for (const need of species[specie as SpeciesType].needs) {
+        if (need.type !== "resource") continue;
+        resourceProduction[need.resource] ??= { produced: 0, consumed: 0, demand: 0 };
+        resourceProduction[need.resource]!.demand += quantity * need.quantity;
+      }
+    }
+
+    return resourceProduction;
   });
 
   setContext(RESOURCE_STATE, {
-    get production() {
-      return production;
+    get population() {
+      return population;
+    },
+    get cardProduction() {
+      return cardProduction;
+    },
+    get resourceProduction() {
+      return resourceProduction;
     },
   } satisfies ResourceState);
 </script>

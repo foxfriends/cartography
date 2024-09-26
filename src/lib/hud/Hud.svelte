@@ -17,7 +17,7 @@
   const { deck, field, money } = $derived(gameState);
 
   const resourceState = getResourceState();
-  const { production } = $derived(resourceState);
+  const { resourceProduction } = $derived(resourceState);
 
   let deckDialog: DeckDialog | undefined = $state();
   let cardRewardDialog: CardRewardDialog | undefined = $state();
@@ -49,26 +49,11 @@
     window.setTimeout(() => cardFocusDialog?.show(card), 0);
   }
 
-  interface Summary {
-    produced: number;
-    consumed: number;
-  }
-
-  const summary = $derived(
-    Object.values(production)
-      .flatMap((production) => production.outputs)
-      .reduce<Map<ResourceType, Summary>>((summary, output) => {
-        const total = summary.get(output.resource) ?? { produced: 0, consumed: 0 };
-        total.produced += output.quantity;
-        for (const { quantity } of output.consumedBy) total.consumed += quantity;
-        return summary.set(output.resource, total);
-      }, new Map()),
-  );
-
   const income = $derived(
-    Array.from(summary)
+    Object.entries(resourceProduction)
       .map(
-        ([resource, { produced, consumed }]) => resources[resource].value * (produced - consumed),
+        ([resource, { produced, consumed }]) =>
+          resources[resource as ResourceType].value * (produced - consumed),
       )
       .reduce(add, 0),
   );
@@ -82,10 +67,14 @@
       <span>${income} / day</span>
     </div>
     <div class="resource-area">
-      {#each summary.entries() as [resource, { produced, consumed }] (resource)}
+      {#each Object.entries(resourceProduction) as [resource, { produced, consumed, demand }] (resource)}
         <span>
-          <ResourceRef id={resource} />
-          {produced}/{consumed}
+          <ResourceRef id={resource as ResourceType} />
+          {#if demand}
+            {produced}/{demand}
+          {:else}
+            {produced - consumed}
+          {/if}
         </span>
       {/each}
     </div>

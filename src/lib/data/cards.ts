@@ -28,7 +28,7 @@ export interface SourceCard extends BaseCard {
   employees: number;
 }
 
-export interface ResidentalCard extends BaseCard {
+export interface ResidentialCard extends BaseCard {
   category: "residential";
   population: Population[];
 }
@@ -44,7 +44,7 @@ export interface TradeCard extends BaseCard {
   category: "trade";
 }
 
-export type Card = ProductionCard | SourceCard | ResidentalCard | TradeCard;
+export type Card = ProductionCard | SourceCard | ResidentialCard | TradeCard;
 
 export type CardType = keyof typeof cards;
 

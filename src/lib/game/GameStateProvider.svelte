@@ -9,7 +9,7 @@
     readonly deck: Deck;
     readonly geography: Geography;
     readonly field: Field;
-    readonly money: number;
+    money: number;
   }
 
   const GAME_STATE = Symbol("GAME_STATE");
@@ -136,6 +136,9 @@
     },
     get money() {
       return money;
+    },
+    set money(qty) {
+      money = qty;
     },
   } satisfies GameState);
 

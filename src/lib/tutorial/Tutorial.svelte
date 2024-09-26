@@ -1,5 +1,6 @@
 <script lang="ts">
   import { getGameState } from "$lib/game/GameStateProvider.svelte";
+  import { getResourceState } from "$lib/game/ResourceStateProvider.svelte";
   import CardRef from "$lib/components/CardRef.svelte";
   import SpeciesRef from "$lib/components/SpeciesRef.svelte";
   import TutorialDialog from "./TutorialDialog.svelte";
@@ -10,19 +11,32 @@
   import type { CardFieldedEvent } from "$lib/events/CardFieldedEvent";
   import type { CardPlacedEvent } from "$lib/events/CardPlacedEvent";
   import { generateCardId } from "$lib/engine/Card";
+  import MoneyRef from "$lib/components/MoneyRef.svelte";
 
   const gameState = getGameState();
   const { deck, field } = $derived(gameState);
 
+  const resourceState = getResourceState();
+  const { resourceProduction } = $derived(resourceState);
+
   let intro: TutorialDialog | undefined = $state();
-  let placeNeighbourhood: TutorialDialog | undefined = $state();
   let deckView: TutorialDialog | undefined = $state();
   let arrangeNeighbourhood: TutorialDialog | undefined = $state();
   let aboutNeighbourhoods: TutorialDialog | undefined = $state();
   let aboutBakery: TutorialDialog | undefined = $state();
   let aboutSources: TutorialDialog | undefined = $state();
+  let aboutTrade: TutorialDialog | undefined = $state();
+  let aboutIncome: TutorialDialog | undefined = $state();
+  let aboutPacks: TutorialDialog | undefined = $state();
 
-  type Step = "intro" | "place-neighbourhood" | "place-bakery" | "place-sources";
+  type Step =
+    | "intro"
+    | "place-neighbourhood"
+    | "place-bakery"
+    | "place-sources"
+    | "await-production"
+    | "place-trading-centre"
+    | "buy-pack";
 
   let step: Step = $state("intro");
 
@@ -37,6 +51,15 @@
   $effect(() => {
     window.localStorage.setItem("tutorial_step", JSON.stringify(step));
     if (step === "intro") window.setTimeout(() => intro!.show(), 500);
+    if (step === "buy-pack") window.setTimeout(() => aboutPacks!.show(), 500);
+  });
+
+  $effect(() => {
+    if (step === "await-production") {
+      if (resourceProduction.wheat && resourceProduction.wheat.produced > 0) {
+        window.setTimeout(() => aboutTrade!.show(), 500);
+      }
+    }
   });
 
   function introReward() {
@@ -65,6 +88,20 @@
       );
       step = "place-sources";
     }, 500);
+  }
+
+  function aboutTradeReward() {
+    window.setTimeout(() => {
+      window.dispatchEvent(
+        new CardsReceivedEvent([{ id: generateCardId(), type: "trading-centre" }]),
+      );
+      step = "place-trading-centre";
+    }, 500);
+  }
+
+  function aboutIncomeReward() {
+    gameState.money += 4;
+    step = "buy-pack";
   }
 
   function ondeckopened(_: DeckOpenedEvent) {
@@ -98,48 +135,43 @@
     ) {
       window.setTimeout(() => aboutSources!.show(), 500);
     }
+    if (
+      step === "place-trading-centre" &&
+      deck.find((d) => d.id === card.id)?.type === "trading-centre"
+    ) {
+      window.setTimeout(() => aboutIncome!.show(), 500);
+    }
   }
 </script>
 
 <svelte:window {ondeckopened} {oncardfielded} {oncardplaced} />
 
-<TutorialDialog
-  bind:this={intro}
-  onDismiss={() => window.setTimeout(() => placeNeighbourhood!.show(), 100)}
->
-  <p>Hello Mayor! Welcome to the location of our new town!</p>
+<TutorialDialog bind:this={intro} onDismiss={introReward}>
   <p>
-    All of us are just getting started here ourselves. As you can see, we haven't even set up a
-    single neighbourhood yet.
+    Hello Mayor, and welcome to the location of our new town! All of us are just getting started
+    here ourselves. We haven't even placed a single card yet!
   </p>
-  <p>Will you help us choose a spot for that right now?</p>
+  <p>
+    I have the card for a <CardRef id="cat-neighbourhood" /> right here, I'll put it into your deck.
+    Since you're in charge here, I'll let you see about setting that up for us. Start by opening up the
+    deck view.
+  </p>
+  <p class="info">The button to open the deck view is at the bottom right.</p>
 
   {#snippet actions(dismiss)}
     <button onclick={dismiss}>Of course!</button>
   {/snippet}
 </TutorialDialog>
 
-<TutorialDialog bind:this={placeNeighbourhood} onDismiss={introReward}>
-  <p>
-    Great! I have the card for a <CardRef id="cat-neighbourhood" /> right here, I'll put it into your
-    deck. Take a look and see for yourself!
-  </p>
-  <p class="info">The button to open the deck is at the bottom right.</p>
-
-  {#snippet actions(dismiss)}
-    <button onclick={dismiss}>Ok, let me see...</button>
-  {/snippet}
-</TutorialDialog>
-
 <TutorialDialog bind:this={deckView}>
-  <p>This is the deck view; the cards you see here are yours!</p>
   <p>
-    There are all sorts of cards to be collected, each one providing a different function. Be sure
-    to collect as many as you can to grow your town into a vibrant place to live.
+    This is the deck view; the cards you see here are yours. There are all sorts of cards to be
+    collected, each one providing a different function. I'm sure you'll soon have a whole collection
+    and turn this town into a great place to live!
   </p>
   <p>
-    We need to set up a neighbourhood for your citizens to live in, select your
-    <CardRef id="cat-neighbourhood" /> now.
+    For now, we just need to set up that <CardRef id="cat-neighbourhood" /> for your citizens to live
+    in.
   </p>
   <p class="info">Click a card to drop it into the world.</p>
 
@@ -162,17 +194,17 @@
 
 <TutorialDialog bind:this={aboutNeighbourhoods} onDismiss={arrangeNeighbourhoodReward}>
   <p>
-    Residential cards provide housing for citizens in your town. The
+    Residential cards provide housing for residents in your town. The
     <CardRef id="cat-neighbourhood" /> in particular has room for 6 <SpeciesRef id="cat" /> residents.
   </p>
   <p>
-    Each species of citizen has different needs. When the needs of a citizen are satisfied, their
-    productivity increases and they will be willing to pay you more taxes.
+    Each type of resident has different needs. When the needs of a resident are satisfied, their
+    productivity increases and they will pay you more <MoneyRef />.
   </p>
   <p>
-    Each <SpeciesRef id="cat" /> requires 1 <ResourceRef id="bread" /> per day to be satisfied. We can
-    produce <ResourceRef id="bread" /> by building a <CardRef id="bakery" />. I have a
-    <CardRef id="bakery" /> card for you right here.
+    A <SpeciesRef id="cat" /> requires 1 <ResourceRef id="bread" /> per day to be satisfied. Luckily,
+    I have a <CardRef id="bakery" /> card already, which will allow us to produce that
+    <ResourceRef id="bread" /> right here in town!
   </p>
   <p class="info">Place a <CardRef id="bakery" /> from your deck into your town.</p>
 
@@ -190,7 +222,7 @@
   </p>
   <p>
     If we want this <CardRef id="bakery" /> working, we'll need to get our hands on those resources.
-    I think I have a few more cards that might help with that right here, take a look!
+    I think I have a few more cards that might help with that, take a look and see what you can do.
   </p>
 
   {#snippet actions(dismiss)}
@@ -198,7 +230,7 @@
   {/snippet}
 </TutorialDialog>
 
-<TutorialDialog bind:this={aboutSources}>
+<TutorialDialog bind:this={aboutSources} onDismiss={() => (step = "await-production")}>
   <p>
     The <CardRef id="water-well" /> and <CardRef id="wheat-farm" /> cards are both Source cards, meaning
     they are able to produce resources without needing to consume anything first. Instead, they allow
@@ -209,9 +241,65 @@
     <CardRef id="wheat-farm" /> requires being placed on fertile <TerrainRef id="soil" /> in order to
     grow wheat.
   </p>
+  <p class="info">Make sure your new cards are both producing.</p>
 
   {#snippet actions(dismiss)}
     <button onclick={dismiss}>Makes sense to me!</button>
+  {/snippet}
+</TutorialDialog>
+
+<TutorialDialog bind:this={aboutTrade} onDismiss={aboutTradeReward}>
+  <p>
+    The <CardRef id="wheat-farm" /> is producing, but without a <CardRef id="flour-mill" /> in town,
+    there's nothing for us to do with the <ResourceRef id="wheat" />.
+  </p>
+  <p>
+    Luckily, I've got one last card here with me, it's a rare <CardRef id="trading-centre" /> card. You'll
+    probably never get your hands on another one of these. This <CardRef id="trading-centre" />
+    will become the backbone of our town, allowing us to sell our excess resources in exchange for
+    <MoneyRef />.
+  </p>
+  <p class="info">Place the <CardRef id="trading-centre" />.</p>
+
+  {#snippet actions(dismiss)}
+    <button onclick={dismiss}>Wow!</button>
+  {/snippet}
+</TutorialDialog>
+
+<TutorialDialog bind:this={aboutIncome} onDismiss={aboutIncomeReward}>
+  <p>
+    This is a world of production and trade, so all resources are reported in a rate of
+    <strong>production per day</strong>. Other than <MoneyRef />, there's not much point in
+    stockpiling any resources. Instead, and the end of each day, any excess resources we haven't
+    used get exported via the
+    <CardRef id="trading-centre" />.
+  </p>
+  <p>
+    The <CardRef id="wheat-farm" /> produces 4 <ResourceRef id="wheat" /> per day, but a unit of
+    <ResourceRef id="wheat" /> is worth just 1 <MoneyRef /> when exported. The
+    <ResourceRef id="water" /> on the other hand isn't even worth selling. Unused resources aren't worth
+    much!
+  </p>
+  <p>
+    Eventually most of your income will be coming from satisfied residents buying the things they
+    need, but for now I'll just work out a deal real quick for your first export.
+  </p>
+
+  {#snippet actions(dismiss)}
+    <button onclick={dismiss}>I do like money...</button>
+  {/snippet}
+</TutorialDialog>
+
+<TutorialDialog bind:this={aboutPacks} onDismiss={aboutIncomeReward}>
+  <p>
+    The other thing the <CardRef id="trading-centre" /> allows you to trade for is more cards. For a
+    little bit of <MoneyRef />, you can buy a pack containing a few common cards which you can add
+    to your town.
+  </p>
+  <p class="info">Open up the shop with the button at the bottom right.</p>
+
+  {#snippet actions(dismiss)}
+    <button onclick={dismiss}>Exciting!</button>
   {/snippet}
 </TutorialDialog>
 
