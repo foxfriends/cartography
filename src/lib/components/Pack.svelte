@@ -1,13 +1,14 @@
 <script lang="ts">
+  import type { Pack } from "$lib/engine/Pack";
   import { cards } from "$lib/data/cards";
-  import type { Pack } from "$lib/game/GameStateProvider.svelte";
   import Card from "./Card.svelte";
   import CardBack from "./CardBack.svelte";
   import Row from "./Row.svelte";
   import PackRef from "./PackRef.svelte";
   import ShimmerBox from "./ShimmerBox.svelte";
+  import { enter } from "$lib/events";
 
-  const { pack }: { pack: Pack } = $props();
+  const { pack, onSelect }: { pack: Pack; onSelect: () => void } = $props();
 
   let hovering = $state(false);
 </script>
@@ -16,6 +17,8 @@
   class="pack"
   role="button"
   tabindex={0}
+  onclick={onSelect}
+  onkeydown={enter(onSelect)}
   onmouseover={() => (hovering = true)}
   onfocus={() => (hovering = true)}
   onmouseout={() => (hovering = false)}

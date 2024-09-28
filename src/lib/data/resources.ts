@@ -33,12 +33,12 @@ export const resources = {
   bread: {
     type: "bread",
     name: "Bread",
-    value: 5,
+    value: 3,
   },
   salad: {
     type: "salad",
     name: "Salad",
-    value: 5,
+    value: 3,
   },
 } as const satisfies Record<string, Resource>;
 

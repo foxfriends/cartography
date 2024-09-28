@@ -1,24 +1,14 @@
 <script lang="ts" module>
   import { getContext, setContext, type Snippet } from "svelte";
   import type { Geography } from "$lib/types";
-  import type { CardsReceivedEvent } from "$lib/events/CardsReceivedEvent";
-  import type { Deck } from "$lib/engine/DeckCard";
+  import { CardsReceivedEvent } from "$lib/events/CardsReceivedEvent";
+  import type { Deck, DeckCard } from "$lib/engine/DeckCard";
   import type { Field } from "$lib/engine/FieldCard";
-  import type { CardCategory, CardType } from "$lib/data/cards";
-
-  type PackItem =
-    | { type: "card"; card: CardType; missing?: true }
-    | { type: "category"; category: CardCategory }
-    | { type: "any" };
-
-  export interface Pack {
-    id: string;
-    name: string;
-    description?: string;
-    price: number;
-    originalPrice?: number;
-    contents: PackItem[];
-  }
+  import type { Pack } from "$lib/engine/Pack";
+  import { cards } from "$lib/data/cards";
+  import type { BuyPackEvent } from "$lib/events/BuyPackEvent";
+  import { generateCardId } from "$lib/engine/Card";
+  import { choose } from "$lib/algorithm/choose";
 
   interface Shop {
     packs: Pack[];
@@ -173,8 +163,33 @@
   function oncardsreceived(event: CardsReceivedEvent) {
     deck.push(...event.cards);
   }
+
+  function onbuypack(event: BuyPackEvent) {
+    if (event.pack.price > money) return;
+
+    const allCards = Object.values(cards);
+    const contents: DeckCard[] = event.pack.contents
+      .map((content) => {
+        switch (content.type) {
+          case "card":
+            if (content.missing) return undefined;
+            return { id: generateCardId(), type: content.card };
+          case "category":
+            return {
+              id: generateCardId(),
+              type: choose(allCards.filter((card) => card.category === content.category)).type,
+            };
+          case "any":
+            return { id: generateCardId(), type: choose(allCards).type };
+        }
+      })
+      .filter((card) => card !== undefined);
+
+    money -= event.pack.price;
+    window.dispatchEvent(new CardsReceivedEvent(contents));
+  }
 </script>
 
-<svelte:window {oncardsreceived} />
+<svelte:window {oncardsreceived} {onbuypack} />
 
 {@render children()}

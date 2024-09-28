@@ -2,8 +2,10 @@
   import { getGameState } from "$lib/game/GameStateProvider.svelte";
   import Modal from "$lib/components/Modal.svelte";
   import { ShopOpenedEvent } from "$lib/events/ShopOpenedEvent";
+  import type { Pack as PackT } from "$lib/engine/Pack";
   import Pack from "$lib/components/Pack.svelte";
   import Grid from "$lib/components/Grid.svelte";
+  import { BuyPackEvent } from "$lib/events/BuyPackEvent";
 
   const gameState = getGameState();
   const { shop } = $derived(gameState);
@@ -13,6 +15,11 @@
   export function show() {
     dialog?.show();
     window.dispatchEvent(new ShopOpenedEvent());
+  }
+
+  function buyPack(pack: PackT) {
+    dialog?.close();
+    window.dispatchEvent(new BuyPackEvent(pack));
   }
 
   export function close() {
@@ -29,7 +36,7 @@
     <div class="content">
       <Grid items={shop.packs}>
         {#snippet item(pack)}
-          <Pack {pack} />
+          <Pack {pack} onSelect={() => buyPack(pack)} />
         {/snippet}
       </Grid>
     </div>

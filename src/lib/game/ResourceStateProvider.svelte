@@ -211,7 +211,7 @@
         const value = resources[resource as ResourceType].value;
         return (
           value * Math.max(0, produced - consumed - demand) +
-          value * 10 * Math.min(demand, Math.max(0, produced - consumed))
+          value * 5 * Math.min(demand, Math.max(0, produced - consumed))
         );
       })
       .reduce(add, 0),

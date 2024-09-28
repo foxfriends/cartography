@@ -13,6 +13,7 @@
   import type { CardPlacedEvent } from "$lib/events/CardPlacedEvent";
   import { generateCardId } from "$lib/engine/Card";
   import MoneyRef from "$lib/components/MoneyRef.svelte";
+  import type { BuyPackEvent } from "$lib/events/BuyPackEvent";
 
   const gameState = getGameState();
   const { deck, field, shop } = $derived(gameState);
@@ -30,6 +31,7 @@
   let aboutIncome: TutorialDialog | undefined = $state();
   let aboutPacks: TutorialDialog | undefined = $state();
   let aboutShop: TutorialDialog | undefined = $state();
+  let complete: TutorialDialog | undefined = $state();
 
   type Step =
     | "intro"
@@ -38,7 +40,9 @@
     | "place-sources"
     | "await-production"
     | "place-trading-centre"
-    | "buy-pack";
+    | "buy-pack"
+    | "produce-bread"
+    | "complete";
 
   let step: Step = $state("intro");
 
@@ -60,6 +64,15 @@
     if (step === "await-production") {
       if (resourceProduction.wheat && resourceProduction.wheat.produced > 0) {
         window.setTimeout(() => aboutTrade!.show(), 500);
+      }
+    }
+  });
+
+  $effect(() => {
+    if (step === "produce-bread") {
+      if (resourceProduction.bread && resourceProduction.bread.produced > 0) {
+        window.setTimeout(() => complete!.show(), 500);
+        step = "complete";
       }
     }
   });
@@ -140,6 +153,10 @@
     }
   }
 
+  function onbuypack(_event: BuyPackEvent) {
+    if (step === "buy-pack") step = "produce-bread";
+  }
+
   function oncardplaced({ card }: CardPlacedEvent) {
     if (
       step === "place-neighbourhood" &&
@@ -168,7 +185,7 @@
   }
 </script>
 
-<svelte:window {ondeckopened} {onshopopened} {oncardfielded} {oncardplaced} />
+<svelte:window {ondeckopened} {onshopopened} {oncardfielded} {oncardplaced} {onbuypack} />
 
 <TutorialDialog bind:this={intro} onDismiss={introReward}>
   <p>
@@ -340,7 +357,24 @@
   <p class="info">Buy (the rest of) the <PackRef>Starter Pack</PackRef>.</p>
 
   {#snippet actions(dismiss)}
-    <button onclick={dismiss}>That's ok.</button>
+    <button onclick={dismiss}>That's ok...</button>
+  {/snippet}
+</TutorialDialog>
+
+<TutorialDialog bind:this={complete}>
+  <p>
+    That's it, the <CardRef id="bakery" /> is finally able to make its <ResourceRef id="bread" />!
+    You'll be on your own from here on out. I look forward to seeing where you take the town, and
+    meeting all the people who will eventually move in! Good luck, and I hope you have fun!
+  </p>
+  <p class="info">
+    Cards don't only come from packs. Earn powerful and rare cards by participating in certain
+    activities in the real world, or trade your cards online with other players to get exactly the
+    ones you need.
+  </p>
+
+  {#snippet actions(dismiss)}
+    <button onclick={dismiss}>I will!</button>
   {/snippet}
 </TutorialDialog>
 

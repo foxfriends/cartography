@@ -15,7 +15,7 @@
         const value = resources[resource as ResourceType].value;
         return (
           value * Math.max(0, produced - consumed - demand) +
-          value * 10 * Math.min(demand, Math.max(0, produced - consumed))
+          value * 5 * Math.min(demand, Math.max(0, produced - consumed))
         );
       })
       .reduce(add, 0),
@@ -52,7 +52,7 @@
         </td>
         <td class="consumed">{excess}</td>
         <td><MoneyRef amount={value} /></td>
-        <td><MoneyRef amount={value * excess + value * 10 * satisfaction} /></td>
+        <td><MoneyRef amount={value * excess + value * 5 * satisfaction} /></td>
       </tr>
     {/each}
   </tbody>
