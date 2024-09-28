@@ -33,7 +33,6 @@
 
   dialog {
     position: absolute;
-    transform: scale(0.75);
     border: none;
     box-shadow: 0 0 2rem rgb(0 0 0 / 0.25);
     opacity: 0;

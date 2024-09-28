@@ -6,6 +6,7 @@ import type { CardFieldedEvent } from "$lib/events/CardFieldedEvent";
 import type { CardPlacedEvent } from "$lib/events/CardPlacedEvent";
 import type { DeckOpenedEvent } from "$lib/events/DeckOpenedEvent";
 import type { CardFocusEvent } from "$lib/events/CardFocusEvent";
+import type { ShopOpenedEvent } from "$lib/events/ShopOpenedEvent";
 
 // for information about these interfaces
 declare global {
@@ -23,6 +24,7 @@ declare global {
       oncardfielded?: EventHandler<CardFieldedEvent, T> | undefined | null;
       oncardplaced?: EventHandler<CardPlacedEvent, T> | undefined | null;
       ondeckopened?: EventHandler<DeckOpenedEvent, T> | undefined | null;
+      onshopopened?: EventHandler<ShopOpenedEvent, T> | undefined | null;
       oncardfocus?: EventHandler<CardFocusEvent, T> | undefined | null;
     }
 
@@ -31,6 +33,7 @@ declare global {
       oncardfielded?: EventHandler<CardFieldedEvent, Window> | undefined | null;
       oncardplaced?: EventHandler<CardPlacedEvent, Window> | undefined | null;
       ondeckopened?: EventHandler<DeckOpenedEvent, Window> | undefined | null;
+      onshopopened?: EventHandler<ShopOpenedEvent, Window> | undefined | null;
       oncardfocus?: EventHandler<CardFocusEvent, Window> | undefined | null;
     }
   }

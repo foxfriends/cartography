@@ -6,6 +6,7 @@
   import TutorialDialog from "./TutorialDialog.svelte";
   import ResourceRef from "$lib/components/ResourceRef.svelte";
   import TerrainRef from "$lib/components/TerrainRef.svelte";
+  import PackRef from "$lib/components/PackRef.svelte";
   import { CardsReceivedEvent } from "$lib/events/CardsReceivedEvent";
   import type { DeckOpenedEvent } from "$lib/events/DeckOpenedEvent";
   import type { CardFieldedEvent } from "$lib/events/CardFieldedEvent";
@@ -14,7 +15,7 @@
   import MoneyRef from "$lib/components/MoneyRef.svelte";
 
   const gameState = getGameState();
-  const { deck, field } = $derived(gameState);
+  const { deck, field, shop } = $derived(gameState);
 
   const resourceState = getResourceState();
   const { resourceProduction } = $derived(resourceState);
@@ -28,6 +29,7 @@
   let aboutTrade: TutorialDialog | undefined = $state();
   let aboutIncome: TutorialDialog | undefined = $state();
   let aboutPacks: TutorialDialog | undefined = $state();
+  let aboutShop: TutorialDialog | undefined = $state();
 
   type Step =
     | "intro"
@@ -102,11 +104,33 @@
   function aboutIncomeReward() {
     gameState.money += 4;
     step = "buy-pack";
+    shop.packs.push({
+      id: window.crypto.randomUUID(),
+      name: "Starter Pack?",
+      description:
+        "A one of a kind pack containing all you need to get started!\n" +
+        "It looks like this one has been opened already, and some of the cards are missing.",
+      price: 4,
+      originalPrice: 20,
+      contents: [
+        { type: "card", card: "cat-neighbourhood", missing: true },
+        { type: "card", card: "water-well", missing: true },
+        { type: "card", card: "wheat-farm", missing: true },
+        { type: "card", card: "flour-mill" },
+        { type: "card", card: "bakery", missing: true },
+      ],
+    });
   }
 
   function ondeckopened(_: DeckOpenedEvent) {
     if (step === "place-neighbourhood") {
       window.setTimeout(() => deckView!.show(), 500);
+    }
+  }
+
+  function onshopopened(_: DeckOpenedEvent) {
+    if (step === "buy-pack") {
+      window.setTimeout(() => aboutShop!.show(), 500);
     }
   }
 
@@ -144,11 +168,11 @@
   }
 </script>
 
-<svelte:window {ondeckopened} {oncardfielded} {oncardplaced} />
+<svelte:window {ondeckopened} {onshopopened} {oncardfielded} {oncardplaced} />
 
 <TutorialDialog bind:this={intro} onDismiss={introReward}>
   <p>
-    Hello Mayor, and welcome to the location of our new town! All of us are just getting started
+    Hello Mayor, and welcome to the location of our new Town! All of us are just getting started
     here ourselves. We haven't even placed a single card yet!
   </p>
   <p>
@@ -271,8 +295,7 @@
     This is a world of production and trade, so all resources are reported in a rate of
     <strong>production per day</strong>. Other than <MoneyRef />, there's not much point in
     stockpiling any resources. Instead, and the end of each day, any excess resources we haven't
-    used get exported via the
-    <CardRef id="trading-centre" />.
+    used get exported via the <CardRef id="trading-centre" />.
   </p>
   <p>
     The <CardRef id="wheat-farm" /> produces 4 <ResourceRef id="wheat" /> per day, but a unit of
@@ -300,6 +323,24 @@
 
   {#snippet actions(dismiss)}
     <button onclick={dismiss}>Exciting!</button>
+  {/snippet}
+</TutorialDialog>
+
+<TutorialDialog bind:this={aboutShop}>
+  <p>
+    The shop offers new cards in <strong>Packs</strong>. The available packs are always changing,
+    and each one contains a different assortment of cards, so be sure to check back often and buy
+    any that catch your eye.
+  </p>
+  <p>
+    There's one pack available right now, the <PackRef>Starter Pack</PackRef>, but I have a
+    confession to make... I already opened it and gave you most of the cards. There's still one left
+    though, I didn't want to take away all the fun!
+  </p>
+  <p class="info">Buy (the rest of) the <PackRef>Starter Pack</PackRef>.</p>
+
+  {#snippet actions(dismiss)}
+    <button onclick={dismiss}>That's ok.</button>
   {/snippet}
 </TutorialDialog>
 

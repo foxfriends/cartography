@@ -6,6 +6,6 @@
   const card = $derived(cards[id]);
 </script>
 
-<Shimmer style="--shimmer-color: rgb(164 85 217)">
+<Shimmer style="--shimmer-color: var(--color-card)">
   {card.name}
 </Shimmer>

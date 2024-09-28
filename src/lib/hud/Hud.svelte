@@ -12,6 +12,7 @@
   import { type DeckCard } from "$lib/engine/DeckCard";
   import { getResourceState } from "$lib/game/ResourceStateProvider.svelte";
   import ProductionReportDialog from "./ProductionReportDialog.svelte";
+  import ShopDialog from "./ShopDialog.svelte";
 
   const gameState = getGameState();
   const { deck, field, money } = $derived(gameState);
@@ -20,12 +21,21 @@
   const { resourceProduction, income } = $derived(resourceState);
 
   let deckDialog: DeckDialog | undefined = $state();
+  let shopDialog: ShopDialog | undefined = $state();
   let cardRewardDialog: CardRewardDialog | undefined = $state();
   let cardFocusDialog: CardFocusDialog | undefined = $state();
   let productionReportDialog: ProductionReportDialog | undefined = $state();
 
+  const tradingCentre = $derived(deck.find((card) => card.type === "trading-centre"));
+  const tradingCentreOnField = $derived(field.find((card) => card.id === tradingCentre?.id));
+  const hasTrade = $derived(tradingCentreOnField && !tradingCentreOnField.loose);
+
   function onClickDeck() {
     deckDialog?.show();
+  }
+
+  function onClickShop() {
+    shopDialog?.show();
   }
 
   function onClickProduction() {
@@ -79,13 +89,17 @@
   <div class="menu" role="toolbar">
     <a class="button" href="/">Menu</a>
     <button onclick={reset}>Reset</button>
-    <button onclick={onClickProduction}>Prod</button>
+    {#if hasTrade}
+      <button onclick={onClickProduction}>Prod</button>
+      <button onclick={onClickShop}>Shop</button>
+    {/if}
     <button onclick={onClickDeck}>Deck</button>
   </div>
 </div>
 
 <ProductionReportDialog bind:this={productionReportDialog} />
 <DeckDialog bind:this={deckDialog} {onSelectCard} />
+<ShopDialog bind:this={shopDialog} />
 <CardRewardDialog bind:this={cardRewardDialog} />
 <CardFocusDialog bind:this={cardFocusDialog} />
 

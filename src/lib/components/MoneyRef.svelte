@@ -4,7 +4,7 @@
   const { amount }: { amount?: number } = $props();
 </script>
 
-<Shimmer style="--shimmer-color: rgb(186 141 26)">
+<Shimmer style="--shimmer-color: oklch(from var(--color-money) calc(l - 0.2) c h)">
   {#if amount !== undefined}
     ${amount}
   {:else}

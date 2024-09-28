@@ -6,4 +6,4 @@
   const terrain = $derived(terrains[id]);
 </script>
 
-<Shimmer style="--shimmer-color: rgb(38 163 38)">{terrain.name}</Shimmer>
+<Shimmer style="--shimmer-color: var(--color-terrain)">{terrain.name}</Shimmer>

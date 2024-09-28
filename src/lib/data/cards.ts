@@ -45,7 +45,7 @@ export interface TradeCard extends BaseCard {
 }
 
 export type Card = ProductionCard | SourceCard | ResidentialCard | TradeCard;
-
+export type CardCategory = Card["category"];
 export type CardType = keyof typeof cards;
 
 export const cards = {

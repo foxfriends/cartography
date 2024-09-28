@@ -6,6 +6,6 @@
   const specie = $derived(species[id]);
 </script>
 
-<Shimmer style="--shimmer-color: rgb(16 121 227)">
+<Shimmer style="--shimmer-color: var(--color-species)">
   {plural ? specie.namePlural : specie.name}
 </Shimmer>

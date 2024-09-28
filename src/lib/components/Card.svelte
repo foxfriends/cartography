@@ -96,22 +96,23 @@
         opacity: 100%;
       }
     }
+  }
 
-    .title {
-      padding: 0.25rem;
-      border: 1px solid rgb(0 0 0 / 0.12);
-    }
+  .title {
+    padding: 0.25rem;
+    border: 1px solid rgb(0 0 0 / 0.12);
+    white-space: nowrap;
+  }
 
-    .image {
-      aspect-ratio: 1 / 1;
-      width: 100%;
-      background-color: rgb(0 0 0 / 0.1);
-    }
+  .image {
+    aspect-ratio: 1 / 1;
+    width: 100%;
+    background-color: rgb(0 0 0 / 0.1);
+  }
 
-    .info {
-      border: 1px solid rgb(0 0 0 / 0.12);
-      flex-grow: 1;
-      padding: 0.25rem;
-    }
+  .info {
+    border: 1px solid rgb(0 0 0 / 0.12);
+    flex-grow: 1;
+    padding: 0.25rem;
   }
 </style>
