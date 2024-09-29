@@ -4,7 +4,7 @@
   import ShimmerModal from "$lib/components/ShimmerModal.svelte";
   import type { Card as CardT } from "$lib/data/cards";
 
-  let dialog: ShimmerModal | undefined = $state();
+  let dialog: ReturnType<typeof ShimmerModal> | undefined = $state();
   let cards: CardT[] = $state([]);
 
   export function show(cardsToShow: CardT[]) {

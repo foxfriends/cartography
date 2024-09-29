@@ -21,17 +21,19 @@
   const resourceState = getResourceState();
   const { resourceProduction } = $derived(resourceState);
 
-  let intro: TutorialDialog | undefined = $state();
-  let deckView: TutorialDialog | undefined = $state();
-  let arrangeNeighbourhood: TutorialDialog | undefined = $state();
-  let aboutNeighbourhoods: TutorialDialog | undefined = $state();
-  let aboutBakery: TutorialDialog | undefined = $state();
-  let aboutSources: TutorialDialog | undefined = $state();
-  let aboutTrade: TutorialDialog | undefined = $state();
-  let aboutIncome: TutorialDialog | undefined = $state();
-  let aboutPacks: TutorialDialog | undefined = $state();
-  let aboutShop: TutorialDialog | undefined = $state();
-  let complete: TutorialDialog | undefined = $state();
+  type TutorialDialogComponent = ReturnType<typeof TutorialDialog>;
+
+  let intro: TutorialDialogComponent | undefined = $state();
+  let deckView: TutorialDialogComponent | undefined = $state();
+  let arrangeNeighbourhood: TutorialDialogComponent | undefined = $state();
+  let aboutNeighbourhoods: TutorialDialogComponent | undefined = $state();
+  let aboutBakery: TutorialDialogComponent | undefined = $state();
+  let aboutSources: TutorialDialogComponent | undefined = $state();
+  let aboutTrade: TutorialDialogComponent | undefined = $state();
+  let aboutIncome: TutorialDialogComponent | undefined = $state();
+  let aboutPacks: TutorialDialogComponent | undefined = $state();
+  let aboutShop: TutorialDialogComponent | undefined = $state();
+  let complete: TutorialDialogComponent | undefined = $state();
 
   type Step =
     | "intro"

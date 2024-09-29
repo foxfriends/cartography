@@ -10,7 +10,7 @@
   const gameState = getGameState();
   const { shop } = $derived(gameState);
 
-  let dialog: Modal | undefined = $state();
+  let dialog: ReturnType<typeof Modal> | undefined = $state();
 
   export function show() {
     dialog?.show();

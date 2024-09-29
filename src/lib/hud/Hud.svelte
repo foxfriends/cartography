@@ -23,11 +23,11 @@
   const resourceState = getResourceState();
   const { resourceProduction, income } = $derived(resourceState);
 
-  let deckDialog: DeckDialog | undefined = $state();
-  let shopDialog: ShopDialog | undefined = $state();
-  let cardRewardDialog: CardRewardDialog | undefined = $state();
-  let cardFocusDialog: CardFocusDialog | undefined = $state();
-  let productionReportDialog: ProductionReportDialog | undefined = $state();
+  let deckDialog: ReturnType<typeof DeckDialog> | undefined = $state();
+  let shopDialog: ReturnType<typeof ShopDialog> | undefined = $state();
+  let cardRewardDialog: ReturnType<typeof CardRewardDialog> | undefined = $state();
+  let cardFocusDialog: ReturnType<typeof CardFocusDialog> | undefined = $state();
+  let productionReportDialog: ReturnType<typeof ProductionReportDialog> | undefined = $state();
 
   const tradingCentre = $derived(deck.find((card) => card.type === "trading-centre"));
   const tradingCentreOnField = $derived(field.find((card) => card.id === tradingCentre?.id));

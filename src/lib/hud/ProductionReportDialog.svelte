@@ -6,7 +6,7 @@
   const resourceState = getResourceState();
   const { resourceProduction } = $derived(resourceState);
 
-  let dialog: Modal | undefined = $state();
+  let dialog: ReturnType<typeof Modal> | undefined = $state();
 
   export function show() {
     dialog?.show();
