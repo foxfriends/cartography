@@ -1,6 +1,8 @@
 <script lang="ts">
   import { cards, type Card } from "$lib/data/cards";
+  import { getAppState } from "$lib/game/AppStateProvider.svelte";
   import { getGameState } from "$lib/game/GameStateProvider.svelte";
+  import { getResourceState } from "$lib/game/ResourceStateProvider.svelte";
   import { CardFieldedEvent } from "$lib/events/CardFieldedEvent";
   import type { CardsReceivedEvent } from "$lib/events/CardsReceivedEvent";
   import CardRewardDialog from "./CardRewardDialog.svelte";
@@ -10,9 +12,10 @@
   import type { CardFocusEvent } from "$lib/events/CardFocusEvent";
   import ResourceRef from "$lib/components/ResourceRef.svelte";
   import { type DeckCard } from "$lib/engine/DeckCard";
-  import { getResourceState } from "$lib/game/ResourceStateProvider.svelte";
   import ProductionReportDialog from "./ProductionReportDialog.svelte";
   import ShopDialog from "./ShopDialog.svelte";
+
+  const appState = getAppState();
 
   const gameState = getGameState();
   const { deck, field, money } = $derived(gameState);
@@ -36,6 +39,10 @@
 
   function onClickShop() {
     shopDialog?.show();
+  }
+
+  function onClickFlow() {
+    appState.mode = appState.mode === "flow" ? "place" : "flow";
   }
 
   function onClickProduction() {
@@ -89,6 +96,7 @@
   <div class="menu" role="toolbar">
     <a class="button" href="/">Menu</a>
     <button onclick={reset}>Reset</button>
+    <button onclick={onClickFlow}>Flow</button>
     {#if hasTrade}
       <button onclick={onClickProduction}>Prod</button>
       <button onclick={onClickShop}>Shop</button>

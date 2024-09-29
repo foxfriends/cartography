@@ -1,4 +1,5 @@
 <script lang="ts">
+  import AppStateProvider from "$lib/game/AppStateProvider.svelte";
   import GameStateProvider from "$lib/game/GameStateProvider.svelte";
   import ResourceStateProvider from "$lib/game/ResourceStateProvider.svelte";
   import GameWindow from "$lib/game/GameWindow.svelte";
@@ -7,17 +8,19 @@
 </script>
 
 <div role="application">
-  <GameStateProvider>
-    <ResourceStateProvider>
-      <main>
-        <GameWindow />
-      </main>
-      <div class="hud">
-        <Hud />
-      </div>
-      <Tutorial />
-    </ResourceStateProvider>
-  </GameStateProvider>
+  <AppStateProvider>
+    <GameStateProvider>
+      <ResourceStateProvider>
+        <main>
+          <GameWindow />
+        </main>
+        <div class="hud">
+          <Hud />
+        </div>
+        <Tutorial />
+      </ResourceStateProvider>
+    </GameStateProvider>
+  </AppStateProvider>
 </div>
 
 <style>
