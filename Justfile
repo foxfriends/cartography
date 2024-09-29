@@ -1,3 +1,5 @@
+set quiet
+
 default: dev
 
 dev:
@@ -17,11 +19,18 @@ watch:
     npx svelte-kit sync
     npx svelte-check --tsconfig ./tsconfig.json --watch
 
-lint:
-    npx eslint . --cache
+
+lint mode="check":
+    if [ "{{mode}}" = "fix" ]; then \
+        npx eslint . --fix; \
+    else \
+        npx eslint . --cache; \
+    fi
 
 fmt:
     npx prettier --write . --cache
 
 test:
     npm test
+
+fix: fmt (lint "fix")
