@@ -15,14 +15,14 @@
   } = $props();
 </script>
 
-{#each field as card (card)}
-  {@const handcard = deck.find((hc) => hc.id === card.id)}
-  {#if handcard}
+{#each field as card (card.id)}
+  {@const deckCard = deck.find((dc) => dc.id === card.id)}
+  {#if deckCard}
     <CardTile
       id={card.id}
       x={card.x}
       y={card.y}
-      type={handcard.type}
+      type={deckCard.type}
       onMove={(x, y) => onMoveCard(card.id, x, y)}
       loose={card.loose}
     />

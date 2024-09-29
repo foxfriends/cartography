@@ -5,6 +5,7 @@
   import type { Deck, DeckCard } from "$lib/engine/DeckCard";
   import type { Field } from "$lib/engine/FieldCard";
   import type { Pack } from "$lib/engine/Pack";
+  import type { Flow } from "$lib/engine/Flow";
   import { cards } from "$lib/data/cards";
   import type { BuyPackEvent } from "$lib/events/BuyPackEvent";
   import { generateCardId } from "$lib/engine/Card";
@@ -18,6 +19,7 @@
     readonly deck: Deck;
     readonly geography: Geography;
     readonly field: Field;
+    readonly flow: Flow[];
     readonly shop: Shop;
     money: number;
   }
@@ -124,12 +126,13 @@
   let field: Field = $state([]);
   let money: number = $state(0);
   let shop: Shop = $state({ packs: [] });
+  let flow: Flow[] = $state([]);
 
   $effect.pre(() => {
     const storedState = window.localStorage.getItem("game_state");
     if (!storedState) return;
     try {
-      ({ field, deck, shop, money } = JSON.parse(storedState));
+      ({ field, deck, flow, shop, money } = JSON.parse(storedState));
     } catch {
       /* empty */
     }
@@ -145,11 +148,14 @@
     get field() {
       return field;
     },
-    get money() {
-      return money;
-    },
     get shop() {
       return shop;
+    },
+    get flow() {
+      return flow;
+    },
+    get money() {
+      return money;
     },
     set money(qty) {
       money = qty;
@@ -157,7 +163,7 @@
   } satisfies GameState);
 
   $effect(() => {
-    window.localStorage.setItem("game_state", JSON.stringify({ field, deck, shop, money }));
+    window.localStorage.setItem("game_state", JSON.stringify({ field, deck, flow, shop, money }));
   });
 
   function oncardsreceived(event: CardsReceivedEvent) {

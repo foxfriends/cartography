@@ -6,7 +6,7 @@
 </script>
 
 <div class="grid">
-  {#each items as data}
+  {#each items as data (data)}
     {@render item(data)}
   {/each}
 </div>

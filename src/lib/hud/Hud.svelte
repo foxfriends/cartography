@@ -96,7 +96,9 @@
   <div class="menu" role="toolbar">
     <a class="button" href="/">Menu</a>
     <button onclick={reset}>Reset</button>
-    <button onclick={onClickFlow}>Flow</button>
+    <button onclick={onClickFlow}>
+      Mode: {appState.mode}
+    </button>
     {#if hasTrade}
       <button onclick={onClickProduction}>Prod</button>
       <button onclick={onClickShop}>Shop</button>

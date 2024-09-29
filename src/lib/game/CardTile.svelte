@@ -2,6 +2,7 @@
   import { fade } from "svelte/transition";
   import { CardFocusEvent } from "$lib/events/CardFocusEvent";
   import { cards, type CardType } from "$lib/data/cards";
+  import { getAppState } from "./AppStateProvider.svelte";
 
   const {
     id,
@@ -19,6 +20,8 @@
     onMove: (deltaClientX: number, deltaClientY: number) => void;
   } = $props();
 
+  const appState = getAppState();
+
   let mouseDragging = $state(false);
   let touchDragging: Touch | null = $state(null);
   let draggedX = $state(0);
@@ -29,8 +32,10 @@
 
   function onmousedown(event: MouseEvent) {
     if (event.buttons === 1) {
-      mouseDragging = true;
       unmoved = true;
+      if (appState.mode === "place") {
+        mouseDragging = true;
+      }
     }
   }
 
@@ -107,6 +112,7 @@
   class="griditem card"
   class:loose
   class:dragging
+  aria-grabbed={!!dragging}
   style="
     --loose-x: {loose ? x : 0}px;
     --loose-y: {loose ? y : 0}px;

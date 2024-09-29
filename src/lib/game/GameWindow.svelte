@@ -4,11 +4,15 @@
   import GridLines from "./GridLines.svelte";
   import { CardPlacedEvent } from "$lib/events/CardPlacedEvent";
   import type { CardId } from "$lib/engine/Card";
+  import { getAppState } from "./AppStateProvider.svelte";
+  import CardFlow from "./CardFlow.svelte";
 
   const TILE_SIZE = 128;
 
+  const appState = getAppState();
+
   const gameState = getGameState();
-  const { geography, deck, field } = $derived(gameState);
+  const { geography, deck, field, flow } = $derived(gameState);
 
   let clientWidth = $state(0);
   let clientHeight = $state(0);
@@ -106,6 +110,9 @@
           })),
       ),
   );
+
+  const visibleField = $derived(field.filter((card) => card.loose || isOnScreen(card)));
+  const activeField = $derived(visibleField.filter((card) => !card.loose));
 </script>
 
 <div
@@ -122,7 +129,10 @@
     <div class="terrain" data-type={tile.type} style="--grid-x: {tile.x}; --grid-y: {tile.y}"></div>
   {/each}
   <GridLines />
-  <CardField field={field.filter((card) => card.loose || isOnScreen(card))} {deck} {onMoveCard} />
+  <CardField field={visibleField} {deck} {onMoveCard} />
+  {#if appState.mode === "flow"}
+    <CardFlow field={activeField} {deck} {flow} />
+  {/if}
 </div>
 
 <svelte:window {onmousemove} {onmouseup} {ontouchmove} {ontouchend} ontouchcancel={ontouchend} />
