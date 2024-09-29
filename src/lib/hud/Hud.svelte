@@ -1,17 +1,17 @@
 <script lang="ts">
+  import { type DeckCard } from "$lib/engine/DeckCard";
+  import { type ResourceType } from "$lib/data/resources";
   import { cards, type Card } from "$lib/data/cards";
   import { getAppState } from "$lib/game/AppStateProvider.svelte";
   import { getGameState } from "$lib/game/GameStateProvider.svelte";
   import { getResourceState } from "$lib/game/ResourceStateProvider.svelte";
   import { CardFieldedEvent } from "$lib/events/CardFieldedEvent";
   import type { CardsReceivedEvent } from "$lib/events/CardsReceivedEvent";
-  import CardRewardDialog from "./CardRewardDialog.svelte";
-  import DeckDialog from "./DeckDialog.svelte";
-  import { type ResourceType } from "$lib/data/resources";
-  import CardFocusDialog from "./CardFocusDialog.svelte";
   import type { CardFocusEvent } from "$lib/events/CardFocusEvent";
   import ResourceRef from "$lib/components/ResourceRef.svelte";
-  import { type DeckCard } from "$lib/engine/DeckCard";
+  import CardFocusDialog from "./CardFocusDialog.svelte";
+  import CardRewardDialog from "./CardRewardDialog.svelte";
+  import DeckDialog from "./DeckDialog.svelte";
   import ProductionReportDialog from "./ProductionReportDialog.svelte";
   import ShopDialog from "./ShopDialog.svelte";
 

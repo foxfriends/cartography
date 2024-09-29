@@ -1,12 +1,16 @@
 set quiet
 
 default: dev
+fix: fmt (lint "fix")
 
 dev:
     npx vite dev
 
 build:
     npx vite build
+
+clean:  
+    rm -rf .svelte-kit build .eslintcache 
 
 preview:
     npx vite preview
@@ -18,7 +22,6 @@ check:
 watch:
     npx svelte-kit sync
     npx svelte-check --tsconfig ./tsconfig.json --watch
-
 
 lint mode="check":
     if [ "{{mode}}" = "fix" ]; then \
@@ -33,4 +36,3 @@ fmt:
 test:
     npm test
 
-fix: fmt (lint "fix")
