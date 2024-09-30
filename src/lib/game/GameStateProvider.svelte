@@ -10,6 +10,8 @@
   import type { BuyPackEvent } from "$lib/events/BuyPackEvent";
   import { generateCardId } from "$lib/engine/Card";
   import { choose } from "$lib/algorithm/choose";
+  import type { CreateFlowEvent } from "$lib/events/CreateFlowEvent";
+  import type { DeleteFlowEvent } from "$lib/events/DeleteFlowEvent";
 
   interface Shop {
     packs: Pack[];
@@ -194,8 +196,42 @@
     money -= event.pack.price;
     window.dispatchEvent(new CardsReceivedEvent(contents));
   }
+
+  function oncreateflow(event: CreateFlowEvent) {
+    if (event.flow.source === event.flow.destination) return;
+
+    const source = deck.find((card) => card.id === event.flow.source);
+    if (!source) return;
+    const sourceType = cards[source.type];
+    if (!("outputs" in sourceType)) return;
+    if (!sourceType.outputs.some((output) => output.resource === event.flow.resource)) return;
+
+    const destination = deck.find((card) => card.id === event.flow.destination);
+    if (!destination) return;
+    const destinationType = cards[destination.type];
+    if (!("inputs" in destinationType)) return;
+    if (!destinationType.inputs.some((input) => input.resource === event.flow.resource)) return;
+
+    if (
+      flow.some(
+        (flow) =>
+          flow.source === event.flow.source &&
+          flow.destination === event.flow.destination &&
+          flow.resource === event.flow.resource,
+      )
+    ) {
+      return;
+    }
+
+    flow.push(event.flow);
+  }
+
+  function ondeleteflow(event: DeleteFlowEvent) {
+    const index = flow.findIndex((flow) => flow.id === event.flow);
+    if (index !== -1) flow.splice(index, 1);
+  }
 </script>
 
-<svelte:window {oncardsreceived} {onbuypack} />
+<svelte:window {oncardsreceived} {onbuypack} {oncreateflow} {ondeleteflow} />
 
 {@render children()}

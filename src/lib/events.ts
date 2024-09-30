@@ -1,4 +1,4 @@
-import type { EventHandler, KeyboardEventHandler } from "svelte/elements";
+import type { EventHandler, KeyboardEventHandler, MouseEventHandler } from "svelte/elements";
 
 type Handler<Args extends unknown[] = unknown[]> = (...args: Args) => void;
 export function opt<Args extends unknown[], R>(
@@ -10,6 +10,12 @@ export function opt<Args extends unknown[], R>(
 export function enter<Element extends EventTarget>(handler: KeyboardEventHandler<Element>) {
   return (event: KeyboardEvent & { currentTarget: Element }) => {
     if (event.key === "enter") handler(event);
+  };
+}
+
+export function lmb<Element extends EventTarget>(handler: MouseEventHandler<Element>) {
+  return (event: MouseEvent & { currentTarget: Element }) => {
+    if (event.buttons === 1) handler(event);
   };
 }
 

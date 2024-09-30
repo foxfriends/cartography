@@ -9,6 +9,8 @@ import type { CardFocusEvent } from "$lib/events/CardFocusEvent";
 import type { ShopOpenedEvent } from "$lib/events/ShopOpenedEvent";
 import type { BuyPackEvent } from "$lib/events/BuyPackEvent";
 import type { StartFlowEvent } from "$lib/events/StartFlowEvent";
+import type { CreateFlowEvent } from "$lib/events/CreateFlowEvent";
+import type { DeleteFlowEvent } from "$lib/events/DeleteFlowEvent";
 
 // for information about these interfaces
 declare global {
@@ -30,6 +32,8 @@ declare global {
       oncardfocus?: EventHandler<CardFocusEvent, T> | undefined | null;
       onbuypack?: EventHandler<BuyPackEvent, T> | undefined | null;
       onstartflow?: EventHandler<StartFlowEvent, T> | undefined | null;
+      oncreateflow?: EventHandler<CreateFlowEvent, T> | undefined | null;
+      ondeleteflow?: EventHandler<DeleteFlowEvent, T> | undefined | null;
     }
 
     interface SvelteWindowAttributes {
@@ -40,6 +44,8 @@ declare global {
       onshopopened?: EventHandler<ShopOpenedEvent, Window> | undefined | null;
       oncardfocus?: EventHandler<CardFocusEvent, Window> | undefined | null;
       onbuypack?: EventHandler<BuyPackEvent, Window> | undefined | null;
+      oncreateflow?: EventHandler<CreateFlowEvent, Window> | undefined | null;
+      ondeleteflow?: EventHandler<DeleteFlowEvent, Window> | undefined | null;
     }
   }
 }

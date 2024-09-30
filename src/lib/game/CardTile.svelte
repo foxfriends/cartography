@@ -3,6 +3,7 @@
   import { CardFocusEvent } from "$lib/events/CardFocusEvent";
   import { cards, type CardType } from "$lib/data/cards";
   import { getAppState } from "./AppStateProvider.svelte";
+  import type { CardId } from "$lib/engine/Card";
 
   const {
     id,
@@ -12,7 +13,7 @@
     loose = false,
     onMove,
   }: {
-    id: string;
+    id: CardId;
     type: CardType;
     x: number;
     y: number;
@@ -30,12 +31,10 @@
 
   const looseRotation = Math.sign(Math.random() - 0.5) * (Math.round(Math.random() * 10) + 5);
 
-  function onmousedown(event: MouseEvent) {
-    if (event.buttons === 1) {
-      unmoved = true;
-      if (appState.mode === "place") {
-        mouseDragging = true;
-      }
+  function onmousedown(_event: MouseEvent) {
+    unmoved = true;
+    if (appState.mode === "place") {
+      mouseDragging = true;
     }
   }
 
