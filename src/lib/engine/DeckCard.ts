@@ -7,6 +7,6 @@ export interface DeckCard {
 }
 export type Deck = DeckCard[];
 
-export function indexById(field: Deck): Map<string, DeckCard> {
+export function indexById(field: Deck): Map<CardId, DeckCard> {
   return new Map(field.map((card) => [card.id, card]));
 }

@@ -15,3 +15,7 @@ export type FlowId = string & { [__brand]: "FlowId" };
 export function generateFlowId(): FlowId {
   return window.crypto.randomUUID() as FlowId;
 }
+
+export function indexByDestination(flows: Flow[]): Map<CardId, Flow[]> {
+  return Map.groupBy(flows, (flow) => flow.destination);
+}

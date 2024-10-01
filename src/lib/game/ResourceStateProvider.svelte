@@ -1,19 +1,14 @@
 <script lang="ts" module>
   import { getContext, setContext, type Snippet } from "svelte";
-  import { getGameState } from "./GameStateProvider.svelte";
   import { resources, type ResourceType } from "$lib/data/resources";
-  import type { CardId } from "$lib/engine/Card";
-  import { type DeckCard, indexById as indexDeckById } from "$lib/engine/DeckCard";
-  import { canProduce, isDependent, sourceIsProducing, type ProducingCard } from "$lib/engine/Card";
-  import {
-    coordinatesInRange,
-    indexByPosition,
-    isInRange,
-    type FieldCard,
-  } from "$lib/engine/FieldCard";
-  import { cards, type Card, type ResidentialCard } from "$lib/data/cards";
-  import { add } from "$lib/algorithm/reducer";
+  import { cards, type Population } from "$lib/data/cards";
   import { species, type SpeciesType } from "$lib/data/species";
+  import { indexById as indexDeckById } from "$lib/engine/DeckCard";
+  import { indexById as indexFieldById, indexByPosition } from "$lib/engine/FieldCard";
+  import { indexByDestination } from "$lib/engine/Flow";
+  import { canProduce, sourceIsProducing, type CardId } from "$lib/engine/Card";
+  import { add } from "$lib/algorithm/reducer";
+  import { getGameState } from "./GameStateProvider.svelte";
 
   const RESOURCE_STATE = Symbol("RESOURCE_STATE");
 
@@ -45,12 +40,12 @@
     demand: number;
   }
 
-  interface Population {
+  interface SpeciesPopulation {
     quantity: number;
   }
 
   export interface ResourceState {
-    readonly population: Partial<Record<SpeciesType, Population>>;
+    readonly population: Partial<Record<SpeciesType, SpeciesPopulation>>;
     readonly cardProduction: Record<CardId, CardProduction>;
     readonly resourceProduction: Partial<Record<ResourceType, ResourceProduction>>;
     readonly income: number;
@@ -62,39 +57,23 @@
 </script>
 
 <script lang="ts">
-  interface Producer {
-    card: ProducingCard;
-    field: FieldCard;
-    deck: DeckCard;
-  }
-
-  interface Residential {
-    card: ResidentialCard;
-    field: FieldCard;
-    deck: DeckCard;
-  }
-
   const { children }: { children: Snippet } = $props();
   const gameState = getGameState();
-  const { deck, field, geography } = $derived(gameState);
+  const { deck, field, flow, geography } = $derived(gameState);
 
   const deckById = $derived(indexDeckById(deck));
-  const cardsOnField = $derived(
-    field
-      .filter((fc) => !fc.loose)
-      .map((fc) => ({ field: fc, deck: deckById.get(fc.id)! }))
-      .map((fdc) => ({ ...fdc, card: cards[fdc.deck.type] as Card })),
-  );
-  const producers = $derived(
-    cardsOnField.filter((card): card is Producer => canProduce(card.card)),
-  );
-  const cardLayout = $derived(indexByPosition(field));
+  const fieldById = $derived(indexFieldById(field));
+  const _cardLayout = $derived(indexByPosition(field));
+  const flowGraph = $derived(indexByDestination(flow));
+  const cardsOnField = $derived(field.filter((fc) => !fc.loose));
 
   const population = $derived(
     cardsOnField
-      .filter((card): card is Residential => card.card.category === "residential")
-      .flatMap((card) => card.card.population)
-      .reduce<Partial<Record<SpeciesType, Population>>>((population, residence) => {
+      .map((field) => deckById.get(field.id)!)
+      .map((deck) => cards[deck.type])
+      .filter((card) => card.category === "residential")
+      .flatMap((card) => card.population as Population[])
+      .reduce<Partial<Record<SpeciesType, SpeciesPopulation>>>((population, residence) => {
         population[residence.species] ??= { quantity: 0 };
         population[residence.species]!.quantity += residence.quantity;
         return population;
@@ -103,79 +82,89 @@
 
   const cardProduction = $derived.by(() => {
     const cardProduction: Record<CardId, CardProduction> = {};
-
     const remaining = new Map(
-      producers.map((self) => {
-        const nearby = producers
-          .filter((other) => isInRange(self.field, other.field))
-          .filter((other) => isDependent(self.card, other.card));
-        return [self, new Set(nearby)];
-      }),
+      Array.from(flowGraph.entries())
+        .filter(([, inputs]) => inputs.length)
+        .map(([id, inputs]) => [id, [...inputs]]),
     );
+    const producing = cardsOnField
+      .filter((field) => canProduce(cards[deckById.get(field.id)!.type]))
+      .filter((field) => !flowGraph.get(field.id)?.length)
+      .map((field) => field.id);
 
-    const producing = Array.from(remaining)
-      .filter(([, dependencies]) => dependencies.size === 0)
-      .map(([card]) => card);
+    nextCard: while (producing.length) {
+      const currentId = producing.shift()!;
+      const currentField = fieldById.get(currentId)!;
+      const currentDeck = deckById.get(currentId)!;
+      const currentCard = cards[currentDeck.type];
 
-    nextCard: while (producing.length > 0) {
-      const current = producing.shift()!;
-      for (const [key, value] of remaining.entries()) {
-        if (value.delete(current) && value.size === 0) producing.push(key);
+      for (const [id, flows] of remaining.entries()) {
+        const left = flows.filter((flow) => flow.source === currentId);
+        if (left.length) {
+          remaining.set(id, left);
+        } else {
+          remaining.delete(id);
+          producing.push(id);
+        }
       }
 
       const inputs: Input[] = [];
-      switch (current.card.category) {
+      switch (currentCard.category) {
         case "production": {
-          const tentativeInputs = current.card.inputs.map((input) => {
-            const cardsInRange = Array.from(coordinatesInRange(current.field))
-              .map((pos) => cardLayout.get(...pos))
-              .filter((card) => card !== undefined);
-
-            let remaining = input.quantity;
+          const sources = flowGraph.get(currentId);
+          const tentativeInputs = currentCard.inputs.map((input) => {
             const consumeFrom = [];
-            for (const producer of cardsInRange) {
-              const producerOutput = cardProduction[producer.id]?.outputs;
-              if (!producerOutput) continue;
-              for (const output of producerOutput) {
-                if (output.resource !== input.resource) continue;
-                const outputLeft =
-                  output.quantity -
-                  output.consumedBy.map((consumer) => consumer.quantity).reduce(add, 0);
-                if (remaining <= outputLeft) {
-                  consumeFrom.push({ producer, output, quantity: remaining });
-                  remaining = 0;
-                  break;
-                } else {
-                  consumeFrom.push({ producer, output, quantity: outputLeft });
-                  remaining -= outputLeft;
+            let remaining: number = input.quantity;
+            if (sources) {
+              for (const flow of sources) {
+                const producerOutput = cardProduction[flow.source]?.outputs;
+                if (!producerOutput) continue;
+
+                for (const output of producerOutput) {
+                  if (output.resource !== input.resource) continue;
+
+                  const outputLeft =
+                    output.quantity -
+                    output.consumedBy.map((consumer) => consumer.quantity).reduce(add, 0);
+                  if (remaining <= outputLeft) {
+                    consumeFrom.push({ flow, output, quantity: remaining });
+                    remaining = 0;
+                    break;
+                  } else {
+                    consumeFrom.push({ flow, output, quantity: outputLeft });
+                    remaining -= outputLeft;
+                  }
                 }
               }
             }
             return { input, remaining, consumeFrom };
           });
-          if (!tentativeInputs.every((input) => input.remaining === 0)) {
-            continue nextCard;
-          }
+          if (!tentativeInputs.every((input) => input.remaining === 0)) continue nextCard;
+
           for (const input of tentativeInputs) {
-            for (const { producer, output, quantity } of input.consumeFrom) {
-              output.consumedBy.push({ id: current.deck.id, quantity });
-              inputs.push({ cardId: producer.id, resource: output.resource, quantity });
+            for (const { flow, output, quantity } of input.consumeFrom) {
+              output.consumedBy.push({ id: currentId, quantity });
+              inputs.push({ cardId: flow.source, resource: output.resource, quantity });
             }
           }
           break;
         }
         case "source": {
-          if (!sourceIsProducing({ card: current.card, field: current.field }, geography))
+          if (!sourceIsProducing({ card: currentCard, field: currentField }, geography)) {
             continue nextCard;
+          }
           break;
         }
+        case "residential":
+        case "trade":
+          continue nextCard;
         default:
-          current.card satisfies never;
+          currentCard satisfies never;
           throw new Error("Unreachable");
       }
-      cardProduction[current.deck.id] = {
+      cardProduction[currentId] = {
         inputs,
-        outputs: current.card.outputs.map((output) => ({ ...output, consumedBy: [] })),
+        outputs: currentCard.outputs.map((output) => ({ ...output, consumedBy: [] })),
       };
     }
 

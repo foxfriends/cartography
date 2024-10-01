@@ -1,5 +1,3 @@
-import { nearestEdgeDistance } from "$lib/algorithm/nearestEdge";
-import { rangeInclusive } from "$lib/algorithm/range";
 import type { CardId } from "./Card";
 
 export interface FieldCard {
@@ -10,7 +8,7 @@ export interface FieldCard {
 }
 export type Field = FieldCard[];
 
-export function indexById(field: Field): Map<string, FieldCard> {
+export function indexById(field: Field): Map<CardId, FieldCard> {
   return new Map(field.map((card) => [card.id, card]));
 }
 
@@ -25,17 +23,4 @@ export function indexByPosition(field: Field) {
       return index[y]?.[x];
     },
   };
-}
-
-const TRANSPORTATION_RANGE = 2;
-export function isInRange(lhs: FieldCard, rhs: FieldCard) {
-  return nearestEdgeDistance(lhs, rhs) <= TRANSPORTATION_RANGE;
-}
-
-export function* coordinatesInRange({ x, y }: FieldCard): Generator<[x: number, y: number]> {
-  for (const yy of rangeInclusive(y - TRANSPORTATION_RANGE, y + TRANSPORTATION_RANGE)) {
-    for (const xx of rangeInclusive(x - TRANSPORTATION_RANGE, x + TRANSPORTATION_RANGE)) {
-      yield [xx, yy];
-    }
-  }
 }
