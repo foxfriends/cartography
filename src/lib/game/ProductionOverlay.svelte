@@ -136,14 +136,14 @@
     }
 
     &.output::after {
-      --pulse-color: var(--color-terrain);
-      background-color: var(--color-terrain);
+      --pulse-color: var(--color-output);
+      background-color: var(--color-output);
       animation: pulse 1s ease-out infinite;
     }
 
     &.input::after {
-      --pulse-color: var(--color-resource);
-      background-color: var(--color-resource);
+      --pulse-color: var(--color-input);
+      background-color: var(--color-input);
       animation: pulse 1s infinite ease-out reverse;
     }
   }

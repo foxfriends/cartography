@@ -33,6 +33,7 @@
   let aboutIncome: TutorialDialogComponent | undefined = $state();
   let aboutPacks: TutorialDialogComponent | undefined = $state();
   let aboutShop: TutorialDialogComponent | undefined = $state();
+  let aboutFlow: TutorialDialogComponent | undefined = $state();
   let complete: TutorialDialogComponent | undefined = $state();
 
   type Step =
@@ -184,6 +185,9 @@
     ) {
       window.setTimeout(() => aboutIncome!.show(), 500);
     }
+    if (step === "produce-bread" && deck.find((d) => d.id === card.id)?.type === "flour-mill") {
+      window.setTimeout(() => aboutFlow!.show(), 500);
+    }
   }
 </script>
 
@@ -191,7 +195,7 @@
 
 <TutorialDialog bind:this={intro} onDismiss={introReward}>
   <p>
-    Hello Mayor, and welcome to the location of our new Town! All of us are just getting started
+    Hello mayor, and welcome to the location of our new town! All of us are just getting started
     here ourselves. We haven't even placed a single card yet!
   </p>
   <p>
@@ -313,12 +317,12 @@
   <p>
     This is a world of production and trade, so all resources are reported in a rate of
     <strong>production per day</strong>. Other than <MoneyRef />, there's not much point in
-    stockpiling any resources. Instead, and the end of each day, any excess resources we haven't
-    used get exported via the <CardRef id="trading-centre" />.
+    stockpiling any resources. Instead, at the end of each day, any excess resources we haven't used
+    get exported via the <CardRef id="trading-centre" />.
   </p>
   <p>
     The <CardRef id="wheat-farm" /> produces 4 <ResourceRef id="wheat" /> per day, but a unit of
-    <ResourceRef id="wheat" /> is worth just 1 <MoneyRef /> when exported. The
+    <ResourceRef id="wheat" /> is worth just <MoneyRef amount={1} /> when exported. The
     <ResourceRef id="water" /> on the other hand isn't even worth selling. Unused resources aren't worth
     much!
   </p>
@@ -363,9 +367,33 @@
   {/snippet}
 </TutorialDialog>
 
+<TutorialDialog bind:this={aboutFlow}>
+  <p>
+    There's just one last step: to set up the transportation of resources from where they are
+    produced, to where they will be consumed. As the mayor, you're responsible for determining all
+    of what goes where and how it gets there.
+  </p>
+  <p>
+    In general, it's hard to move things long distances by hand in one day. One or two tiles is
+    totally fine, but beyond that you'll be losing about 25% of the total throughput per tile. Any
+    more than 5 tiles is too far for things to be carried by hand in a day at all, though you might
+    be able find cards for useful tools to help with that type of thing later on.
+  </p>
+  <p class="info">Enter Flow mode and drag connections from producers to consumers.</p>
+
+  {#snippet actions(dismiss)}
+    <button onclick={dismiss}>Cool!</button>
+  {/snippet}
+</TutorialDialog>
+
 <TutorialDialog bind:this={complete}>
   <p>
     That's it, the <CardRef id="bakery" /> is finally able to make its <ResourceRef id="bread" />!
+    You don't have to set up connections for residents finding and consuming their needs, or for
+    resources to be exported, that all happens automatically, so you'll find that already your
+    expected profits for tomorrow are looking quite healthy!
+  </p>
+  <p>
     You'll be on your own from here on out. I look forward to seeing where you take the town, and
     meeting all the people who will eventually move in! Good luck, and I hope you have fun!
   </p>
