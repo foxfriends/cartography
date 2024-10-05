@@ -6,14 +6,17 @@ fix: fmt (lint "fix")
 dev:
     npx vite dev
 
+app:
+    npx tauri dev
+
 build:
     npx vite build
 
+build-app:
+    npx tauri build
+
 clean:  
     rm -rf .svelte-kit build .eslintcache 
-
-preview:
-    npx vite preview
 
 check:
     npx svelte-kit sync
@@ -35,4 +38,3 @@ fmt:
 
 test:
     npm test
-
