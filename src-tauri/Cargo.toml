@@ -1,12 +1,12 @@
 [package]
-name = "app"
+name = "cartography"
 version = "0.1.0"
 description = "A Tauri App"
-authors = ["you"]
+authors = ["Cameron Eldridge <cam.eldridge@gmail.com>"]
 license = ""
-repository = ""
+repository = "https://github.com/foxfriends/cartography.git"
 edition = "2021"
-rust-version = "1.71"
+rust-version = "1.79"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
