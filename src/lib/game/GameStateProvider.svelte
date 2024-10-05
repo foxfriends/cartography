@@ -5,6 +5,8 @@
   import type { Deck, DeckCard } from "$lib/engine/DeckCard";
   import type { Field } from "$lib/engine/FieldCard";
   import type { Pack } from "$lib/engine/Pack";
+  import { createCitizen, type Citizen } from "$lib/engine/Citizen";
+  import type { Employment } from "$lib/engine/Employment";
   import type { Flow } from "$lib/engine/Flow";
   import { cards } from "$lib/data/cards";
   import type { BuyPackEvent } from "$lib/events/BuyPackEvent";
@@ -20,6 +22,8 @@
   interface GameState {
     readonly deck: Deck;
     readonly geography: Geography;
+    readonly citizens: Citizen[];
+    readonly employment: Employment[];
     readonly field: Field;
     readonly flow: Flow[];
     readonly shop: Shop;
@@ -126,15 +130,17 @@
 
   let deck: Deck = $state([]);
   let field: Field = $state([]);
-  let money: number = $state(0);
+  let citizens: Citizen[] = $state([]);
+  let employment: Employment[] = $state([]);
   let shop: Shop = $state({ packs: [] });
   let flow: Flow[] = $state([]);
+  let money: number = $state(0);
 
   $effect.pre(() => {
     const storedState = window.localStorage.getItem("game_state");
     if (!storedState) return;
     try {
-      ({ field, deck, flow, shop, money } = JSON.parse(storedState));
+      ({ field, deck, flow, citizens, employment, shop, money } = JSON.parse(storedState));
     } catch {
       /* empty */
     }
@@ -156,6 +162,12 @@
     get flow() {
       return flow;
     },
+    get citizens() {
+      return citizens;
+    },
+    get employment() {
+      return employment;
+    },
     get money() {
       return money;
     },
@@ -165,10 +177,25 @@
   } satisfies GameState);
 
   $effect(() => {
-    window.localStorage.setItem("game_state", JSON.stringify({ field, deck, flow, shop, money }));
+    window.localStorage.setItem(
+      "game_state",
+      JSON.stringify({ field, deck, flow, citizens, employment, shop, money }),
+    );
   });
 
   function oncardsreceived(event: CardsReceivedEvent) {
+    for (const { id, type } of event.cards) {
+      const card = cards[type];
+      if (card.category === "residential") {
+        for (const population of card.population) {
+          citizens.push(
+            ...Array.from({ length: population.quantity }, () =>
+              createCitizen(id, population.species),
+            ),
+          );
+        }
+      }
+    }
     deck.push(...event.cards);
   }
 
