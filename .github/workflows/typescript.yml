@@ -16,6 +16,7 @@ jobs:
         run: npm ci
       - name: Run fmt
         run: npx prettier . --check
+
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -30,6 +31,7 @@ jobs:
         run: npm ci
       - name: Run lint
         run: npx eslint . --max-warnings 0
+
   check:
     runs-on: ubuntu-latest
     steps:
@@ -47,6 +49,7 @@ jobs:
           set -e
           npx svelte-kit sync
           npx svelte-check --tsconfig ./tsconfig.json
+
   build:
     runs-on: ubuntu-latest
     steps:
