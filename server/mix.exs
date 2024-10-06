@@ -24,6 +24,8 @@ defmodule Cartography.MixProject do
     [
       {:bandit, "~> 1.0"},
       {:websock_adapter, "~> 0.5"},
+      {:ecto_sql, "~> 3.0"},
+      {:postgrex, ">= 0.0.0"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev], runtime: false}
     ]

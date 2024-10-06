@@ -32,58 +32,10 @@ COMMENT ON EXTENSION citext IS 'data type for case-insensitive character strings
 
 
 --
--- Name: card_archetype; Type: TYPE; Schema: public; Owner: -
---
-
-CREATE TYPE public.card_archetype AS ENUM (
-    'residential',
-    'production',
-    'source',
-    'trade'
-);
-
-
---
 -- Name: card_category; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.card_category AS ENUM (
-    'residential',
-    'production',
-    'source',
-    'trade'
-);
-
-
---
--- Name: card_class; Type: TYPE; Schema: public; Owner: -
---
-
-CREATE TYPE public.card_class AS ENUM (
-    'residential',
-    'production',
-    'source',
-    'trade'
-);
-
-
---
--- Name: card_placement; Type: TYPE; Schema: public; Owner: -
---
-
-CREATE TYPE public.card_placement AS ENUM (
-    'residential',
-    'production',
-    'source',
-    'trade'
-);
-
-
---
--- Name: card_type; Type: TYPE; Schema: public; Owner: -
---
-
-CREATE TYPE public.card_type AS ENUM (
     'residential',
     'production',
     'source',

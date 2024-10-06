@@ -3,29 +3,37 @@ set quiet
 default: dev
 fix: fmt (lint "fix")
 
-assert_env := `test -f .env`
-
 export CONCURRENTLY_KILL_OTHERS := "true"
 export CONCURRENTLY_PAD_PREFIX := "true"
 export CONCURRENTLY_PREFIX_COLORS := "auto"
 
-export DATABASE_URL := `rg '^DATABASE_URL="?([^"]*)"?$' -r '$1' .env`
-export SHADOW_DATABASE_URL := `rg '^SHADOW_DATABASE_URL="?([^"]*)"?$' -r '$1' .env`
-export ROOT_DATABASE_URL := `rg '^ROOT_DATABASE_URL="?([^"]*)"?$' -r '$1' .env`
+export DATABASE_URL := `if [ -f .env ]; then rg '^DATABASE_URL="?([^"]*)"?$' -r '$1' .env; fi`
+export SHADOW_DATABASE_URL := `if [ -f .env ]; then rg '^SHADOW_DATABASE_URL="?([^"]*)"?$' -r '$1' .env; fi`
+export ROOT_DATABASE_URL := `if [ -f .env ]; then rg '^ROOT_DATABASE_URL="?([^"]*)"?$' -r '$1' .env; fi`
 
-database_name := file_stem(DATABASE_URL)
-shadow_database_name := file_stem(SHADOW_DATABASE_URL)
+database_name := if DATABASE_URL != "" { file_stem(DATABASE_URL) } else { "" }
+shadow_database_name := if SHADOW_DATABASE_URL != "" { file_stem(SHADOW_DATABASE_URL) } else { "" }
 
 dev: up
-    npx concurrently --names "sveltekit,migrate" \
-        "npx vite dev" \
-        "npx graphile-migrate watch"
-
-app: up
-    npx concurrently --names "sveltekit,migrate,tauri" \
+    npx concurrently --names "sveltekit,migrate,server" \
         "npx vite dev" \
         "npx graphile-migrate watch" \
+        "cd server && mix run --no-halt"
+
+app: up
+    npx concurrently --names "sveltekit,migrate,server,tauri" \
+        "npx vite dev" \
+        "npx graphile-migrate watch" \
+        "cd server && mix run" \
         "npx tauri dev"
+
+init: && get up
+    cp .env.example .env.local
+    if [ ! -f .env ]; then ln -s .env.local .env; fi
+
+get:
+    npm install
+    cd server && mix deps.get
 
 up: && migrate
     docker compose up -d --wait
@@ -77,3 +85,7 @@ migrate:
 migration:
     npx prettier migrations -w
     npx graphile-migrate commit
+
+[confirm]
+reset:
+    npx graphile-migrate reset --erase
