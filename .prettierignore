@@ -17,3 +17,6 @@ yarn.lock
 
 /migrations/committed
 /generated
+
+/server/deps
+/server/_build

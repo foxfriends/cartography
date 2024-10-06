@@ -4,6 +4,8 @@ on: push
 jobs:
   status:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost/cartography
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -30,7 +32,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:45432/cartography
+      DATABASE_URL: postgresql://postgres:postgres@localhost/cartography
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

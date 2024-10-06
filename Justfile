@@ -58,12 +58,18 @@ watch:
 
 lint mode="check":
     npx eslint . {{ if mode == "fix" { "--fix" } else { "--cache" } }}
+    cd server && mix credo
+    cd src-tauri && cargo clippy
 
 fmt:
     npx prettier --write . --cache
+    cd src-tauri && cargo fmt
+    cd server && mix format
 
 test:
     npm test
+    cd server && mix test
+    cd src-tauri && cargo test
 
 migrate:
     npx graphile-migrate migrate
