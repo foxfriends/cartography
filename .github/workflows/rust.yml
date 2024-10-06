@@ -7,6 +7,19 @@ jobs:
     steps:
       - name: Checkout the source code
         uses: actions/checkout@v4
+      - name: Dependencies
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: >-
+            libwebkit2gtk-4.1-dev
+            build-essential
+            curl
+            wget
+            file
+            libxdo-dev
+            libssl-dev
+            libayatana-appindicator3-dev
+            librsvg2-dev
       - uses: actions/cache@v4
         with:
           path: |
