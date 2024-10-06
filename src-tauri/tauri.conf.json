@@ -5,9 +5,7 @@
   "identifier": "com.cameldridge.cartography",
   "build": {
     "frontendDist": "../build",
-    "devUrl": "http://localhost:5173",
-    "beforeDevCommand": "just dev",
-    "beforeBuildCommand": "just build"
+    "devUrl": "http://localhost:5173"
   },
   "app": {
     "windows": [
