@@ -2,7 +2,12 @@
   "pgSettings": {},
   "placeholders": {},
   "afterReset": [],
-  "afterAllMigrations": [],
+  "afterAllMigrations": [
+    {
+      "_": "command",
+      "command": "pg_dump --no-sync --schema-only --no-owner --exclude-schema=graphile_migrate --file generated/schema.sql \"$GM_DBURL\""
+    }
+  ],
   "afterCurrent": [],
   "//generatedWith": "1.4.1"
 }

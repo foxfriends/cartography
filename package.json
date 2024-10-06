@@ -21,6 +21,7 @@
     "globstar": "^1.0.0",
     "graphile-migrate": "^1.4.1",
     "prettier": "^3.3.3",
+    "prettier-plugin-sql": "^0.18.1",
     "prettier-plugin-svelte": "^3.2.7",
     "svelte": "^5.0.0-next.260",
     "svelte-check": "^4.0.4",

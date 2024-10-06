@@ -27,7 +27,7 @@ app: up
         "npx graphile-migrate watch" \
         "npx tauri dev"
 
-up:
+up: && migrate
     docker compose up -d --wait
     docker compose exec postgres psql {{DATABASE_URL}} -c "" || docker compose exec postgres psql {{ROOT_DATABASE_URL}} -c 'CREATE DATABASE {{database_name}}'
     docker compose exec postgres psql {{SHADOW_DATABASE_URL}} -c "" || docker compose exec postgres psql {{ROOT_DATABASE_URL}} -c 'CREATE DATABASE {{shadow_database_name}}'
@@ -68,4 +68,5 @@ migrate:
     npx graphile-migrate migrate
 
 migration:
+    npx prettier migrations -w
     npx graphile-migrate commit

@@ -95,7 +95,7 @@ export default tsEslint.config(
       "!**/.env.example",
       "**/package-lock.json",
       "src-tauri/target",
-      "vite.config.ts.timestamp-*"
+      "vite.config.ts.timestamp-*",
     ],
   },
 );

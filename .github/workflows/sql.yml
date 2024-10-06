@@ -1,0 +1,45 @@
+name: SQL CI
+on: push
+
+jobs:
+  status:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          cache: npm
+          node-version-file: .node-version
+      - name: Install node_modules
+        run: npm ci
+      - name: Run status
+        run: npx graphile-migrate status --skipDatabase
+
+  migrate:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:45432/cartography
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          cache: npm
+          node-version-file: .node-version
+      - name: Install node_modules
+        run: npm ci
+      - name: Run migrate
+        run: npx graphile-migrate migrate
