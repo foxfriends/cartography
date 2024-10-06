@@ -1,11 +1,14 @@
 name: SQL CI
 on: push
 
+env:
+  DATABASE_URL: postgresql://postgres:postgres@localhost/cartography
+  SHADOW_DATABASE_URL: postgresql://postgres:postgres@localhost/shadow
+  ROOT_DATABASE_URL: postgresql://postgres:postgres@localhost/postgres
+
 jobs:
   status:
     runs-on: ubuntu-latest
-    env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost/cartography
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -31,8 +34,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-    env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost/cartography
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
