@@ -41,9 +41,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Dependencies
-        uses: awalsh128/cache-apt-pkgs-action@latest
-        with:
-          packages: postgresql-client-17
+        run: |
+          sudo apt install -y postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
+          sudo apt install -y postgresql-client-17
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
