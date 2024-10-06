@@ -42,9 +42,9 @@ jobs:
         uses: actions/checkout@v4
       - name: Dependencies
         run: |
-          sudo apt install -y postgresql-common
-          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
-          sudo apt install -y postgresql-client-17
+          sudo apt-get install -y postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -y postgresql-client-17
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
