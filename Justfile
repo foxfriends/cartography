@@ -72,7 +72,7 @@ test:
     cd src-tauri && cargo test
 
 migrate:
-    npx graphile-migrate migrate
+    npx graphile-migrate migrate --forceActions
 
 migration:
     npx prettier migrations -w
