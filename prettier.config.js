@@ -7,6 +7,6 @@ export default {
   overrides: [
     { files: "*.svelte", options: { parser: "svelte" } },
     { files: ".gmrc", options: { parser: "json" } },
-    { files: "*.sql", options: { parser: "sql" } },
+    { files: "*.sql", options: { parser: "sql", language: "postgresql" } },
   ],
 };

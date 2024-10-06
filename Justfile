@@ -50,6 +50,7 @@ clean:
 check:
     npx svelte-kit sync
     npx svelte-check --tsconfig ./tsconfig.json
+    npx graphile-migrate status
 
 watch:
     npx svelte-kit sync

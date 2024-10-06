@@ -16,3 +16,4 @@ yarn.lock
 /src-tauri/gen/schemas
 
 /migrations/committed
+/generated
