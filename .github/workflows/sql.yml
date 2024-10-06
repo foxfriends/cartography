@@ -2,9 +2,9 @@ name: SQL CI
 on: push
 
 env:
-  DATABASE_URL: postgresql://postgres:postgres@postgres/cartography
-  SHADOW_DATABASE_URL: postgresql://postgres:postgres@postgres/shadow
-  ROOT_DATABASE_URL: postgresql://postgres:postgres@postgres/postgres
+  DATABASE_URL: postgresql://postgres:postgres@localhost/cartography
+  SHADOW_DATABASE_URL: postgresql://postgres:postgres@localhost/shadow
+  ROOT_DATABASE_URL: postgresql://postgres:postgres@localhost/postgres
 
 jobs:
   status:
@@ -30,6 +30,8 @@ jobs:
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: cartography
+        ports:
+          - 5432:5432
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
