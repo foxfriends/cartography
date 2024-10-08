@@ -59,6 +59,8 @@ check:
     npx svelte-kit sync
     npx svelte-check --tsconfig ./tsconfig.json
     npx graphile-migrate status
+    cd src-tauri && cargo check
+    cd server && mix dialyzer
 
 watch:
     npx svelte-kit sync

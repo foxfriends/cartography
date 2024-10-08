@@ -6,6 +6,7 @@ defmodule Cartography.Application do
   @impl true
   def start(_type, _args) do
     children = [
+      Cartography.Repo,
       {Bandit,
        plug: Cartography.Router,
        ip: Application.fetch_env!(:cartography, :host),

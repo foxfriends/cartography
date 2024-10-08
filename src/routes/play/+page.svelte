@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SocketProvider from "$lib/appserver/SocketProvider.svelte";
   import AppStateProvider from "$lib/game/AppStateProvider.svelte";
   import GameStateProvider from "$lib/game/GameStateProvider.svelte";
   import ResourceStateProvider from "$lib/game/ResourceStateProvider.svelte";
@@ -8,19 +9,21 @@
 </script>
 
 <div role="application">
-  <AppStateProvider>
-    <GameStateProvider>
-      <ResourceStateProvider>
-        <main>
-          <GameWindow />
-        </main>
-        <div class="hud">
-          <Hud />
-        </div>
-        <Tutorial />
-      </ResourceStateProvider>
-    </GameStateProvider>
-  </AppStateProvider>
+  <SocketProvider>
+    <AppStateProvider>
+      <GameStateProvider>
+        <ResourceStateProvider>
+          <main>
+            <GameWindow />
+          </main>
+          <div class="hud">
+            <Hud />
+          </div>
+          <Tutorial />
+        </ResourceStateProvider>
+      </GameStateProvider>
+    </AppStateProvider>
+  </SocketProvider>
 </div>
 
 <style>
