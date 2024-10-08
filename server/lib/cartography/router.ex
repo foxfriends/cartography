@@ -5,27 +5,31 @@ defmodule Cartography.Router do
   plug(:match)
   plug(:dispatch)
 
-  def accept_only([], _), do: :unknown
-  def accept_only([protocol | _], protocol), do: {:ok, protocol}
-  def accept_only([_ | protocols], protocol), do: accept_only(protocols, protocol)
+  def accept_only(_, []), do: :unknown
+  def accept_only(protocol, [protocol | _]), do: {:ok, protocol}
+  def accept_only(protocol, [_ | protocols]), do: accept_only(protocol, protocols)
 
-  def accept(_, []), do: :unknown
+  def accept([], _), do: :unknown
 
-  def accept(protocols, [protocol | non_preferred]) do
-    case accept_only(protocols, protocol) do
-      :unknown -> accept(protocols, non_preferred)
+  def accept([preferred | rest], supported) do
+    case accept_only(preferred, supported) do
+      :unknown -> accept(rest, supported)
       {:ok, protocol} -> {:ok, protocol}
     end
   end
 
   def negotiate_protocol(conn) do
-    conn |> get_req_header("sec-websocket-protocol") |> accept(["cartography-v1"])
+    conn |> get_req_header("sec-websocket-protocol") |> accept(["v1.cartography.app"])
   end
 
-  def upgrade(conn) do
+  def upgrade(conn, "v1.cartography.app"),
+    do: WebSockAdapter.upgrade(conn, Cartography.Socket, [], timeout: 60_000)
+
+  def negotiate_upgrade(conn) do
     case negotiate_protocol(conn) do
-      {:ok, "cartography-v1"} ->
-        WebSockAdapter.upgrade(conn, Cartography.Socket, [], timeout: 60_000)
+      {:ok, protocol} ->
+        put_resp_header(conn, "sec-websocket-protocol", protocol)
+        |> upgrade(protocol)
 
       :unknown ->
         send_resp(conn, 400, "No supported protocol requested")
@@ -34,7 +38,7 @@ defmodule Cartography.Router do
 
   get "/websocket" do
     conn
-    |> upgrade()
+    |> negotiate_upgrade()
     |> halt()
   end
 
