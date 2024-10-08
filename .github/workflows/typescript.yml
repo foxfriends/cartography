@@ -1,6 +1,10 @@
 name: TypeScript CI
 on: push
 
+env:
+  PUBLIC_SERVER_URL: "http://localhost:4000"
+  PUBLIC_SERVER_WS_URL: "ws://localhost:4000"
+
 jobs:
   fmt:
     runs-on: ubuntu-latest
