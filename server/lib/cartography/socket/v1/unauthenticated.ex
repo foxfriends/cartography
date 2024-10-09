@@ -3,7 +3,7 @@ defmodule Cartography.Socket.V1.Unauthenticated do
   Unauthenticated state handlers for V1 socket protocol.
   """
 
-  def handle_json(%{"type" => "auth", "id" => id}, state)
+  def handle_message("auth", %{"id" => id}, state)
       when is_binary(id) do
     with {:ok, _} <- Cartography.Repo.insert(%Cartography.Account{id: id}, on_conflict: :nothing),
          %Cartography.Account{id: id} <- Cartography.Repo.get!(Cartography.Account, id),

@@ -4,7 +4,7 @@ defmodule Cartography.Socket.V1 do
   """
 
   use Cartography.JsonWebSocket
-  alias Cartography.Socket.V1.{State, Unauthenticated, Authenticated}
+  alias Cartography.Socket.V1.{Authenticated, State, Unauthenticated}
 
   @impl WebSock
   def init(_) do
@@ -16,10 +16,14 @@ defmodule Cartography.Socket.V1 do
     {:ok, state}
   end
 
-  @impl Cartography.JsonWebSocket
-  def handle_json(message, %{account_id: nil} = state),
-    do: Unauthenticated.handle_json(message, state)
+  def handle_message(type, data, %{account_id: nil} = state),
+    do: Unauthenticated.handle_message(type, data, state)
 
-  def handle_json(message, state),
-    do: Authenticated.handle_json(message, state)
+  def handle_message(type, data, state),
+    do: Authenticated.handle_message(type, data, state)
+
+  @impl Cartography.JsonWebSocket
+  def handle_json(%{"type" => type, "data" => data}, state) do
+    handle_message(type, data, state)
+  end
 end
