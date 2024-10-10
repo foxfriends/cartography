@@ -47,6 +47,7 @@ stop:
     docker compose stop
 
 build:
+    npx svelte-kit sync
     npx vite build
 
 build-app:
