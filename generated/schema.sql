@@ -43,6 +43,28 @@ CREATE TYPE public.card_category AS ENUM (
 );
 
 
+--
+-- Name: current_account_id(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.current_account_id() RETURNS character varying
+    LANGUAGE sql STABLE
+    AS $$
+  SELECT cast(nullif(current_setting('current_account_id'), '') AS VARCHAR(32));
+$$;
+
+
+--
+-- Name: is_current_account_id(character varying); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.is_current_account_id(account_id character varying) RETURNS boolean
+    LANGUAGE sql STABLE
+    AS $$
+  SELECT current_account_id() IS NULL OR current_account_id() = account_id;
+$$;
+
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -69,7 +91,7 @@ COMMENT ON TABLE public.accounts IS 'Player/user accounts. Represents one person
 
 CREATE TABLE public.card_accounts (
     card_id bigint NOT NULL,
-    account_id public.citext NOT NULL
+    account_id character varying(32) NOT NULL
 );
 
 
@@ -136,7 +158,7 @@ ALTER TABLE public.cards ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 
 CREATE TABLE public.field_cards (
     card_id bigint NOT NULL,
-    account_id public.citext NOT NULL,
+    account_id character varying(32) NOT NULL,
     field_id bigint NOT NULL,
     grid_x integer NOT NULL,
     grid_y integer NOT NULL
@@ -157,7 +179,7 @@ COMMENT ON TABLE public.field_cards IS 'Tracks the location of cards placed into
 CREATE TABLE public.fields (
     id bigint NOT NULL,
     name character varying(64) DEFAULT ''::character varying NOT NULL,
-    account_id public.citext NOT NULL,
+    account_id character varying(32) NOT NULL,
     grid_x integer NOT NULL,
     grid_y integer NOT NULL,
     width integer GENERATED ALWAYS AS (8) STORED NOT NULL,
@@ -358,6 +380,33 @@ ALTER TABLE ONLY public.field_cards
 
 ALTER TABLE ONLY public.fields
     ADD CONSTRAINT fields_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.accounts(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: field_cards; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.field_cards ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: field_cards field_cards_account_id; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY field_cards_account_id ON public.field_cards FOR SELECT USING (true);
+
+
+--
+-- Name: field_cards field_cards_owner_write; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY field_cards_owner_write ON public.field_cards FOR SELECT USING (public.is_current_account_id(account_id));
+
+
+--
+-- Name: field_cards field_cards_public_read; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY field_cards_public_read ON public.field_cards FOR SELECT USING (true);
 
 
 --

@@ -3,7 +3,7 @@ defmodule Cartography.Socket.V1 do
   WebSocket handler for all game clients.
   """
 
-  use Cartography.JsonWebSocket
+  use JsonWebSocket
   alias Cartography.Socket.V1.{Authenticated, State, Unauthenticated}
 
   @impl WebSock
@@ -22,7 +22,7 @@ defmodule Cartography.Socket.V1 do
   def handle_message(type, data, state),
     do: Authenticated.handle_message(type, data, state)
 
-  @impl Cartography.JsonWebSocket
+  @impl JsonWebSocket
   def handle_json(%{"type" => type, "data" => data}, state) do
     handle_message(type, data, state)
   end

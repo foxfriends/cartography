@@ -1,9 +1,9 @@
-defmodule Cartography.JsonWebSocket do
+defmodule JsonWebSocket do
   @moduledoc """
   JSON specialized WebSocket handler behaviour and helpers.
 
   This will set `@behaviour WebSock` and implement most of the required callbacks, while
-  also setting `@behaviour Cartography.JsonWebSocket` to require additional callbacks
+  also setting `@behaviour JsonWebSocket` to require additional callbacks
   specialized for handling JSON messages.
   """
 
@@ -47,13 +47,13 @@ defmodule Cartography.JsonWebSocket do
   defmacro __using__(_) do
     quote do
       @behaviour WebSock
-      @behaviour Cartography.JsonWebSocket
+      @behaviour JsonWebSocket
 
       def handle_in({text, [opcode: :text]}, state) do
         case Jason.decode(text) do
           {:ok, data} ->
             handle_json(data, state)
-            |> Cartography.JsonWebSocket.encode_json()
+            |> JsonWebSocket.encode_json()
 
           {:error, error} ->
             {:stop, error, 4000, state}
