@@ -2,6 +2,7 @@ defmodule Cartography.Field do
   use Ecto.Schema
 
   @primary_key false
+  @derive Jason.Encoder
 
   schema "fields" do
     field(:id, :integer, primary_key: true)

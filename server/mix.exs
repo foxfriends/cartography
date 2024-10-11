@@ -7,6 +7,7 @@ defmodule Cartography.MixProject do
       version: "0.1.0",
       elixir: "~> 1.17",
       start_permanent: Mix.env() == :prod,
+      consolidate_protocols: Mix.env() == :prod,
       deps: deps()
     ]
   end
@@ -27,8 +28,8 @@ defmodule Cartography.MixProject do
       {:ecto_sql, "~> 3.0"},
       {:postgrex, ">= 0.0.0"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
-      {:lettuce, "~> 0.2", only: [:dev]}
+      {:dialyxir, "~> 1.4", only: [:dev], runtime: false}
+      # {:lettuce, "~> 0.2", only: [:dev]}
     ]
   end
 end
