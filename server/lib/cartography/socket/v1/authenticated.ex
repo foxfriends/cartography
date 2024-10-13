@@ -8,7 +8,7 @@ defmodule Cartography.Socket.V1.Authenticated do
         %{"card_id" => _card_id, "field_id" => _field_id, "x" => _x, "y" => _y},
         %{account_id: account_id} = state
       ) do
-    Cartography.Repo.as_account_id(account_id, fn ->
+    Cartography.Database.as_account_id!(account_id, fn ->
       {:ok, state}
     end)
   end

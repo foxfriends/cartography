@@ -3,10 +3,26 @@ defmodule Cartography.Application do
 
   use Application
 
+  defp parse_connection_url(url) do
+    info = URI.parse(url)
+    destructure([username, password], String.split(info.userinfo, ":"))
+    "/" <> database = info.path
+
+    [
+      username: username,
+      password: password,
+      database: database,
+      hostname: info.host,
+      port: info.port
+    ]
+  end
+
   @impl true
   def start(_type, _args) do
+    connection = parse_connection_url(Application.fetch_env!(:cartography, :database_url))
+
     children = [
-      Cartography.Repo,
+      {Cartography.Database, connection},
       {Bandit,
        plug: Cartography.Router,
        ip: Application.fetch_env!(:cartography, :host),

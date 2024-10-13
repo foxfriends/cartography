@@ -3,10 +3,18 @@ defmodule Cartography.Socket.V1.Unauthenticated do
   Unauthenticated state handlers for V1 socket protocol.
   """
 
+  import Sql
+
   def handle_message("auth", %{"id" => id}, state)
       when is_binary(id) do
-    with {:ok, _} <- Cartography.Repo.insert(%Cartography.Account{id: id}, on_conflict: :nothing),
-         %Cartography.Account{id: id} <- Cartography.Repo.get!(Cartography.Account, id),
-         do: {:push, {:json, %{id: id}}, %{state | account_id: id}}
+    account =
+      with nil <-
+             Cartography.Database.one!(
+               ~q"INSERT INTO accounts (id) VALUES (#{id}) ON CONFLICT DO NOTHING RETURNING *"
+             ) do
+        Cartography.Database.one!(~q"SELECT * FROM accounts WHERE id = #{id}")
+      end
+
+    {:push, {:json, %{id: account.id}}, %{state | account_id: account.id}}
   end
 end

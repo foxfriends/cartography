@@ -23,9 +23,8 @@ defmodule Cartography.MixProject do
   defp deps do
     [
       {:bandit, "~> 1.0"},
+      {:postgrex, ">= 0.19.1"},
       {:websock_adapter, "~> 0.5"},
-      {:ecto_sql, "~> 3.0"},
-      {:postgrex, ">= 0.0.0"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
       {:lettuce, "~> 0.2", only: [:dev]}
