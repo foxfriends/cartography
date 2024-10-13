@@ -27,9 +27,10 @@ app: up
         "cd server && mix run" \
         "npx tauri dev"
 
-init: && get up
+init: get
     cp .env.example .env.local
     if [ ! -f .env ]; then ln -s .env.local .env; fi
+    just up
 
 get:
     npm install

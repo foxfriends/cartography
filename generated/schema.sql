@@ -3,7 +3,7 @@
 --
 
 -- Dumped from database version 17.0 (Debian 17.0-1.pgdg120+1)
--- Dumped by pg_dump version 17.0 (Ubuntu 17.0-1.pgdg24.04+1)
+-- Dumped by pg_dump version 17.0 (Debian 17.0-1.pgdg120+1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -387,13 +387,6 @@ ALTER TABLE ONLY public.fields
 --
 
 ALTER TABLE public.field_cards ENABLE ROW LEVEL SECURITY;
-
---
--- Name: field_cards field_cards_account_id; Type: POLICY; Schema: public; Owner: -
---
-
-CREATE POLICY field_cards_account_id ON public.field_cards FOR SELECT USING (true);
-
 
 --
 -- Name: field_cards field_cards_owner_write; Type: POLICY; Schema: public; Owner: -
