@@ -47,7 +47,7 @@ defmodule Cartography.Database do
   end
 
   def one!(sql) do
-    case IO.inspect(query!(sql)) do
+    case query!(sql) do
       %{rows: []} -> nil
       %{rows: [row]} -> row
       _ -> raise "one! multiple rows returned by query"
