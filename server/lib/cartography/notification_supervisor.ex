@@ -9,12 +9,12 @@ defmodule Cartography.NotificationSupervisor do
     DynamicSupervisor.start_link(__MODULE__, [], name: __MODULE__)
   end
 
-  def start_child(child_spec) do
-    opts = [
-      name: {:via, Registry, {Cartography.NotificationRegistry, child_spec.name}}
+  def start_listener(child, init, opts) do
+    defaults = [
+      name: {:via, Registry, {Cartography.NotificationRegistry, {self(), opts[:name]}}}
     ]
 
-    DynamicSupervisor.start_child(__MODULE__, Keyword.merge(opts, child_spec))
+    DynamicSupervisor.start_child(__MODULE__, {child, [init, Keyword.merge(defaults, opts)]})
   end
 
   @impl DynamicSupervisor

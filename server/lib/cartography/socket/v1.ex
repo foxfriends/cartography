@@ -20,11 +20,6 @@ defmodule Cartography.Socket.V1 do
     {:ok, %State{}}
   end
 
-  @impl WebSock
-  def handle_info(_, state) do
-    {:ok, state}
-  end
-
   def handle_message(type, data, id, %{account_id: nil} = state),
     do: Unauthenticated.handle_message(type, data, id, state)
 
@@ -34,5 +29,15 @@ defmodule Cartography.Socket.V1 do
   @impl JsonWebSocket
   def handle_json(%{"type" => type, "data" => data, "id" => id}, state) do
     handle_message(type, data, id, state)
+  end
+
+  @impl WebSock
+  def handle_info({:push, messages}, state) do
+    {:push, messages, state}
+  end
+
+  @impl WebSock
+  def handle_info(_, state) do
+    {:ok, state}
   end
 end

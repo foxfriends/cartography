@@ -7,8 +7,10 @@ defmodule Cartography.Socket.V1.Authenticated do
   alias Cartography.Socket.V1.Message
 
   def handle_message("watch_fields", %{}, message_id, state) do
-    Cartography.NotificationSupervisor.start_child(
-      {FieldsListener, account_id: state.account_id, name: {self(), message_id}}
+    Cartography.NotificationSupervisor.start_listener(
+      FieldsListener,
+      [account_id: state.account_id],
+      name: message_id
     )
 
     {:ok, state}
