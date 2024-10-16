@@ -24,7 +24,7 @@ BEGIN
     ELSE
       CONTINUE;
     END IF;
-     IF v_attribute IS NOT NULL THEN
+    IF v_attribute IS NOT NULL THEN
       EXECUTE 'select $1.' || quote_ident(v_attribute) || ', $1.' || quote_ident(v_id)
         USING v_record
         INTO v_sub, v_target;

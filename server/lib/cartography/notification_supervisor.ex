@@ -17,6 +17,13 @@ defmodule Cartography.NotificationSupervisor do
     DynamicSupervisor.start_child(__MODULE__, {child, [init, Keyword.merge(defaults, opts)]})
   end
 
+  def stop_listener(name) do
+    case Registry.lookup(Cartography.NotificationRegistry, {self(), name}) do
+      [{pid, _}] -> DynamicSupervisor.terminate_child(__MODULE__, pid)
+      _ -> {:error, :not_found}
+    end
+  end
+
   @impl DynamicSupervisor
   def init(_arg) do
     DynamicSupervisor.init(strategy: :one_for_one)

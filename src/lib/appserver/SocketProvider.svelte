@@ -17,6 +17,9 @@
   socket.addEventListener("message", (event) => {
     // eslint-disable-next-line no-console
     console.log("Message received", event.message);
+    if (event.message.type === "account") {
+      socket.watchFields();
+    }
   });
 
   setContext(SOCKET, socket);

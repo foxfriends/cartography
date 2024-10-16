@@ -24,7 +24,7 @@ defmodule Cartography.Application do
     children = [
       {Cartography.Database, connection},
       {Cartography.Notifications, connection},
-      {Registry, keys: :unique, name: Cartography.Subscriptions},
+      {Registry, keys: :unique, name: Cartography.NotificationRegistry},
       {Cartography.NotificationSupervisor, []},
       {Bandit,
        plug: Cartography.Router,

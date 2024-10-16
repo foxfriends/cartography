@@ -1,7 +1,12 @@
 defmodule Cartography.NotificationListener do
   alias Cartography.Notifications
 
-  @callback handle_notification(message :: term(), state) ::
+  @callback handle_notification(
+              event :: String.t(),
+              target :: String.t(),
+              subject :: String.t(),
+              state
+            ) ::
               {:noreply, state} | {:stop, reason :: term(), state}
             when state: var
 
@@ -14,7 +19,7 @@ defmodule Cartography.NotificationListener do
     rename =
       {:via, Registry, {Cartography.NotificationRegistry, {self(), options[:name]}}}
 
-    GenServer.start_link(module, init_arg, Keyword.merge([name: rename], options))
+    GenServer.start_link(module, init_arg, Keyword.merge(options, name: rename))
   end
 
   defmacro __using__(_) do
@@ -26,6 +31,7 @@ defmodule Cartography.NotificationListener do
       def child_spec([init, opts]) do
         %{
           id: __MODULE__,
+          restart: :transient,
           start: {__MODULE__, :start_link, [init, opts]}
         }
       end
@@ -36,9 +42,11 @@ defmodule Cartography.NotificationListener do
             {:notification, _notification_pid, _listen_ref, _channel, message},
             {internal, state}
           ) do
-        case handle_notification(message, state) do
-          {:stop, reason, new_state} -> {:stop, reason, {internal, new_state}}
+        decoded = Jason.decode!(message)
+
+        case handle_notification(decoded["event"], decoded["target"], decoded["subject"], state) do
           {:noreply, new_state} -> {:noreply, {internal, new_state}}
+          {:stop, reason, new_state} -> {:stop, reason, {internal, new_state}}
         end
       end
     end

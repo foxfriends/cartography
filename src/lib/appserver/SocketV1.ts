@@ -1,4 +1,8 @@
-type Message = unknown;
+interface Message {
+  type: string;
+  id: string;
+  data: unknown;
+}
 
 export class MessageEvent extends Event {
   message: Message;
@@ -55,12 +59,22 @@ export class SocketV1 extends EventTarget {
     });
   }
 
-  #sendMessage(type: string, data: unknown) {
-    this.#socket.send(JSON.stringify({ type, data }));
+  #sendMessage(type: string, data: unknown, id: string = window.crypto.randomUUID()) {
+    this.#socket.send(JSON.stringify({ type, data, id }));
   }
 
   auth(data: { id: string }) {
     this.#sendMessage("auth", data);
+  }
+
+  unsubscribe(id: string) {
+    this.#sendMessage("unsubscribe", {}, id);
+  }
+
+  watchFields() {
+    const id = window.crypto.randomUUID();
+    this.#sendMessage("watch_fields", {}, id);
+    return new Subscription(this, id);
   }
 
   addEventListener<K extends keyof SocketV1EventMap>(
@@ -79,5 +93,46 @@ export class SocketV1 extends EventTarget {
     options?: boolean | AddEventListenerOptions,
   ) {
     super.addEventListener(type, listener, options);
+  }
+
+  removeEventListener<K extends keyof SocketV1EventMap>(
+    type: K,
+    listener: (this: WebSocket, ev: SocketV1EventMap[K]) => unknown,
+    options?: boolean | EventListenerOptions,
+  ): void;
+  removeEventListener(
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | EventListenerOptions,
+  ): void;
+  removeEventListener(
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | EventListenerOptions,
+  ): void {
+    super.removeEventListener(type, listener, options);
+  }
+}
+
+class Subscription extends EventTarget {
+  #socket: SocketV1;
+  #handler: (event: MessageEvent) => void;
+  id: string;
+
+  constructor(socket: SocketV1, id: string) {
+    super();
+    this.#socket = socket;
+    this.id = id;
+
+    this.#handler = (event: MessageEvent) => {
+      if (event.message.id === this.id) this.dispatchEvent(event);
+    };
+
+    this.#socket.addEventListener("message", this.#handler);
+  }
+
+  unsubscribe() {
+    this.#socket.unsubscribe(this.id);
+    this.#socket.removeEventListener("message", this.#handler);
   }
 }

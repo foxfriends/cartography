@@ -11,8 +11,8 @@ defmodule Cartography.Socket.V1 do
     defstruct [:account_id]
   end
 
-  defmodule Message do
-    defstruct [:id, :type, :data]
+  def message(type, data, id) do
+    %{type: type, data: data, id: id}
   end
 
   @impl WebSock
@@ -29,6 +29,10 @@ defmodule Cartography.Socket.V1 do
   @impl JsonWebSocket
   def handle_json(%{"type" => type, "data" => data, "id" => id}, state) do
     handle_message(type, data, id, state)
+  end
+
+  def push(pid, messages) do
+    send(pid, {:push, JsonWebSocket.encode_messages(messages)})
   end
 
   @impl WebSock
