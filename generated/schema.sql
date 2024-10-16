@@ -65,6 +65,62 @@ CREATE FUNCTION public.is_current_account_id(account_id character varying) RETUR
 $$;
 
 
+--
+-- Name: notify_changes(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.notify_changes() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $_$
+DECLARE
+  v_process_new bool = (TG_OP = 'INSERT' OR TG_OP = 'UPDATE');
+  v_process_old bool = (TG_OP = 'UPDATE' OR TG_OP = 'DELETE');
+  v_event text = TG_ARGV[0];
+  v_topic_template text = TG_ARGV[1];
+  v_attribute text = TG_ARGV[2];
+  v_id text = TG_ARGV[3];
+  v_record record;
+  v_sub text;
+  v_target text;
+  v_topic text;
+  v_i int = 0;
+  v_last_topic text;
+BEGIN
+  -- On UPDATE sometimes topic may be changed for NEW record,
+  -- so we need notify to both topics NEW and OLD.
+  FOR v_i in 0..1 LOOP
+    IF (v_i = 0) AND v_process_new IS TRUE THEN
+      v_record = NEW;
+    ELSIF (v_i = 1) AND v_process_old IS TRUE THEN
+      v_record = OLD;
+    ELSE
+      CONTINUE;
+    END IF;
+     IF v_attribute IS NOT NULL THEN
+      EXECUTE 'select $1.' || quote_ident(v_attribute) || ', $1.' || quote_ident(v_id)
+        USING v_record
+        INTO v_sub, v_target;
+    END IF;
+    IF v_sub IS NOT NULL THEN
+      v_topic = replace(v_topic_template, '$1', v_sub);
+    ELSE
+      v_topic = v_topic_template;
+    END IF;
+    IF v_topic IS DISTINCT FROM v_last_topic THEN
+      -- This if statement prevents us from triggering the notification twice for the same row
+      v_last_topic = v_topic;
+      PERFORM pg_notify(v_topic, json_build_object(
+        'event', v_event,
+        'subject', v_sub,
+        'target', v_target
+      )::text);
+    END IF;
+  END LOOP;
+  RETURN v_record;
+end;
+$_$;
+
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -308,6 +364,41 @@ CREATE UNIQUE INDEX accounts_id_case_insensitive ON public.accounts USING btree 
 --
 
 CREATE INDEX card_accounts_account_id_index ON public.card_accounts USING btree (account_id);
+
+
+--
+-- Name: field_cards _500_subscription_card_moved; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER _500_subscription_card_moved AFTER INSERT OR UPDATE ON public.field_cards FOR EACH ROW EXECUTE FUNCTION public.notify_changes('place_card', 'field_cards:$1', 'account_id', 'card_id');
+
+
+--
+-- Name: field_cards _500_subscription_card_removed; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER _500_subscription_card_removed AFTER DELETE ON public.field_cards FOR EACH ROW EXECUTE FUNCTION public.notify_changes('remove_card', 'field_cards:$1', 'account_id', 'card_id');
+
+
+--
+-- Name: card_accounts _500_subscription_card_transferred; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER _500_subscription_card_transferred AFTER INSERT OR DELETE OR UPDATE ON public.card_accounts FOR EACH ROW EXECUTE FUNCTION public.notify_changes('transfer_card', 'card_accounts:$1', 'account_id', 'card_id');
+
+
+--
+-- Name: fields _500_subscription_fields_changed; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER _500_subscription_fields_changed AFTER UPDATE ON public.fields FOR EACH ROW EXECUTE FUNCTION public.notify_changes('edit_field', 'fields:$1', 'account_id', 'id');
+
+
+--
+-- Name: fields _500_subscription_fields_created; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER _500_subscription_fields_created AFTER INSERT ON public.fields FOR EACH ROW EXECUTE FUNCTION public.notify_changes('new_field', 'fields:$1', 'account_id', 'id');
 
 
 --
