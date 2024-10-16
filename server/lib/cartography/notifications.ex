@@ -9,12 +9,16 @@ defmodule Cartography.Notifications do
   end
 
   def start_link(config) do
-    Postgrex.Notifications.start_link(
-      Keyword.merge(
-        [name: @name, parameters: [application_name: "Cartography Server (Notifications)"]],
-        config
+    if Application.get_env(:cartography, __MODULE__)[:enabled] == false do
+      :ignore
+    else
+      Postgrex.Notifications.start_link(
+        Keyword.merge(
+          [name: @name, parameters: [application_name: "Cartography Server (Notifications)"]],
+          config
+        )
       )
-    )
+    end
   end
 
   def listen(channel), do: listen(@name, channel)

@@ -17,7 +17,7 @@ defmodule Cartography.Socket.V1.Authenticated do
   end
 
   def handle_message("unsubscribe", %{}, message_id, state) do
-    {:ok, _} = Cartography.NotificationSupervisor.stop_listener(message_id)
+    :ok = Cartography.NotificationSupervisor.stop_listener(message_id)
 
     {:ok, state}
   end
