@@ -30,7 +30,6 @@ defmodule Cartography.NotificationListener do
         }
       end
 
-
       @impl GenServer
       @dialyzer {:no_match, handle_info: 2}
       def handle_info(
