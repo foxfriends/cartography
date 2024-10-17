@@ -1,4 +1,4 @@
-import type { MessageEvent } from "./MessageEvent";
+import { MessageEvent } from "./MessageEvent";
 import { type SocketV1 } from "./SocketV1";
 
 interface SubscriptionEventMap {
