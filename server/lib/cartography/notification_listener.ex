@@ -3,8 +3,8 @@ defmodule Cartography.NotificationListener do
 
   @callback handle_notification(
               event :: String.t(),
-              target :: String.t(),
-              subject :: String.t(),
+              target :: term(),
+              subject :: term(),
               state
             ) ::
               {:noreply, state} | {:stop, reason :: term(), state}

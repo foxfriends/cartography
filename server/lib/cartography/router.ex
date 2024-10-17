@@ -23,7 +23,7 @@ defmodule Cartography.Router do
   end
 
   def upgrade(conn, "v1.cartography.app"),
-    do: WebSockAdapter.upgrade(conn, Cartography.Socket.V1, [], timeout: 60_000)
+    do: WebSockAdapter.upgrade(conn, Cartography.Socket.V1, [], timeout: :infinity)
 
   def negotiate_upgrade(conn) do
     case negotiate_protocol(conn) do

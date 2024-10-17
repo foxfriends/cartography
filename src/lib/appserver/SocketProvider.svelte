@@ -18,7 +18,7 @@
     // eslint-disable-next-line no-console
     console.log("Message received", event.message);
     if (event.message.type === "account") {
-      socket.watchFields();
+      socket.subscribe("fields");
     }
   });
 

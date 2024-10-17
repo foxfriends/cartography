@@ -1,3 +1,8 @@
+--! Previous: sha1:04fbd9b251f7a3d274ef7f6014e0cafebbf74cec
+--! Hash: sha1:bc62df145480bcf6395559dcc60d95fe473cff01
+
+DROP FUNCTION IF EXISTS notify_changes () CASCADE;
+
 CREATE
 OR REPLACE FUNCTION notify_changes_text_target () RETURNS TRIGGER AS $$
 DECLARE
@@ -97,3 +102,49 @@ BEGIN
   RETURN v_record;
 end;
 $$ LANGUAGE PLPGSQL VOLATILE;
+
+CREATE
+OR REPLACE TRIGGER _500_subscription_fields_created
+AFTER INSERT ON fields FOR EACH ROW
+EXECUTE PROCEDURE notify_changes_int_target ('new_field', 'fields:$1', 'account_id', 'id');
+
+CREATE
+OR REPLACE TRIGGER _500_subscription_fields_changed
+AFTER
+UPDATE ON fields FOR EACH ROW
+EXECUTE PROCEDURE notify_changes_int_target ('edit_field', 'fields:$1', 'account_id', 'id');
+
+CREATE
+OR REPLACE TRIGGER _500_subscription_card_moved
+AFTER INSERT
+OR
+UPDATE ON field_cards FOR EACH ROW
+EXECUTE PROCEDURE notify_changes_int_target (
+  'place_card',
+  'field_cards:$1',
+  'field_id',
+  'card_id'
+);
+
+CREATE
+OR REPLACE TRIGGER _500_subscription_card_removed
+AFTER DELETE ON field_cards FOR EACH ROW
+EXECUTE PROCEDURE notify_changes_int_target (
+  'unplace_card',
+  'field_cards:$1',
+  'field_id',
+  'card_id'
+);
+
+CREATE
+OR REPLACE TRIGGER _500_subscription_card_transferred
+AFTER INSERT
+OR
+UPDATE
+OR DELETE ON card_accounts FOR EACH ROW
+EXECUTE PROCEDURE notify_changes_int_target (
+  'transfer_card',
+  'card_accounts:$1',
+  'account_id',
+  'card_id'
+);

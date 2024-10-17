@@ -13,6 +13,20 @@ defmodule Cartography.ListenerSupervisor do
     DynamicSupervisor.start_link(__MODULE__, :ok, opts)
   end
 
+  def start_child(supervisor, {child, [args, opts]}) do
+    opts =
+      Keyword.merge(opts,
+        name: {:via, Registry, {Cartography.Registry, {self(), child, opts[:name]}}}
+      )
+
+    DynamicSupervisor.start_child(
+      supervisor,
+      {child, [args, opts]}
+    )
+  end
+
+  defdelegate terminate_child(supervisor, pid), to: DynamicSupervisor, as: :terminate_child
+
   @impl DynamicSupervisor
   def init(_) do
     DynamicSupervisor.init(strategy: :one_for_one)

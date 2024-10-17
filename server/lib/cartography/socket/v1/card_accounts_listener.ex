@@ -1,4 +1,4 @@
-defmodule Cartography.Socket.V1.FieldsListener do
+defmodule Cartography.Socket.V1.CardAccountsListener do
   alias Cartography.Socket.V1
   use Cartography.NotificationListener
 
@@ -13,7 +13,7 @@ defmodule Cartography.Socket.V1.FieldsListener do
   @impl GenServer
   def init(config) do
     account_id = config[:account_id]
-    channel = "fields:#{account_id}"
+    channel = "card_accounts:#{account_id}"
 
     state = %State{
       socket: config[:socket],
@@ -25,15 +25,8 @@ defmodule Cartography.Socket.V1.FieldsListener do
   end
 
   @impl Cartography.NotificationListener
-  def handle_notification("new_field", target, _subject, state) do
-    V1.push(state.socket, {:json, V1.message("field", %{id: target}, state.subscription_id)})
-
-    {:noreply, state}
-  end
-
-  @impl Cartography.NotificationListener
-  def handle_notification("edit_field", target, _subject, state) do
-    V1.push(state.socket, {:json, V1.message("field", %{id: target}, state.subscription_id)})
+  def handle_notification("transfer_card", target, _subject, state) do
+    V1.push(state.socket, {:json, V1.message("card", %{id: target}, state.subscription_id)})
 
     {:noreply, state}
   end

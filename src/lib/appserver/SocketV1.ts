@@ -19,6 +19,9 @@ interface SocketV1EventMap {
   close: CloseEvent;
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention -- this is a server owned field
+type Channel = "deck" | "fields" | { topic: "field_cards"; field_id: number };
+
 export class SocketV1 extends EventTarget {
   #socket: WebSocket;
 
@@ -71,9 +74,9 @@ export class SocketV1 extends EventTarget {
     this.#sendMessage("unsubscribe", {}, id);
   }
 
-  watchFields() {
+  subscribe(channel: Channel) {
     const id = window.crypto.randomUUID();
-    this.#sendMessage("watch_fields", {}, id);
+    this.#sendMessage("subscribe", { channel }, id);
     return new Subscription(this, id);
   }
 
