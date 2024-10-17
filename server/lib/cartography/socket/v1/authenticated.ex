@@ -7,18 +7,21 @@ defmodule Cartography.Socket.V1.Authenticated do
   alias Cartography.Socket.V1.FieldsListener
 
   def handle_message("watch_fields", %{}, message_id, state) do
-    Cartography.NotificationSupervisor.start_listener(
-      FieldsListener,
-      [socket: self(), account_id: state.account_id, subscription_id: message_id],
-      name: message_id
+    DynamicSupervisor.start_child(
+      state.supervisor,
+      {FieldsListener,
+       [
+         [socket: self(), account_id: state.account_id, subscription_id: message_id],
+         [name: {:via, Registry, {Cartography.Registry, {self(), FieldsListener, message_id}}}]
+       ]}
     )
 
     {:ok, state}
   end
 
   def handle_message("unsubscribe", %{}, message_id, state) do
-    :ok = Cartography.NotificationSupervisor.stop_listener(message_id)
-
+    [{listener, _}] = Registry.lookup(state.registry, message_id)
+    :ok = DynamicSupervisor.terminate_child(state.supervisor, listener)
     {:ok, state}
   end
 

@@ -11,15 +11,15 @@ defmodule Cartography.NotificationListener do
             when state: var
 
   def init(channel, state) do
+    Process.flag(:trap_exit, true)
     {_, listen_ref} = Notifications.listen(channel)
     {:ok, {%{listen_ref: listen_ref}, state}}
   end
 
-  def start_link(module, init_arg, options) do
-    rename =
-      {:via, Registry, {Cartography.NotificationRegistry, {self(), options[:name]}}}
+  def terminate(_reason, %{listen_ref: listen_ref}) do
+    Notifications.unlisten(listen_ref)
 
-    GenServer.start_link(module, init_arg, Keyword.merge(options, name: rename))
+    :ok
   end
 
   defmacro __using__(_) do
@@ -31,8 +31,8 @@ defmodule Cartography.NotificationListener do
       def child_spec([init, opts]) do
         %{
           id: __MODULE__,
-          restart: :transient,
-          start: {__MODULE__, :start_link, [init, opts]}
+          start: {__MODULE__, :start_link, [init, opts]},
+          restart: :transient
         }
       end
 
@@ -48,6 +48,11 @@ defmodule Cartography.NotificationListener do
           {:noreply, new_state} -> {:noreply, {internal, new_state}}
           {:stop, reason, new_state} -> {:stop, reason, {internal, new_state}}
         end
+      end
+
+      @impl GenServer
+      def terminate(reason, {internal, _state}) do
+        Cartography.NotificationListener.terminate(reason, internal)
       end
     end
   end

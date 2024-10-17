@@ -4,11 +4,12 @@ defmodule Cartography.Socket.V1 do
   """
 
   use JsonWebSocket
+  require Logger
   alias Cartography.Socket.V1.Authenticated
   alias Cartography.Socket.V1.Unauthenticated
 
   defmodule State do
-    defstruct [:account_id]
+    defstruct [:id, :account_id, :supervisor]
   end
 
   def message(type, data, id) do
@@ -17,7 +18,18 @@ defmodule Cartography.Socket.V1 do
 
   @impl WebSock
   def init(_) do
-    {:ok, %State{}}
+    id = UUID.uuid4()
+
+    {:ok, supervisor} =
+      DynamicSupervisor.start_child(
+        Cartography.SocketSupervisor,
+        {Cartography.ListenerSupervisor,
+         name: {:via, Registry, {Cartography.Registry, {self(), __MODULE__}}}}
+      )
+
+    Logger.info("Socket #{id} connected")
+
+    {:ok, %State{id: id, supervisor: supervisor}}
   end
 
   def handle_message(type, data, id, %{account_id: nil} = state),
@@ -41,7 +53,9 @@ defmodule Cartography.Socket.V1 do
   end
 
   @impl WebSock
-  def handle_info(_, state) do
-    {:ok, state}
+  def terminate(reason, state) do
+    Logger.info("Socket #{state.id} closing (#{reason})")
+    :ok = Cartography.ListenerSupervisor.stop(state.supervisor)
+    :ok
   end
 end

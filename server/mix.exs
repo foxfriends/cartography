@@ -25,6 +25,7 @@ defmodule Cartography.MixProject do
       {:bandit, "~> 1.0"},
       {:postgrex, ">= 0.19.1"},
       {:websock_adapter, "~> 0.5"},
+      {:uuid, "~> 1.1"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
       {:lettuce, "~> 0.2", only: [:dev]}

@@ -16,13 +16,13 @@ shadow_database_name := if SHADOW_DATABASE_URL != "" { file_stem(SHADOW_DATABASE
 
 dev: up
     npx concurrently --names "sveltekit,migrate,server" \
-        "npx vite dev" \
+        "npx vite dev --host" \
         "npx graphile-migrate watch" \
         "cd server && mix run --no-halt"
 
 app: up
     npx concurrently --names "sveltekit,migrate,server,tauri" \
-        "npx vite dev" \
+        "npx vite dev --host" \
         "npx graphile-migrate watch" \
         "cd server && mix run" \
         "npx tauri dev"

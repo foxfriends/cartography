@@ -6,8 +6,8 @@ defmodule Cartography.Socket.V1.FieldsListener do
     defstruct [:socket, :subscription_id, :account_id]
   end
 
-  def start_link(init, opts) do
-    Cartography.NotificationListener.start_link(__MODULE__, init, opts)
+  def start_link(init_arg, opts) do
+    GenServer.start_link(__MODULE__, init_arg, opts)
   end
 
   @impl GenServer
