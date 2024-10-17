@@ -120,7 +120,7 @@ export class SocketV1 extends EventTarget {
     super.removeEventListener(type, listener, options);
   }
 
-  close() {
-    this.#socket.close();
+  close(code?: number, reason?: string) {
+    this.#socket.close(code, reason);
   }
 }

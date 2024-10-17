@@ -1,4 +1,5 @@
 import type { Account } from "../Account";
+import type { Field } from "../Field";
 
 export interface MessageReplyMap {
   auth: AccountMessage;
@@ -19,6 +20,7 @@ export interface AccountMessage extends AnyMessage {
 
 export interface FieldMessage extends AnyMessage {
   type: "field";
+  data: Field;
 }
 
 export interface FieldCardMessage extends AnyMessage {

@@ -6,13 +6,12 @@ export interface FieldCard {
   y: number;
   loose?: boolean;
 }
-export type Field = FieldCard[];
 
-export function indexById(field: Field): Map<CardId, FieldCard> {
+export function indexById(field: FieldCard[]): Map<CardId, FieldCard> {
   return new Map(field.map((card) => [card.id, card]));
 }
 
-export function indexByPosition(field: Field) {
+export function indexByPosition(field: FieldCard[]) {
   const index: FieldCard[][] = [];
   for (const card of field) {
     index[card.y] ??= [];
