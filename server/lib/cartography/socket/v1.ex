@@ -54,7 +54,7 @@ defmodule Cartography.Socket.V1 do
 
   @impl WebSock
   def terminate(reason, state) do
-    Logger.info("Socket #{state.id} closing (#{reason})")
+    Logger.info("Socket #{state.id} closing (#{inspect(reason)})")
     :ok = Cartography.ListenerSupervisor.stop(state.supervisor)
     :ok
   end

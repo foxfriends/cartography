@@ -1,3 +1,6 @@
+import { OneOff } from "./OneOff";
+import { Subscription } from "./Subscription";
+
 interface Message {
   type: string;
   id: string;
@@ -10,6 +13,15 @@ export class MessageEvent extends Event {
   constructor(message: Message) {
     super("message");
     this.message = message;
+  }
+}
+
+export class CloseEvent extends Event {
+  reason: string;
+
+  constructor(reason: string) {
+    super("close");
+    this.reason = reason;
   }
 }
 
@@ -30,8 +42,10 @@ export class SocketV1 extends EventTarget {
 
     this.#socket = new WebSocket(url, ["v1.cartography.app"]);
 
-    this.#socket.addEventListener("open", () => {
-      this.auth({ id: "foxfriends" });
+    this.#socket.addEventListener("open", (event) => {
+      // eslint-disable-next-line no-console
+      console.log("Socket opened", event);
+      this.dispatchEvent(new Event("open"));
     });
 
     this.#socket.addEventListener("message", (event) => {
@@ -52,22 +66,23 @@ export class SocketV1 extends EventTarget {
     this.#socket.addEventListener("close", (event) => {
       // eslint-disable-next-line no-console
       console.log("Socket closed", event);
-      this.dispatchEvent(event);
+      this.dispatchEvent(new CloseEvent(event.reason));
     });
 
     this.#socket.addEventListener("error", (event) => {
       // eslint-disable-next-line no-console
       console.log("Socket error", event);
-      this.dispatchEvent(event);
+      this.dispatchEvent(new Event("error"));
     });
   }
 
   #sendMessage(type: string, data: unknown, id: string = window.crypto.randomUUID()) {
     this.#socket.send(JSON.stringify({ type, data, id }));
+    return new OneOff(this, id);
   }
 
   auth(data: { id: string }) {
-    this.#sendMessage("auth", data);
+    return this.#sendMessage("auth", data);
   }
 
   unsubscribe(id: string) {
@@ -114,28 +129,5 @@ export class SocketV1 extends EventTarget {
     options?: boolean | EventListenerOptions,
   ): void {
     super.removeEventListener(type, listener, options);
-  }
-}
-
-class Subscription extends EventTarget {
-  #socket: SocketV1;
-  #handler: (event: MessageEvent) => void;
-  id: string;
-
-  constructor(socket: SocketV1, id: string) {
-    super();
-    this.#socket = socket;
-    this.id = id;
-
-    this.#handler = (event: MessageEvent) => {
-      if (event.message.id === this.id) this.dispatchEvent(event);
-    };
-
-    this.#socket.addEventListener("message", this.#handler);
-  }
-
-  unsubscribe() {
-    this.#socket.unsubscribe(this.id);
-    this.#socket.removeEventListener("message", this.#handler);
   }
 }

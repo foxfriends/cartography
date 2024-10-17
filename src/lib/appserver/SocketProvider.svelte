@@ -1,7 +1,7 @@
 <script module lang="ts">
   import { getContext, setContext, type Snippet } from "svelte";
   import { PUBLIC_SERVER_WS_URL } from "$env/static/public";
-  import { SocketV1 } from "./SocketV1";
+  import { SocketV1 } from "./socket/SocketV1";
 
   const SOCKET = Symbol("SOCKET");
   export function getSocket(): SocketV1 {
@@ -14,12 +14,10 @@
 
   const socket = new SocketV1(`${PUBLIC_SERVER_WS_URL}/websocket`);
 
-  socket.addEventListener("message", (event) => {
-    // eslint-disable-next-line no-console
-    console.log("Message received", event.message);
-    if (event.message.type === "account") {
-      socket.subscribe("fields");
-    }
+  socket.addEventListener("open", async () => {
+    await socket.auth({ id: "foxfriends" }).reply();
+
+    socket.subscribe("fields").addEventListener("message", (_event) => {});
   });
 
   setContext(SOCKET, socket);

@@ -1,6 +1,9 @@
 defmodule Cartography.Socket.V1.FieldsListener do
+  import Sql
+  alias Cartography.Database
+  alias Cartography.NotificationListener
   alias Cartography.Socket.V1
-  use Cartography.NotificationListener
+  use NotificationListener
 
   defmodule State do
     defstruct [:socket, :subscription_id, :account_id]
@@ -21,20 +24,25 @@ defmodule Cartography.Socket.V1.FieldsListener do
       account_id: account_id
     }
 
-    Cartography.NotificationListener.init(channel, state)
+    NotificationListener.init(channel, state)
   end
 
-  @impl Cartography.NotificationListener
+  @impl NotificationListener
   def handle_notification("new_field", target, _subject, state) do
-    V1.push(state.socket, {:json, V1.message("field", %{id: target}, state.subscription_id)})
+    push_field(target, state)
 
     {:noreply, state}
   end
 
-  @impl Cartography.NotificationListener
+  @impl NotificationListener
   def handle_notification("edit_field", target, _subject, state) do
-    V1.push(state.socket, {:json, V1.message("field", %{id: target}, state.subscription_id)})
+    push_field(target, state)
 
     {:noreply, state}
+  end
+
+  defp push_field(id, state) do
+    field = Database.one!(~q"SELECT * FROM fields WHERE id = #{id}")
+    V1.push(state.socket, {:json, V1.message("field", field, state.subscription_id)})
   end
 end
