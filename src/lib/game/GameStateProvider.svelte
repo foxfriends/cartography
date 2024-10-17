@@ -14,6 +14,8 @@
   import { choose } from "$lib/algorithm/choose";
   import type { CreateFlowEvent } from "$lib/events/CreateFlowEvent";
   import type { DeleteFlowEvent } from "$lib/events/DeleteFlowEvent";
+  import { getSocket } from "$lib/appserver/SocketProvider.svelte";
+  import type { Subscription } from "$lib/appserver/socket/Subscription";
 
   interface Shop {
     packs: Pack[];
@@ -39,6 +41,15 @@
 
 <script lang="ts">
   const { children }: { children: Snippet } = $props();
+  const socket = $derived.by(getSocket);
+
+  $effect(() => {
+    let subscription: Subscription | undefined = undefined;
+    socket.addEventListener("auth", () => {
+      subscription = socket.subscribe("fields");
+    });
+    return () => subscription?.unsubscribe();
+  });
 
   const geography = {
     biome: "Coast",
@@ -125,7 +136,6 @@
         { type: "grass" },
       ],
     ],
-    resources: [],
   } as const satisfies Geography;
 
   let deck: Deck = $state([]);

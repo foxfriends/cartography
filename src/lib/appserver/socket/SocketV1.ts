@@ -1,34 +1,15 @@
+import { CloseEvent } from "./CloseEvent";
+import { MessageEvent } from "./MessageEvent";
+import { AuthEvent } from "./AuthEvent";
 import { OneOff } from "./OneOff";
 import { Subscription } from "./Subscription";
-
-interface Message {
-  type: string;
-  id: string;
-  data: unknown;
-}
-
-export class MessageEvent extends Event {
-  message: Message;
-
-  constructor(message: Message) {
-    super("message");
-    this.message = message;
-  }
-}
-
-export class CloseEvent extends Event {
-  reason: string;
-
-  constructor(reason: string) {
-    super("close");
-    this.reason = reason;
-  }
-}
+import type { MessageReplyMap } from "./Message";
 
 interface SocketV1EventMap {
   message: MessageEvent;
   error: Event;
   close: CloseEvent;
+  auth: AuthEvent;
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention -- this is a server owned field
@@ -76,13 +57,21 @@ export class SocketV1 extends EventTarget {
     });
   }
 
-  #sendMessage(type: string, data: unknown, id: string = window.crypto.randomUUID()) {
+  #sendMessage<T extends keyof MessageReplyMap>(
+    type: T,
+    data: unknown,
+    id: string = window.crypto.randomUUID(),
+  ) {
     this.#socket.send(JSON.stringify({ type, data, id }));
-    return new OneOff(this, id);
+    return new OneOff<T>(this, id);
   }
 
   auth(data: { id: string }) {
-    return this.#sendMessage("auth", data);
+    this.#sendMessage("auth", data)
+      .reply()
+      .then((event) => {
+        this.dispatchEvent(new AuthEvent(event.data));
+      });
   }
 
   unsubscribe(id: string) {
@@ -129,5 +118,9 @@ export class SocketV1 extends EventTarget {
     options?: boolean | EventListenerOptions,
   ): void {
     super.removeEventListener(type, listener, options);
+  }
+
+  close() {
+    this.#socket.close();
   }
 }

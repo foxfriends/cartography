@@ -5,22 +5,33 @@
 
   const SOCKET = Symbol("SOCKET");
   export function getSocket(): SocketV1 {
-    return getContext(SOCKET) as SocketV1;
+    const context = getContext(SOCKET) as { get socket(): SocketV1 };
+    return context.socket;
   }
 </script>
 
 <script lang="ts">
   const { children }: { children: Snippet } = $props();
 
-  const socket = new SocketV1(`${PUBLIC_SERVER_WS_URL}/websocket`);
+  let socket = $state();
 
-  socket.addEventListener("open", async () => {
-    await socket.auth({ id: "foxfriends" }).reply();
+  $effect.pre(() => {
+    const newSocket = new SocketV1(`${PUBLIC_SERVER_WS_URL}/websocket`);
 
-    socket.subscribe("fields").addEventListener("message", (_event) => {});
+    newSocket.addEventListener("open", () => {
+      newSocket.auth({ id: "foxfriends" });
+    });
+
+    socket = newSocket;
+
+    return () => newSocket.close();
   });
 
-  setContext(SOCKET, socket);
+  setContext(SOCKET, {
+    get socket() {
+      return socket;
+    },
+  });
 </script>
 
 {@render children()}

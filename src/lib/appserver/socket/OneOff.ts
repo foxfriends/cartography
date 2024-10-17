@@ -1,6 +1,8 @@
-import { MessageEvent, type SocketV1 } from "./SocketV1";
+import type { MessageReplyMap } from "./Message";
+import type { MessageEvent } from "./MessageEvent";
+import { type SocketV1 } from "./SocketV1";
 
-export class OneOff extends EventTarget {
+export class OneOff<T extends keyof MessageReplyMap> extends EventTarget {
   #socket: SocketV1;
   id: string;
 
@@ -11,12 +13,12 @@ export class OneOff extends EventTarget {
   }
 
   async reply(abort?: AbortSignal) {
-    return new Promise((resolve, reject) => {
+    return new Promise<MessageReplyMap[T]>((resolve, reject) => {
       abort?.throwIfAborted();
 
       const handler = (event: MessageEvent) => {
         if (event.message.id === this.id) {
-          this.dispatchEvent(new MessageEvent(event.message));
+          resolve(event.message as MessageReplyMap[T]);
           this.#socket.removeEventListener("message", handler);
           abort?.removeEventListener("abort", onabort);
         }

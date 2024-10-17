@@ -1,9 +1,8 @@
-import { MessageEvent, type SocketV1 } from "./SocketV1";
+import type { MessageEvent } from "./MessageEvent";
+import { type SocketV1 } from "./SocketV1";
 
 interface SubscriptionEventMap {
   message: MessageEvent;
-  error: Event;
-  close: CloseEvent;
 }
 
 export class Subscription extends EventTarget {
