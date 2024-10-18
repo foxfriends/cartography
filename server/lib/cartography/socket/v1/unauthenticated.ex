@@ -4,7 +4,7 @@ defmodule Cartography.Socket.V1.Unauthenticated do
   """
 
   import Sql
-  alias Cartography.Socket.V1.Message
+  alias Cartography.Socket.V1
 
   def handle_message("auth", %{"id" => id}, message_id, state)
       when is_binary(id) do
@@ -16,7 +16,7 @@ defmodule Cartography.Socket.V1.Unauthenticated do
         Cartography.Database.one!(~q"SELECT * FROM accounts WHERE id = #{id}")
       end
 
-    {:push, %Message{type: "account", data: %{id: account.id}, id: message_id},
+    {:push, {:json, V1.message("account", %{id: account.id}, message_id)},
      %{state | account_id: account.id}}
   end
 end

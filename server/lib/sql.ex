@@ -5,7 +5,9 @@ defmodule Sql do
 
   def raw(str), do: %Sql{parts: [str]}
 
-  def identifier(name), do: name |> String.replace("\"", "\"\"") |> dq() |> raw()
+  def escape_identifier(name), do: name |> String.replace("\"", "\"\"") |> dq()
+
+  def identifier(name), do: name |> escape_identifier() |> raw()
 
   defp expand({:interpolate, %Sql{parts: parts}}), do: Enum.flat_map(parts, &expand/1)
   defp expand(part), do: [part]

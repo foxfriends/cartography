@@ -2,7 +2,7 @@
   import type { ResourceType } from "$lib/data/resources";
   import type { CardId } from "$lib/engine/Card";
   import type { Deck } from "$lib/engine/DeckCard";
-  import type { Field, FieldCard } from "$lib/engine/FieldCard";
+  import type { FieldCard } from "$lib/engine/FieldCard";
   import { generateFlowId, type Flow, type FlowId } from "$lib/engine/Flow";
   import { CreateFlowEvent } from "$lib/events/CreateFlowEvent";
   import { DeleteFlowEvent } from "$lib/events/DeleteFlowEvent";
@@ -10,7 +10,7 @@
   import FlowLine from "./FlowLine.svelte";
   import ProductionOverlay from "./ProductionOverlay.svelte";
 
-  const { flow, deck, field }: { flow: Flow[]; deck: Deck; field: Field } = $props();
+  const { flow, deck, field }: { flow: Flow[]; deck: Deck; field: FieldCard[] } = $props();
 
   const validFlow = $derived(
     flow

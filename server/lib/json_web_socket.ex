@@ -23,7 +23,7 @@ defmodule JsonWebSocket do
 
   @spec encode_messages(messages()) :: WebSock.messages()
 
-  def encode_messages({:json, text}), do: {:text, Jason.encode!(text)}
+  def encode_messages({:json, map}), do: {:text, Jason.encode!(map)}
 
   def encode_messages([]), do: []
 

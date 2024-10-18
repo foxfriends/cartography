@@ -24,8 +24,8 @@ defmodule Cartography.Application do
     children = [
       {Cartography.Database, connection},
       {Cartography.Notifications, connection},
-      {Registry, keys: :unique, name: Cartography.Subscriptions},
-      {Cartography.NotificationSupervisor, []},
+      {DynamicSupervisor, name: Cartography.SocketSupervisor},
+      {Registry, keys: :unique, name: Cartography.Registry},
       {Bandit,
        plug: Cartography.Router,
        ip: Application.fetch_env!(:cartography, :host),

@@ -3,7 +3,7 @@
   import type { Geography } from "$lib/types";
   import { CardsReceivedEvent } from "$lib/events/CardsReceivedEvent";
   import type { Deck, DeckCard } from "$lib/engine/DeckCard";
-  import type { Field } from "$lib/engine/FieldCard";
+  import type { FieldCard } from "$lib/engine/FieldCard";
   import type { Pack } from "$lib/engine/Pack";
   import { createCitizen, type Citizen } from "$lib/engine/Citizen";
   import type { Employment } from "$lib/engine/Employment";
@@ -14,6 +14,9 @@
   import { choose } from "$lib/algorithm/choose";
   import type { CreateFlowEvent } from "$lib/events/CreateFlowEvent";
   import type { DeleteFlowEvent } from "$lib/events/DeleteFlowEvent";
+  import { getSocket } from "$lib/appserver/SocketProvider.svelte";
+  import type { Subscription } from "$lib/appserver/socket/Subscription";
+  import type { Field } from "$lib/appserver/Field";
 
   interface Shop {
     packs: Pack[];
@@ -24,7 +27,7 @@
     readonly geography: Geography;
     readonly citizens: Citizen[];
     readonly employment: Employment[];
-    readonly field: Field;
+    readonly field: FieldCard[];
     readonly flow: Flow[];
     readonly shop: Shop;
     money: number;
@@ -39,6 +42,24 @@
 
 <script lang="ts">
   const { children }: { children: Snippet } = $props();
+  const socket = $derived.by(getSocket);
+
+  const fields: Field[] = $state([]);
+
+  $effect(() => {
+    let subscription: Subscription | undefined = undefined;
+    socket.addEventListener("auth", () => {
+      subscription = socket.subscribe("fields");
+      subscription.addEventListener("message", ({ message }) => {
+        if (message.type !== "field") {
+          socket.close(4000);
+          return;
+        }
+        fields.find((field) => field.id === message.data.id);
+      });
+    });
+    return () => subscription?.unsubscribe();
+  });
 
   const geography = {
     biome: "Coast",
@@ -125,11 +146,10 @@
         { type: "grass" },
       ],
     ],
-    resources: [],
   } as const satisfies Geography;
 
   let deck: Deck = $state([]);
-  let field: Field = $state([]);
+  let field: FieldCard[] = $state([]);
   let citizens: Citizen[] = $state([]);
   let employment: Employment[] = $state([]);
   let shop: Shop = $state({ packs: [] });

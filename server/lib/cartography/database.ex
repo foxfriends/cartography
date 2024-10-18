@@ -1,5 +1,6 @@
 defmodule Cartography.Database do
   import Sql
+  require Logger
 
   @name __MODULE__
 
@@ -11,12 +12,16 @@ defmodule Cartography.Database do
   end
 
   def start_link(config) do
-    Postgrex.start_link(
-      Keyword.merge(
-        [name: @name, parameters: [application_name: "Cartography Server"]],
-        config
+    if Application.get_env(:cartography, __MODULE__)[:enabled] == false do
+      :ignore
+    else
+      Postgrex.start_link(
+        Keyword.merge(
+          [name: @name, parameters: [application_name: "Cartography Server"]],
+          config
+        )
       )
-    )
+    end
   end
 
   def raw!(sql, values \\ []), do: raw!(@name, sql, values)
@@ -43,6 +48,7 @@ defmodule Cartography.Database do
 
   def query!(conn, %Sql{} = sql, opts \\ []) do
     {sql, values} = Sql.to_query(sql)
+    Logger.debug(sql)
     raw!(conn, sql, values, opts)
   end
 
