@@ -16,7 +16,7 @@ defmodule Cartography.Socket.V1.Unauthenticated do
         Cartography.Database.one!(~q"SELECT * FROM accounts WHERE id = #{id}")
       end
 
-    {:push, {:json, V1.message("account", %{id: account.id}, message_id)},
+    {:push, {:json, V1.message("account", %{account: account}, message_id)},
      %{state | account_id: account.id}}
   end
 end

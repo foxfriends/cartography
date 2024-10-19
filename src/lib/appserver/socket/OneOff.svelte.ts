@@ -33,4 +33,22 @@ export class OneOff<T extends keyof MessageReplyMap> extends EventTarget {
       abort?.addEventListener("abort", onabort);
     });
   }
+
+  $then(callback: (event: MessageReplyMap[T]) => void): void {
+    $effect(() => {
+      const abort = new AbortController();
+
+      this.reply(abort.signal).then(
+        (event) => {
+          callback(event);
+        },
+        (error) => {
+          if (error === "unmounted") return;
+          throw error;
+        },
+      );
+
+      return () => abort.abort("unmounted");
+    });
+  }
 }

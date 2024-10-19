@@ -13,19 +13,23 @@ defmodule Cartography.ListenerSupervisor do
     DynamicSupervisor.start_link(__MODULE__, :ok, opts)
   end
 
-  def start_child(supervisor, {child, [args, opts]}) do
+  def start_child(supervisor, {module, args}, message_id) do
+    args =
+      Keyword.merge(args, socket: self(), subscription_id: message_id)
+
     opts =
-      Keyword.merge(opts,
-        name: {:via, Registry, {Cartography.Registry, {self(), child, opts[:name]}}}
-      )
+      [name: {:via, Registry, {Cartography.Registry, {self(), message_id}}}]
 
     DynamicSupervisor.start_child(
       supervisor,
-      {child, [args, opts]}
+      {module, [args, opts]}
     )
   end
 
-  defdelegate terminate_child(supervisor, pid), to: DynamicSupervisor, as: :terminate_child
+  def terminate_child(supervisor, message_id) do
+    [{listener, _}] = Registry.lookup(Cartography.Registry, {self(), message_id})
+    DynamicSupervisor.terminate_child(supervisor, listener)
+  end
 
   @impl DynamicSupervisor
   def init(_) do

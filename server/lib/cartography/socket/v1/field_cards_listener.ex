@@ -1,4 +1,6 @@
 defmodule Cartography.Socket.V1.FieldCardsListener do
+  import Sql
+  alias Cartography.Database
   alias Cartography.Socket.V1
   use Cartography.NotificationListener
 
@@ -26,14 +28,22 @@ defmodule Cartography.Socket.V1.FieldCardsListener do
 
   @impl Cartography.NotificationListener
   def handle_notification("unplace_card", target, _subject, state) do
-    V1.push(state.socket, {:json, V1.message("card", %{id: target}, state.subscription_id)})
+    V1.push(
+      state.socket,
+      {:json, V1.message("field_card", %{field_card: %{id: target}}, state.subscription_id)}
+    )
 
     {:noreply, state}
   end
 
   @impl Cartography.NotificationListener
   def handle_notification("place_card", target, _subject, state) do
-    V1.push(state.socket, {:json, V1.message("card", %{id: target}, state.subscription_id)})
+    field_card = Database.one!(~q"SELECT * FROM field_cards WHERE card_id = #{target}")
+
+    V1.push(
+      state.socket,
+      {:json, V1.message("field_card", %{field_card: field_card}, state.subscription_id)}
+    )
 
     {:noreply, state}
   end

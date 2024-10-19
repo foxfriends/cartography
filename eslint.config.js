@@ -48,6 +48,12 @@ export default tsEslint.config(
           leadingUnderscore: "allowSingleOrDouble",
         },
         {
+          selector: "classProperty",
+          modifiers: ["static", "readonly"],
+          format: ["UPPER_CASE"],
+          leadingUnderscore: "allowSingleOrDouble",
+        },
+        {
           selector: "objectLiteralProperty",
           format: null,
         },
@@ -69,6 +75,7 @@ export default tsEslint.config(
         "warn",
         { varsIgnorePattern: "^_.*", argsIgnorePattern: "^_.*" },
       ],
+      "@typescript-eslint/no-invalid-void-type": "off",
     },
   },
   {

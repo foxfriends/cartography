@@ -29,6 +29,7 @@ app: up
 
 init: get
     cp .env.example .env.local
+    cd .git/hooks && ln -sf ../../.hooks/* .
     if [ ! -f .env ]; then ln -s .env.local .env; fi
     just up
 
@@ -60,7 +61,6 @@ clean:
 check:
     npx svelte-kit sync
     npx svelte-check --tsconfig ./tsconfig.json
-    npx graphile-migrate status
     cd src-tauri && cargo check
     cd server && mix dialyzer
 
@@ -89,6 +89,9 @@ migrate:
 migration:
     npx prettier migrations -w
     npx graphile-migrate commit
+
+_pre-commit:
+    npx graphile-migrate status
 
 [confirm]
 reset:

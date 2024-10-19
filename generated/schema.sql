@@ -44,28 +44,6 @@ CREATE TYPE public.card_category AS ENUM (
 
 
 --
--- Name: current_account_id(); Type: FUNCTION; Schema: public; Owner: -
---
-
-CREATE FUNCTION public.current_account_id() RETURNS character varying
-    LANGUAGE sql STABLE
-    AS $$
-  SELECT cast(nullif(current_setting('current_account_id'), '') AS VARCHAR(32));
-$$;
-
-
---
--- Name: is_current_account_id(character varying); Type: FUNCTION; Schema: public; Owner: -
---
-
-CREATE FUNCTION public.is_current_account_id(account_id character varying) RETURNS boolean
-    LANGUAGE sql STABLE
-    AS $$
-  SELECT current_account_id() IS NULL OR current_account_id() = account_id;
-$$;
-
-
---
 -- Name: notify_changes_int_target(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -527,26 +505,6 @@ ALTER TABLE ONLY public.field_cards
 
 ALTER TABLE ONLY public.fields
     ADD CONSTRAINT fields_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.accounts(id) ON UPDATE CASCADE ON DELETE CASCADE;
-
-
---
--- Name: field_cards; Type: ROW SECURITY; Schema: public; Owner: -
---
-
-ALTER TABLE public.field_cards ENABLE ROW LEVEL SECURITY;
-
---
--- Name: field_cards field_cards_owner_write; Type: POLICY; Schema: public; Owner: -
---
-
-CREATE POLICY field_cards_owner_write ON public.field_cards FOR SELECT USING (public.is_current_account_id(account_id));
-
-
---
--- Name: field_cards field_cards_public_read; Type: POLICY; Schema: public; Owner: -
---
-
-CREATE POLICY field_cards_public_read ON public.field_cards FOR SELECT USING (true);
 
 
 --

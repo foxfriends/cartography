@@ -1,9 +1,9 @@
-import { CloseEvent } from "./CloseEvent";
 import { MessageEvent } from "./MessageEvent";
 import { AuthEvent } from "./AuthEvent";
-import { OneOff } from "./OneOff";
+import { OneOff } from "./OneOff.svelte";
 import { Subscription, type Channel } from "./Subscription";
-import type { MessageReplyMap } from "./Message";
+import type { Message, MessageReplyMap } from "./Message";
+import { ReactiveEventTarget } from "$lib/ReactiveEventTarget.svelte";
 
 interface SocketV1EventMap {
   message: MessageEvent;
@@ -12,14 +12,21 @@ interface SocketV1EventMap {
   auth: AuthEvent;
 }
 
-export class SocketV1 extends EventTarget {
+export class SocketV1 extends ReactiveEventTarget<SocketV1EventMap> {
+  static readonly PROTOCOL = ["v1.cartography.app"];
+
   #socket: WebSocket;
+  #url: string;
 
   constructor(url: string) {
     super();
+    this.#url = url;
 
-    this.#socket = new WebSocket(url, ["v1.cartography.app"]);
+    this.#socket = new WebSocket(this.#url, SocketV1.PROTOCOL);
+    this.#watchSocket();
+  }
 
+  #watchSocket() {
     this.#socket.addEventListener("open", (event) => {
       // eslint-disable-next-line no-console
       console.log("Socket opened", event);
@@ -33,7 +40,7 @@ export class SocketV1 extends EventTarget {
         this.dispatchEvent(new Event("error"));
       }
       try {
-        const message = JSON.parse(data);
+        const message = JSON.parse(data) as Message;
         this.dispatchEvent(new MessageEvent(message));
       } catch {
         this.#socket.close(4000, "Invalid JSON received");
@@ -41,22 +48,34 @@ export class SocketV1 extends EventTarget {
       }
     });
 
-    this.#socket.addEventListener("close", (event) => {
+    const reconnect = () => {
+      this.#socket.removeEventListener("error", onError);
+      this.#socket.removeEventListener("close", onClose);
+      this.#socket = new WebSocket(this.#url, SocketV1.PROTOCOL);
+      this.#watchSocket();
+    };
+
+    const onError = (event: Event) => {
+      // eslint-disable-next-line no-console
+      console.error("Socket error", event);
+      this.dispatchEvent(new Event("error", event));
+      reconnect();
+    };
+
+    const onClose = (event: CloseEvent) => {
       // eslint-disable-next-line no-console
       console.log("Socket closed", event);
-      this.dispatchEvent(new CloseEvent(event.reason));
-    });
+      this.dispatchEvent(new CloseEvent("close", event));
+      if (!event.wasClean) reconnect();
+    };
 
-    this.#socket.addEventListener("error", (event) => {
-      // eslint-disable-next-line no-console
-      console.log("Socket error", event);
-      this.dispatchEvent(new Event("error"));
-    });
+    this.#socket.addEventListener("error", onError);
+    this.#socket.addEventListener("close", onClose);
   }
 
   #sendMessage<T extends keyof MessageReplyMap>(
     type: T,
-    data: unknown,
+    data: unknown = {},
     id: string = window.crypto.randomUUID(),
   ) {
     this.#socket.send(JSON.stringify({ type, data, id }));
@@ -67,8 +86,12 @@ export class SocketV1 extends EventTarget {
     this.#sendMessage("auth", data)
       .reply()
       .then((event) => {
-        this.dispatchEvent(new AuthEvent(event.data));
+        this.dispatchEvent(new AuthEvent(event.data.account));
       });
+  }
+
+  getFields() {
+    return this.#sendMessage("get_fields");
   }
 
   unsubscribe(id: string) {
@@ -79,42 +102,6 @@ export class SocketV1 extends EventTarget {
     const id = window.crypto.randomUUID();
     this.#sendMessage("subscribe", { channel }, id);
     return new Subscription<C>(this, id);
-  }
-
-  addEventListener<K extends keyof SocketV1EventMap>(
-    type: K,
-    listener: (this: SocketV1, ev: SocketV1EventMap[K]) => unknown,
-    options?: boolean | AddEventListenerOptions,
-  ): void;
-  addEventListener(
-    type: string,
-    listener: EventListenerOrEventListenerObject,
-    options?: boolean | AddEventListenerOptions,
-  ): void;
-  addEventListener(
-    type: string,
-    listener: EventListenerOrEventListenerObject,
-    options?: boolean | AddEventListenerOptions,
-  ) {
-    super.addEventListener(type, listener, options);
-  }
-
-  removeEventListener<K extends keyof SocketV1EventMap>(
-    type: K,
-    listener: (this: WebSocket, ev: SocketV1EventMap[K]) => unknown,
-    options?: boolean | EventListenerOptions,
-  ): void;
-  removeEventListener(
-    type: string,
-    listener: EventListenerOrEventListenerObject,
-    options?: boolean | EventListenerOptions,
-  ): void;
-  removeEventListener(
-    type: string,
-    listener: EventListenerOrEventListenerObject,
-    options?: boolean | EventListenerOptions,
-  ): void {
-    super.removeEventListener(type, listener, options);
   }
 
   close(code?: number, reason?: string) {

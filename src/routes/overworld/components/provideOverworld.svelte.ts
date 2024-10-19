@@ -1,6 +1,5 @@
 import type { Field, FieldId } from "$lib/appserver/Field";
 import { getSocket } from "$lib/appserver/provideSocket.svelte";
-import type { Subscription } from "$lib/appserver/socket/Subscription";
 import { getContext, setContext } from "svelte";
 import { SvelteMap } from "svelte/reactivity";
 
@@ -11,23 +10,29 @@ interface Overworld {
 }
 
 export function getOverworld() {
-  return getContext(OVERWORLD) as Overworld;
+  const overworld = getContext(OVERWORLD) as Overworld;
+  return () => ({ ...overworld });
 }
 
 export function provideOverworld() {
   const socket = getSocket();
-  const fields = $state(new SvelteMap<FieldId, Field>());
 
-  $effect(() => {
-    let subscription: Subscription<"fields"> | undefined;
-    socket.addEventListener("auth", () => {
-      subscription?.unsubscribe();
-      subscription = socket.subscribe("fields");
-      subscription.addEventListener("next", ({ message }) => {
-        fields.set(message.data.id, message.data);
-      });
+  let fields = $state(new SvelteMap<FieldId, Field>());
+
+  socket.$on("auth", () => {
+    const subscription = socket.subscribe("fields");
+
+    socket.getFields().$then(({ data }) => {
+      fields = new SvelteMap(data.fields.map((field) => [field.id, field]));
     });
-    return () => subscription?.unsubscribe();
+
+    subscription.$on("next", ({ message }) => {
+      fields.set(message.data.field.id, message.data.field);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   });
 
   setContext(OVERWORLD, {

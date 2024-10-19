@@ -4,29 +4,31 @@ import { SocketV1 } from "./socket/SocketV1";
 
 const SOCKET = Symbol("Socket");
 
+interface SocketContext {
+  get socket(): SocketV1;
+}
+
 export function getSocket(): SocketV1 {
-  const context = getContext(SOCKET) as { get socket(): SocketV1 };
+  const context = getContext(SOCKET) as SocketContext;
   return context.socket;
 }
 
 export function provideSocket() {
-  let socket = $state();
+  let socket: SocketV1;
 
   $effect.pre(() => {
-    const newSocket = new SocketV1(`${PUBLIC_SERVER_WS_URL}/websocket`);
+    socket = new SocketV1(`${PUBLIC_SERVER_WS_URL}/websocket`);
 
-    newSocket.addEventListener("open", () => {
-      newSocket.auth({ id: "foxfriends" });
+    socket.addEventListener("open", () => {
+      socket.auth({ id: "foxfriends" });
     });
 
-    socket = newSocket;
-
-    return () => newSocket.close();
+    return () => socket.close();
   });
 
   setContext(SOCKET, {
     get socket() {
       return socket;
     },
-  });
+  } satisfies SocketContext);
 }

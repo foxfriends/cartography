@@ -1,5 +1,4 @@
 defmodule Cartography.Database do
-  import Sql
   require Logger
 
   @name __MODULE__
@@ -70,12 +69,5 @@ defmodule Cartography.Database do
       {:error, :rollback} -> raise "transaction! rollback"
       err -> err
     end
-  end
-
-  def as_account_id!(account_id, callback) do
-    transaction!(fn tx ->
-      query!(~q"SET LOCAL cartography.current_account_id = #{account_id}")
-      callback.(tx)
-    end)
   end
 end

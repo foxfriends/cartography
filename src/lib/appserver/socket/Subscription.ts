@@ -1,4 +1,5 @@
-import type { CardAccountMessage, FieldCardMessage, FieldMessage } from "./Message";
+import { ReactiveEventTarget } from "$lib/ReactiveEventTarget.svelte";
+import type { CardMessage, FieldCardMessage, FieldMessage } from "./Message";
 import { MessageEvent } from "./MessageEvent";
 import { NextEvent } from "./NextEvent";
 import { type SocketV1 } from "./SocketV1";
@@ -10,16 +11,20 @@ interface SubscriptionEventMap<C extends Channel> {
 // eslint-disable-next-line @typescript-eslint/naming-convention -- this is a server owned field
 export type Channel = "deck" | "fields" | { topic: "field_cards"; field_id: number };
 
-type Topic<C extends Channel> = C extends string ? C : C extends { topic: infer T } ? T : never;
+export type Topic<C extends Channel> = C extends string
+  ? C
+  : C extends { topic: infer T }
+    ? T
+    : never;
 
 export interface SubscriptionMessageMap {
   fields: FieldMessage;
-  deck: CardAccountMessage;
+  deck: CardMessage;
   // eslint-disable-next-line @typescript-eslint/naming-convention -- this is a server owned field
   field_cards: FieldCardMessage;
 }
 
-export class Subscription<C extends Channel> extends EventTarget {
+export class Subscription<C extends Channel> extends ReactiveEventTarget<SubscriptionEventMap<C>> {
   #socket: SocketV1;
   #handler: (event: MessageEvent) => void;
   id: string;
@@ -41,41 +46,5 @@ export class Subscription<C extends Channel> extends EventTarget {
   unsubscribe() {
     this.#socket.unsubscribe(this.id);
     this.#socket.removeEventListener("message", this.#handler);
-  }
-
-  addEventListener<K extends keyof SubscriptionEventMap<C>>(
-    type: K,
-    listener: (this: SocketV1, ev: SubscriptionEventMap<C>[K]) => unknown,
-    options?: boolean | AddEventListenerOptions,
-  ): void;
-  addEventListener(
-    type: string,
-    listener: EventListenerOrEventListenerObject,
-    options?: boolean | AddEventListenerOptions,
-  ): void;
-  addEventListener(
-    type: string,
-    listener: EventListenerOrEventListenerObject,
-    options?: boolean | AddEventListenerOptions,
-  ) {
-    super.addEventListener(type, listener, options);
-  }
-
-  removeEventListener<K extends keyof SubscriptionEventMap<C>>(
-    type: K,
-    listener: (this: WebSocket, ev: SubscriptionEventMap<C>[K]) => unknown,
-    options?: boolean | EventListenerOptions,
-  ): void;
-  removeEventListener(
-    type: string,
-    listener: EventListenerOrEventListenerObject,
-    options?: boolean | EventListenerOptions,
-  ): void;
-  removeEventListener(
-    type: string,
-    listener: EventListenerOrEventListenerObject,
-    options?: boolean | EventListenerOptions,
-  ): void {
-    super.removeEventListener(type, listener, options);
   }
 }
