@@ -2,7 +2,7 @@ import { CloseEvent } from "./CloseEvent";
 import { MessageEvent } from "./MessageEvent";
 import { AuthEvent } from "./AuthEvent";
 import { OneOff } from "./OneOff";
-import { Subscription } from "./Subscription";
+import { Subscription, type Channel } from "./Subscription";
 import type { MessageReplyMap } from "./Message";
 
 interface SocketV1EventMap {
@@ -11,9 +11,6 @@ interface SocketV1EventMap {
   close: CloseEvent;
   auth: AuthEvent;
 }
-
-// eslint-disable-next-line @typescript-eslint/naming-convention -- this is a server owned field
-type Channel = "deck" | "fields" | { topic: "field_cards"; field_id: number };
 
 export class SocketV1 extends EventTarget {
   #socket: WebSocket;
@@ -78,10 +75,10 @@ export class SocketV1 extends EventTarget {
     this.#sendMessage("unsubscribe", {}, id);
   }
 
-  subscribe(channel: Channel) {
+  subscribe<C extends Channel>(channel: C) {
     const id = window.crypto.randomUUID();
     this.#sendMessage("subscribe", { channel }, id);
-    return new Subscription(this, id);
+    return new Subscription<C>(this, id);
   }
 
   addEventListener<K extends keyof SocketV1EventMap>(

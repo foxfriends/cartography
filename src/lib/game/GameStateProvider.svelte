@@ -14,9 +14,6 @@
   import { choose } from "$lib/algorithm/choose";
   import type { CreateFlowEvent } from "$lib/events/CreateFlowEvent";
   import type { DeleteFlowEvent } from "$lib/events/DeleteFlowEvent";
-  import { getSocket } from "$lib/appserver/SocketProvider.svelte";
-  import type { Subscription } from "$lib/appserver/socket/Subscription";
-  import type { Field } from "$lib/appserver/Field";
 
   interface Shop {
     packs: Pack[];
@@ -42,24 +39,6 @@
 
 <script lang="ts">
   const { children }: { children: Snippet } = $props();
-  const socket = $derived.by(getSocket);
-
-  const fields: Field[] = $state([]);
-
-  $effect(() => {
-    let subscription: Subscription | undefined = undefined;
-    socket.addEventListener("auth", () => {
-      subscription = socket.subscribe("fields");
-      subscription.addEventListener("message", ({ message }) => {
-        if (message.type !== "field") {
-          socket.close(4000);
-          return;
-        }
-        fields.find((field) => field.id === message.data.id);
-      });
-    });
-    return () => subscription?.unsubscribe();
-  });
 
   const geography = {
     biome: "Coast",
