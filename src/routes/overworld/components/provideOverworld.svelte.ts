@@ -7,7 +7,7 @@ import { SvelteMap } from "svelte/reactivity";
 const OVERWORLD = Symbol("Overworld");
 
 interface Overworld {
-  get fields(): Field[];
+  get fields(): SvelteMap<FieldId, Field>;
 }
 
 export function getOverworld() {
