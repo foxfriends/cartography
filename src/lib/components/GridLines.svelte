@@ -9,6 +9,12 @@
 ></div>
 
 <style>
+  @property --grid-lines-color {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: black;
+  }
+
   .gridlines {
     pointer-events: none;
 
@@ -25,15 +31,15 @@
     background-repeat: repeat;
     background-size: var(--tile-width) var(--tile-height);
     background-image: linear-gradient(
-        rgb(0 0 0 / 12%),
-        rgb(0 0 0 / 12%) 1px,
+        rgb(from var(--grid-lines-color) r g b / 12%),
+        rgb(from var(--grid-lines-color) r g b / 12%) 1px,
         transparent 1px,
         transparent
       ),
       linear-gradient(
         to right,
-        rgb(0 0 0 / 12%),
-        rgb(0 0 0 / 12%) 1px,
+        rgb(from var(--grid-lines-color) r g b / 12%),
+        rgb(from var(--grid-lines-color) r g b / 12%) 1px,
         transparent 1px,
         transparent
       );

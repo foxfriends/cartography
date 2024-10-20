@@ -1,6 +1,8 @@
 <script lang="ts">
   import { provideSocket } from "$lib/appserver/provideSocket.svelte";
+  import DragTile from "$lib/components/DragTile.svelte";
   import DragWindow from "$lib/components/DragWindow.svelte";
+  import GridLines from "$lib/components/GridLines.svelte";
   import { getOverworld, provideOverworld } from "./components/provideOverworld.svelte";
 
   provideSocket();
@@ -25,22 +27,22 @@
   );
 </script>
 
-<div role="application">
-  <main class="void">
-    <DragWindow
-      tileWidth={128}
-      tileHeight={128}
-      gridHeight={extentY[1] - extentY[0]}
-      gridWidth={extentX[1] - extentX[0]}
-    >
-      <!-- TODO -->
-      <div></div>
-    </DragWindow>
-  </main>
-</div>
+<main class="void" role="application">
+  <DragWindow
+    tileWidth={128}
+    tileHeight={128}
+    gridHeight={extentY[1] - extentY[0]}
+    gridWidth={extentX[1] - extentX[0]}
+  >
+    <GridLines />
+
+    {#each fields.values() as field (field.id)}
+      <DragTile x={field.grid_x} y={field.grid_y} />
+    {/each}
+  </DragWindow>
+</main>
 
 <style>
-  div,
   main {
     position: absolute;
     inset: 0;
@@ -50,5 +52,6 @@
 
   .void {
     background: black;
+    --grid-lines-color: white;
   }
 </style>

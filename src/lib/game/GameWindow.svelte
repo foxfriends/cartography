@@ -91,11 +91,11 @@
     position: absolute;
     top: 0;
     left: 0;
-    width: var(--card-size);
-    height: var(--card-size);
+    width: var(--tile-width);
+    height: var(--tile-height);
     transform: translate(
-      calc(var(--grid-x) * var(--card-size) - var(--offset-x)),
-      calc(var(--grid-y) * var(--card-size) - var(--offset-y))
+      calc(var(--grid-x) * var(--tile-width) - var(--offset-x)),
+      calc(var(--grid-y) * var(--tile-height) - var(--offset-y))
     );
 
     &[data-type="grass"] {
