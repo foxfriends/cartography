@@ -1,5 +1,6 @@
 <script lang="ts">
   import { provideSocket } from "$lib/appserver/provideSocket.svelte";
+  import DragWindow from "$lib/components/DragWindow.svelte";
   import { getOverworld, provideOverworld } from "./components/provideOverworld.svelte";
 
   provideSocket();
@@ -7,7 +8,7 @@
 
   const { fields } = $derived.by(getOverworld());
 
-  const extent = $derived(
+  const [extentX, extentY] = $derived(
     Array.from(fields.values())
       .map((field) => [field.grid_x, field.grid_y] as const)
       .reduce(
@@ -22,12 +23,20 @@
         ] as const,
       ),
   );
-
-  $inspect(extent);
 </script>
 
 <div role="application">
-  <main class="void"></main>
+  <main class="void">
+    <DragWindow
+      tileWidth={128}
+      tileHeight={128}
+      gridHeight={extentY[1] - extentY[0]}
+      gridWidth={extentX[1] - extentX[0]}
+    >
+      <!-- TODO -->
+      <div></div>
+    </DragWindow>
+  </main>
 </div>
 
 <style>

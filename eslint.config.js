@@ -79,6 +79,12 @@ export default tsEslint.config(
     },
   },
   {
+    files: ["*.svelte", "**/*.svelte"],
+    rules: {
+      "prefer-const": ["warn", { destructuring: "all" }],
+    },
+  },
+  {
     languageOptions: {
       ecmaVersion: 2024,
       sourceType: "module",

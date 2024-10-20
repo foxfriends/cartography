@@ -1,73 +1,23 @@
 <script lang="ts">
   import { getGameState } from "./GameStateProvider.svelte";
   import CardField from "./CardField.svelte";
-  import GridLines from "./GridLines.svelte";
   import { CardPlacedEvent } from "$lib/events/CardPlacedEvent";
   import type { CardId } from "$lib/engine/Card";
   import { getAppState } from "./AppStateProvider.svelte";
   import CardFlow from "./CardFlow.svelte";
+  import DragWindow from "$lib/components/DragWindow.svelte";
+  import GridLines from "$lib/components/GridLines.svelte";
 
   const TILE_SIZE = 128;
 
   const appState = getAppState();
-
   const gameState = getGameState();
   const { geography, deck, field, flow } = $derived(gameState);
 
   let clientWidth = $state(0);
   let clientHeight = $state(0);
-
   let offsetX = $state(0);
   let offsetY = $state(0);
-
-  let mouseDragging = $state(false);
-
-  function oncontextmenu(event: MouseEvent) {
-    event.preventDefault();
-  }
-
-  function onmousedown(event: MouseEvent) {
-    if (event.buttons === 2) mouseDragging = true;
-  }
-
-  function onmouseup(event: MouseEvent) {
-    if (event.button === 2) mouseDragging = false;
-  }
-
-  function onmousemove(event: MouseEvent) {
-    if (!mouseDragging) return;
-    offsetX -= event.movementX;
-    offsetY -= event.movementY;
-  }
-
-  let touchDragging: Touch | null = $state(null);
-
-  function ontouchstart(event: TouchEvent) {
-    if (touchDragging === null && event.changedTouches.length === 1) {
-      touchDragging = event.changedTouches[0]!;
-    }
-  }
-
-  function ontouchend(event: TouchEvent) {
-    if (
-      touchDragging &&
-      !Array.from(event.touches).some((touch) => touch.identifier === touchDragging!.identifier)
-    ) {
-      touchDragging = null;
-    }
-  }
-
-  function ontouchmove(event: TouchEvent) {
-    if (touchDragging === null) return;
-    const previous = touchDragging;
-    const current = Array.from(event.touches).find(
-      (touch) => touch.identifier === previous.identifier,
-    );
-    if (!current) return;
-    offsetX -= current.clientX - previous.clientX;
-    offsetY -= current.clientY - previous.clientY;
-    touchDragging = current;
-  }
 
   function onMoveCard(id: CardId, movementX: number, movementY: number) {
     const card = field.find((card) => card.id === id);
@@ -115,39 +65,28 @@
   const activeField = $derived(visibleField.filter((card) => !card.loose));
 </script>
 
-<div
-  class="window"
+<DragWindow
+  tileWidth={128}
+  tileHeight={128}
+  gridHeight={8}
+  gridWidth={8}
+  bind:offsetX
+  bind:offsetY
   bind:clientWidth
   bind:clientHeight
-  style="--offset-x: {offsetX}px; --offset-y: {offsetY}px"
-  {onmousedown}
-  {ontouchstart}
-  {oncontextmenu}
-  role="presentation"
 >
   {#each terrain as tile (tile)}
     <div class="terrain" data-type={tile.type} style="--grid-x: {tile.x}; --grid-y: {tile.y}"></div>
   {/each}
+
   <GridLines />
   <CardField field={visibleField} {deck} {onMoveCard} />
   {#if appState.mode === "flow"}
     <CardFlow field={activeField} {deck} {flow} />
   {/if}
-</div>
-
-<svelte:window {onmousemove} {onmouseup} {ontouchmove} {ontouchend} ontouchcancel={ontouchend} />
+</DragWindow>
 
 <style>
-  .window {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    overflow: hidden;
-    background-color: rgb(255 255 255);
-    user-select: none;
-    isolation: isolate;
-  }
-
   .terrain {
     position: absolute;
     top: 0;
