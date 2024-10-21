@@ -56,10 +56,10 @@ defmodule Cartography.Socket.V1.Authenticated do
       SELECT
         to_json(fields.*) AS field,
         json_arrayagg(field_cards.* ABSENT ON NULL) AS field_cards
-        FROM fields
-        LEFT JOIN field_cards ON field_cards.field_id = fields.id
-        WHERE fields.id = #{field_id}
-        GROUP BY fields.id")
+      FROM fields
+      LEFT JOIN field_cards ON field_cards.field_id = fields.id
+      WHERE fields.id = #{field_id}
+      GROUP BY fields.id")
     {:push, {:json, V1.message("field", message, message_id)}, state}
   end
 
