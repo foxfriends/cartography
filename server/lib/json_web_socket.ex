@@ -44,6 +44,8 @@ defmodule JsonWebSocket do
 
   def encode_json(other), do: other
 
+  def json_message(value), do: {:json, value}
+
   defmacro __using__(_) do
     quote do
       @behaviour WebSock

@@ -28,7 +28,7 @@ defmodule Cartography.Socket.V1.CardAccountsListener do
   def handle_notification("transfer_card", target, _subject, state) do
     V1.push(
       state.socket,
-      {:json, V1.message("card_account", %{card: %{id: target}}, state.subscription_id)}
+      V1.message("card_account", %{card: %{id: target}}, state.subscription_id)
     )
 
     {:noreply, state}

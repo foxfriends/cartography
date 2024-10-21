@@ -13,7 +13,7 @@ defmodule Cartography.Socket.V1 do
   end
 
   def message(type, data, id) do
-    %{type: type, data: data, id: id}
+    JsonWebSocket.json_message(%{type: type, data: data, id: id})
   end
 
   @impl WebSock

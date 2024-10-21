@@ -42,7 +42,7 @@ defmodule Cartography.Socket.V1.Authenticated do
         state
       ) do
     fields = Database.all!(~q"SELECT * FROM fields WHERE account_id = #{state.account_id}")
-    {:push, {:json, V1.message("fields", %{fields: fields}, message_id)}, state}
+    {:push, V1.message("fields", %{fields: fields}, message_id), state}
   end
 
   def handle_message(
@@ -60,7 +60,7 @@ defmodule Cartography.Socket.V1.Authenticated do
       LEFT JOIN field_cards ON field_cards.field_id = fields.id
       WHERE fields.id = #{field_id}
       GROUP BY fields.id")
-    {:push, {:json, V1.message("field", message, message_id)}, state}
+    {:push, V1.message("field", message, message_id), state}
   end
 
   def handle_message(
@@ -69,6 +69,6 @@ defmodule Cartography.Socket.V1.Authenticated do
         message_id,
         state
       ) do
-    {:push, {:json, V1.message("ack", %{}, message_id)}, state}
+    {:push, V1.message("ack", %{}, message_id), state}
   end
 end

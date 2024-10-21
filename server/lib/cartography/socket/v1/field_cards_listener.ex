@@ -30,7 +30,7 @@ defmodule Cartography.Socket.V1.FieldCardsListener do
   def handle_notification("unplace_card", target, _subject, state) do
     V1.push(
       state.socket,
-      {:json, V1.message("field_card", %{field_card: %{id: target}}, state.subscription_id)}
+      V1.message("field_card", %{field_card: %{id: target}}, state.subscription_id)
     )
 
     {:noreply, state}
@@ -42,7 +42,7 @@ defmodule Cartography.Socket.V1.FieldCardsListener do
 
     V1.push(
       state.socket,
-      {:json, V1.message("field_card", %{field_card: field_card}, state.subscription_id)}
+      V1.message("field_card", %{field_card: field_card}, state.subscription_id)
     )
 
     {:noreply, state}

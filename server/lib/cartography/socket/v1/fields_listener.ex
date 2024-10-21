@@ -43,6 +43,6 @@ defmodule Cartography.Socket.V1.FieldsListener do
 
   defp push_field(id, state) do
     field = Database.one!(~q"SELECT * FROM fields WHERE id = #{id}")
-    V1.push(state.socket, {:json, V1.message("field", %{field: field}, state.subscription_id)})
+    V1.push(state.socket, V1.message("field", %{field: field}, state.subscription_id))
   end
 end
