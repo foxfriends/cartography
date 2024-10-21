@@ -65,16 +65,7 @@
   const activeField = $derived(visibleField.filter((card) => !card.loose));
 </script>
 
-<DragWindow
-  tileWidth={128}
-  tileHeight={128}
-  gridHeight={8}
-  gridWidth={8}
-  bind:offsetX
-  bind:offsetY
-  bind:clientWidth
-  bind:clientHeight
->
+<DragWindow bind:offsetX bind:offsetY bind:clientWidth bind:clientHeight>
   {#each terrain as tile (tile)}
     <div class="terrain" data-type={tile.type} style="--grid-x: {tile.x}; --grid-y: {tile.y}"></div>
   {/each}

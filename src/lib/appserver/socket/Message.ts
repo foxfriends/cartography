@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/naming-convention -- this is a server owned field */
+
 import type { Account } from "../Account";
 import type { Field } from "../Field";
 import type { FieldCard } from "../FieldCard";
@@ -5,8 +7,8 @@ import type { Card } from "../Card";
 
 export interface MessageReplyMap {
   auth: AccountMessage;
-  // eslint-disable-next-line @typescript-eslint/naming-convention -- this is a server owned field
   get_fields: FieldsMessage;
+  get_field: FieldMessage;
   subscribe: never;
   unsubscribe: never;
 }
@@ -24,7 +26,7 @@ export interface AccountMessage extends AnyMessage {
 
 export interface FieldMessage extends AnyMessage {
   type: "field";
-  data: { field: Field };
+  data: { field: Field; field_cards: FieldCard[] };
 }
 
 export interface FieldsMessage extends AnyMessage {
@@ -34,7 +36,7 @@ export interface FieldsMessage extends AnyMessage {
 
 export interface FieldCardMessage extends AnyMessage {
   type: "field_card";
-  // eslint-disable-next-line @typescript-eslint/naming-convention -- this is a server owned field
+
   data: { field_card: FieldCard };
 }
 
@@ -43,4 +45,9 @@ export interface CardMessage extends AnyMessage {
   data: { card: Card };
 }
 
-export type Message = AccountMessage | FieldMessage | CardMessage | FieldCardMessage;
+export type Message =
+  | AccountMessage
+  | FieldMessage
+  | CardMessage
+  | FieldCardMessage
+  | FieldsMessage;

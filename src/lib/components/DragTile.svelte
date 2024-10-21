@@ -98,6 +98,8 @@
   class="griditem tile"
   class:loose
   class:dragging
+  class:clickable={!!onClick}
+  class:draggable={!!onMove}
   aria-grabbed={!!dragging}
   style="
     --loose-x: {loose ? x : 0}px;
@@ -138,7 +140,6 @@
 
   .tile {
     background-color: white;
-    cursor: grab;
     transition:
       --grid-x 100ms,
       --grid-y 100ms,
@@ -156,11 +157,23 @@
         --loose-x 100ms,
         --loose-y 100ms;
     }
+  }
+
+  .tile.clickable {
+    cursor: pointer;
+  }
+
+  .tile.draggable {
+    cursor: grab;
 
     &:hover {
       box-shadow: 0 0 1rem rgb(0 0 0 /0.25);
       border: 1px solid rgb(91 200 227);
       z-index: 1;
+    }
+
+    &.dragging {
+      cursor: grabbing;
     }
   }
 

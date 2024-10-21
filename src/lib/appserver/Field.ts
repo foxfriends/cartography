@@ -11,3 +11,9 @@ export interface Field {
 
 declare const __brand: unique symbol;
 export type FieldId = number & { [__brand]: "FieldId" };
+
+export type FieldIdString = `${number}` & { [__brand]: "FieldId" };
+
+export function parseFieldId(string: FieldIdString): FieldId {
+  return Number.parseInt(string) as FieldId;
+}

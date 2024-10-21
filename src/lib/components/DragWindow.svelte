@@ -2,20 +2,16 @@
   import type { Snippet } from "svelte";
 
   let {
-    gridWidth: _gridWidth,
-    gridHeight: _gridHeight,
-    tileWidth,
-    tileHeight,
+    tileWidth = 128,
+    tileHeight = 128,
     children,
     offsetX = $bindable(0),
     offsetY = $bindable(0),
     clientWidth = $bindable(0),
     clientHeight = $bindable(0),
   }: {
-    gridWidth: number;
-    gridHeight: number;
-    tileWidth: number;
-    tileHeight: number;
+    tileWidth?: number;
+    tileHeight?: number;
     offsetX?: number;
     offsetY?: number;
     clientWidth?: number;

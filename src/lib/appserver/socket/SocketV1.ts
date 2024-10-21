@@ -4,6 +4,7 @@ import { OneOff } from "./OneOff.svelte";
 import { Subscription, type Channel } from "./Subscription";
 import type { Message, MessageReplyMap } from "./Message";
 import { ReactiveEventTarget } from "$lib/ReactiveEventTarget.svelte";
+import type { FieldId } from "../Field";
 
 interface SocketV1EventMap {
   message: MessageEvent;
@@ -92,6 +93,10 @@ export class SocketV1 extends ReactiveEventTarget<SocketV1EventMap> {
 
   getFields() {
     return this.#sendMessage("get_fields");
+  }
+
+  getField(id: FieldId) {
+    return this.#sendMessage("get_field", { field_id: id });
   }
 
   unsubscribe(id: string) {
