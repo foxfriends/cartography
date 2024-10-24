@@ -14,7 +14,7 @@ interface FieldState {
 
 export function getFieldState() {
   const state = getContext(FIELD_STATE) as FieldState;
-  return () => ({ ...state });
+  return { ...state };
 }
 
 export function provideFieldState(fieldId: FieldId, initial?: Field) {

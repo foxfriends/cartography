@@ -8,7 +8,7 @@
 
   provideOverworld();
 
-  const { fields } = $derived.by(getOverworld());
+  const { fields } = $derived.by(getOverworld);
 
   async function viewField(field: Field) {
     await goto(`/field/${field.id}`);

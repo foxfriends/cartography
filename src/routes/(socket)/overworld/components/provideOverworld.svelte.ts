@@ -11,7 +11,7 @@ interface Overworld {
 
 export function getOverworld() {
   const overworld = getContext(OVERWORLD) as Overworld;
-  return () => ({ ...overworld });
+  return { ...overworld };
 }
 
 export function provideOverworld() {

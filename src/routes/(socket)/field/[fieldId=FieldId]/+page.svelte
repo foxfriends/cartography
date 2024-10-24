@@ -9,7 +9,7 @@
 
   provideFieldState(parseFieldId(fieldId));
 
-  const { field: _field, fieldCards: _fieldCards } = $derived.by(getFieldState());
+  const { field: _field, fieldCards: _fieldCards } = $derived.by(getFieldState);
 </script>
 
 <DragWindow></DragWindow>
