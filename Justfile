@@ -1,4 +1,5 @@
 set quiet
+set dotenv-load
 
 default: dev
 fix: fmt (lint "fix")
@@ -7,9 +8,9 @@ export CONCURRENTLY_KILL_OTHERS := "true"
 export CONCURRENTLY_PAD_PREFIX := "true"
 export CONCURRENTLY_PREFIX_COLORS := "auto"
 
-export DATABASE_URL := `if [ -f .env ]; then rg '^DATABASE_URL="?([^"]*)"?$' -r '$1' .env; fi`
-export SHADOW_DATABASE_URL := `if [ -f .env ]; then rg '^SHADOW_DATABASE_URL="?([^"]*)"?$' -r '$1' .env; fi`
-export ROOT_DATABASE_URL := `if [ -f .env ]; then rg '^ROOT_DATABASE_URL="?([^"]*)"?$' -r '$1' .env; fi`
+DATABASE_URL := env_var("DATABASE_URL")
+SHADOW_DATABASE_URL := env_var("SHADOW_DATABASE_URL")
+ROOT_DATABASE_URL := env_var("ROOT_DATABASE_URL")
 
 database_name := if DATABASE_URL != "" { file_stem(DATABASE_URL) } else { "" }
 shadow_database_name := if SHADOW_DATABASE_URL != "" { file_stem(SHADOW_DATABASE_URL) } else { "" }
