@@ -6,6 +6,7 @@
 ```sh
 gleam add server@1
 ```
+
 ```gleam
 import server
 

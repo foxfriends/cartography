@@ -19,13 +19,13 @@ dev: up
     npx concurrently --names "sveltekit,migrate,server" \
         "npx vite dev --host" \
         "npx graphile-migrate watch" \
-        "cd server && mix run --no-halt"
+        "cd server && gleam run"
 
 app: up
     npx concurrently --names "sveltekit,migrate,server,tauri" \
         "npx vite dev --host" \
         "npx graphile-migrate watch" \
-        "cd server && mix run" \
+        "cd server && gleam run" \
         "npx tauri dev"
 
 init: get
@@ -36,7 +36,6 @@ init: get
 
 get:
     npm install
-    cd server && mix deps.get
 
 up: && migrate
     docker compose up -d --wait
@@ -63,7 +62,7 @@ check:
     npx svelte-kit sync
     npx svelte-check --tsconfig ./tsconfig.json
     cd src-tauri && cargo check
-    cd server && mix dialyzer
+    cd server && gleam check
 
 watch:
     npx svelte-kit sync
@@ -71,17 +70,16 @@ watch:
 
 lint mode="check":
     npx eslint . {{ if mode == "fix" { "--fix" } else { "--cache" } }}
-    cd server && mix credo
     cd src-tauri && cargo clippy
 
 fmt:
     npx prettier --write . --cache
     cd src-tauri && cargo fmt
-    cd server && mix format
+    cd server && gleam format
 
 test:
     npm test
-    cd server && mix test
+    cd server && gleam test
     cd src-tauri && cargo test
 
 migrate:

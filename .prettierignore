@@ -20,3 +20,6 @@ yarn.lock
 
 /server/deps
 /server/_build
+/server/build
+
+/server-ex

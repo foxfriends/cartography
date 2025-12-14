@@ -2,8 +2,10 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 17.0 (Debian 17.0-1.pgdg120+1)
--- Dumped by pg_dump version 17.0 (Debian 17.0-1.pgdg120+1)
+\restrict D7ErYkhLNxXoB4997rz0KFtleSPbd9siGVMRmgnprVsCsxWsQ6SCTyVRPHAwR9t
+
+-- Dumped from database version 17.7 (Debian 17.7-3.pgdg13+1)
+-- Dumped by pg_dump version 17.7 (Debian 17.7-3.pgdg13+1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -510,4 +512,6 @@ ALTER TABLE ONLY public.fields
 --
 -- PostgreSQL database dump complete
 --
+
+\unrestrict D7ErYkhLNxXoB4997rz0KFtleSPbd9siGVMRmgnprVsCsxWsQ6SCTyVRPHAwR9t
 
