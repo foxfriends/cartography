@@ -5,6 +5,7 @@ import gleam/int
 import gleam/otp/static_supervisor as sup
 import gleam/result
 import mist
+import notifications
 import palabres
 import palabres/options
 import pog
@@ -31,8 +32,12 @@ pub fn main() -> Nil {
     |> pog.pool_size(10)
     |> pog.supervised()
 
-  let context = context.Context(db_name)
+  let notifications_name = process.new_name("notifications")
+  let database_notifications =
+    notifications.new(notifications_name, pog.named_connection(db_name))
+    |> notifications.supervised()
 
+  let context = context.Context(db_name, notifications_name)
   let server =
     mist.new(fn(req) { router.handler(req, context) })
     |> mist.port(port)
@@ -41,6 +46,7 @@ pub fn main() -> Nil {
   let assert Ok(_) =
     sup.new(sup.OneForOne)
     |> sup.add(database)
+    |> sup.add(database_notifications)
     |> sup.add(server)
     |> sup.start()
 
