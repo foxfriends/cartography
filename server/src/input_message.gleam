@@ -2,7 +2,7 @@ import gleam/dynamic/decode
 
 pub type Channel {
   Fields
-  FieldCards(String)
+  FieldCards(Int)
   Deck
 }
 
@@ -35,7 +35,7 @@ fn decode_channel() {
   case name {
     "fields" -> decode.success(Fields)
     "field_cards" -> {
-      use field_id <- decode.subfield(["channel", "field_id"], decode.string)
+      use field_id <- decode.subfield(["channel", "field_id"], decode.int)
       decode.success(FieldCards(field_id))
     }
     "deck" -> decode.success(Deck)

@@ -2,7 +2,6 @@ import gleam/dict.{type Dict}
 import gleam/dynamic
 import gleam/dynamic/decode
 import gleam/erlang/process
-import gleam/io
 import gleam/otp/actor
 import gleam/otp/supervision
 import gleam/string

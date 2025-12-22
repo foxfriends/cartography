@@ -8,6 +8,8 @@ import gleam/time/calendar
 import gleam/time/duration
 import gleam/time/timestamp
 import handlers/auth_handler
+import handlers/get_field_handler
+import handlers/get_fields_handler
 import handlers/subscribe_handler
 import input_message
 import mist.{type WebsocketConnection, type WebsocketMessage, Text}
@@ -75,12 +77,14 @@ fn handle_message(
     use message <- parse_message(text)
     case message.data {
       input_message.Auth(id) -> auth_handler.handle(state, conn, message.id, id)
+      input_message.GetFields ->
+        get_fields_handler.handle(state, conn, message.id)
+      input_message.GetField(field_id) ->
+        get_field_handler.handle(state, conn, message.id, field_id)
       input_message.Subscribe(channel) ->
         subscribe_handler.handle(state, conn, message.id, channel)
-
-      _ -> {
-        Ok(mist.continue(state))
-      }
+      input_message.Unsubscribe ->
+        unsubscribe_handler.handle(state, conn, message.id)
     }
   }
   case response {

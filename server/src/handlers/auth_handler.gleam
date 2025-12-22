@@ -1,8 +1,8 @@
-import account
 import gleam/option
 import gleam/result
 import gleam/string
 import mist
+import models/account
 import output_message
 import pog
 import rows
@@ -37,13 +37,9 @@ pub fn handle(
     }
 
     use _ <- result.map(
-      output_message.send(
-        output_message.OutputMessage(
-          data: output_message.Account(account.Account(id: acc.id)),
-          id: message_id,
-        ),
-        conn,
-      )
+      output_message.Account(account.Account(id: acc.id))
+      |> output_message.OutputMessage(id: message_id)
+      |> output_message.send(conn)
       |> result.map_error(rows.HandlerError),
     )
     Ok(mist.continue(

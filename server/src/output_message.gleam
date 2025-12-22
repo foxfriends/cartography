@@ -1,9 +1,13 @@
-import account
 import gleam/json
 import mist
+import models/account
+import models/field
+import models/field_card
 
 pub type OutputMessageData {
   Account(account.Account)
+  Fields(List(field.Field))
+  Field(field: field.Field, field_cards: List(field_card.FieldCard))
 }
 
 pub type OutputMessage {
@@ -12,7 +16,21 @@ pub type OutputMessage {
 
 pub fn to_json(message: OutputMessage) -> json.Json {
   let #(msg_type, data) = case message.data {
-    Account(acc) -> #("account", account.to_json(acc))
+    Account(acc) -> #(
+      "account",
+      json.object([#("account", account.to_json(acc))]),
+    )
+    Fields(fields) -> #(
+      "fields",
+      json.object([#("fields", json.array(fields, field.to_json))]),
+    )
+    Field(field_data, field_cards) -> #(
+      "field",
+      json.object([
+        #("field", field.to_json(field_data)),
+        #("field_cards", json.array(field_cards, field_card.to_json)),
+      ]),
+    )
   }
   json.object([
     #("type", json.string(msg_type)),

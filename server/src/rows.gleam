@@ -1,3 +1,5 @@
+import gleam/dynamic/decode
+import gleam/json
 import gleam/option
 import pog
 
@@ -27,4 +29,10 @@ pub fn one(
     [row] -> with_row(row)
     _ -> Error(TooManyRows)
   }
+}
+
+pub fn json(decoder: decode.Decoder(t)) {
+  use json_string <- decode.then(decode.string)
+  let assert Ok(result) = json.parse(json_string, decoder)
+  decode.success(result)
 }
