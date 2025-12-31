@@ -1,4 +1,5 @@
 import context.{type Context}
+import gleam/dict
 import gleam/http/request
 import gleam/json
 import gleam/option
@@ -114,7 +115,10 @@ pub fn socket_handler(
     request: request,
     handler: handle_message,
     on_init: fn(_conn) {
-      #(websocket_state.State(context, option.None), option.None)
+      #(
+        websocket_state.State(context, option.None, listeners: dict.new()),
+        option.None,
+      )
     },
     on_close: fn(_state) {
       palabres.info("websocket connection closed")

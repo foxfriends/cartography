@@ -25,16 +25,16 @@ export function provideFieldState(fieldId: FieldId, initial?: Field) {
 
   socket.$on("auth", () => {
     const fieldSubscription = socket.subscribe("fields");
-    const fieldCardsSubscription = socket.subscribe({ topic: "field_cards", field_id: fieldId });
+    // const fieldCardsSubscription = socket.subscribe({ topic: "field_cards", field_id: fieldId });
 
     socket.getField(fieldId).$then(({ data }) => {
       field = data.field;
       fieldCards = new SvelteMap(data.field_cards.map((card) => [card.card_id, card]));
     });
 
-    fieldCardsSubscription.$on("next", ({ message }) => {
-      fieldCards.set(message.data.field_card.card_id, message.data.field_card);
-    });
+    // fieldCardsSubscription.$on("next", ({ message }) => {
+    //   fieldCards.set(message.data.field_card.card_id, message.data.field_card);
+    // });
 
     fieldSubscription.$on("next", ({ message }) => {
       field = message.data.field;
@@ -42,7 +42,7 @@ export function provideFieldState(fieldId: FieldId, initial?: Field) {
 
     return () => {
       fieldSubscription.unsubscribe();
-      fieldCardsSubscription.unsubscribe();
+      // fieldCardsSubscription.unsubscribe();
     };
   });
 

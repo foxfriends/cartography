@@ -1,11 +1,13 @@
 import gleam/dynamic/decode
 import gleam/json
 import gleam/option
+import gleam/result
 import pog
 
 pub type Error(e) {
   TooManyRows
   NoRows
+  QueryError(pog.QueryError)
   HandlerError(e)
 }
 
@@ -29,6 +31,17 @@ pub fn one(
     [row] -> with_row(row)
     _ -> Error(TooManyRows)
   }
+}
+
+pub fn execute(
+  query: pog.Query(t),
+  database: pog.Connection,
+  with_rows: fn(pog.Returned(t)) -> Result(u, Error(e)),
+) -> Result(u, Error(e)) {
+  use rows <- result.try(
+    pog.execute(query, database) |> result.map_error(QueryError),
+  )
+  with_rows(rows)
 }
 
 pub fn json(decoder: decode.Decoder(t)) {

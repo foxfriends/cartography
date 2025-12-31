@@ -39,7 +39,7 @@ pub fn handle(
     use #(field_data, field_cards) <- rows.one(result)
 
     use _ <- result.map(
-      output_message.Field(field: field_data, field_cards:)
+      output_message.FieldWithCards(field: field_data, field_cards:)
       |> output_message.OutputMessage(id: message_id)
       |> output_message.send(conn)
       |> result.map_error(rows.HandlerError),

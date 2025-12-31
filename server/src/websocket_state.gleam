@@ -1,8 +1,13 @@
 import context
+import gleam/dict
 import gleam/option
 
 pub type State {
-  State(context: context.Context, account_id: option.Option(String))
+  State(
+    context: context.Context,
+    account_id: option.Option(String),
+    listeners: dict.Dict(String, fn() -> Nil),
+  )
 }
 
 pub fn account_id(

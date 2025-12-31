@@ -7,7 +7,8 @@ import models/field_card
 pub type OutputMessageData {
   Account(account.Account)
   Fields(List(field.Field))
-  Field(field: field.Field, field_cards: List(field_card.FieldCard))
+  FieldWithCards(field: field.Field, field_cards: List(field_card.FieldCard))
+  Field(field: field.Field)
 }
 
 pub type OutputMessage {
@@ -24,11 +25,17 @@ pub fn to_json(message: OutputMessage) -> json.Json {
       "fields",
       json.object([#("fields", json.array(fields, field.to_json))]),
     )
-    Field(field_data, field_cards) -> #(
+    FieldWithCards(field_data, field_cards) -> #(
       "field",
       json.object([
         #("field", field.to_json(field_data)),
         #("field_cards", json.array(field_cards, field_card.to_json)),
+      ]),
+    )
+    Field(field_data) -> #(
+      "field",
+      json.object([
+        #("field", field.to_json(field_data)),
       ]),
     )
   }

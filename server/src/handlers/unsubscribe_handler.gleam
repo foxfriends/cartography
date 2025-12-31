@@ -1,6 +1,5 @@
-import gleam/erlang/process
+import gleam/dict
 import mist
-import notifications
 import websocket_state
 
 pub fn handle(
@@ -8,8 +7,11 @@ pub fn handle(
   _conn: mist.WebsocketConnection,
   message_id: String,
 ) -> Result(mist.Next(websocket_state.State, _msg), String) {
-  process.named_subject(state.context.notifications)
-  |> process.send(notifications.unsubscribe(message_id))
-
-  Ok(mist.continue(state))
+  case dict.get(state.listeners, message_id) {
+    Ok(unsub) -> {
+      unsub()
+      Ok(mist.continue(state))
+    }
+    Error(_) -> Ok(mist.continue(state))
+  }
 }

@@ -1,15 +1,16 @@
-import gleam/dynamic
-import gleam/erlang/process
+import gleam/dict
 import gleam/io
+import gleam/result
 import gleam/string
+import handlers/listeners/fields_listener
 import input_message
 import mist
-import notifications
+import notification_listener
 import websocket_state
 
 pub fn handle(
   state: websocket_state.State,
-  _conn: mist.WebsocketConnection,
+  conn: mist.WebsocketConnection,
   message_id: String,
   channel: input_message.Channel,
 ) -> Result(mist.Next(websocket_state.State, _msg), String) {
@@ -17,19 +18,29 @@ pub fn handle(
 
   case channel {
     input_message.Fields -> {
-      process.named_subject(state.context.notifications)
-      |> process.send(
-        notifications.dynamic(log_notification)
-        |> notifications.for(message_id, "fields:" <> account_id),
+      use listener <- result.try(
+        fields_listener.start(
+          state.context.notifications,
+          conn,
+          state.context.db,
+          account_id,
+          message_id,
+        )
+        |> result.map_error(string.inspect),
       )
+
+      Ok(mist.continue(
+        websocket_state.State(
+          ..state,
+          listeners: dict.insert(state.listeners, message_id, fn() {
+            notification_listener.unlisten(listener.data)
+          }),
+        ),
+      ))
     }
     _ -> {
       io.println(string.inspect(channel))
+      Ok(mist.continue(state))
     }
   }
-  Ok(mist.continue(state))
-}
-
-fn log_notification(dyn: dynamic.Dynamic) {
-  io.println(string.inspect(dyn))
 }
