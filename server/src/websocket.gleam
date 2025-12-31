@@ -11,6 +11,7 @@ import handlers/auth_handler
 import handlers/get_field_handler
 import handlers/get_fields_handler
 import handlers/subscribe_handler
+import handlers/unsubscribe_handler
 import input_message
 import mist.{type WebsocketConnection, type WebsocketMessage, Text}
 import palabres
