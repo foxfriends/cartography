@@ -1,7 +1,5 @@
 import gleam/dynamic/decode
 import gleam/erlang/process
-import gleam/json
-import gleam/otp/actor
 import gleam/result
 import mist
 import models/field
@@ -48,33 +46,8 @@ pub fn start(
 ) {
   notification_listener.new(State(account_id:, conn:, db:, message_id:))
   |> notification_listener.listen_to(notifications, "fields:" <> account_id)
-  |> notification_listener.on_message(on_message)
+  |> notification_listener.on_notification(event_decoder(), on_notification)
   |> notification_listener.start()
-}
-
-fn parse_message(
-  state: notification_listener.State(State),
-  message: notification_listener.Message(Message),
-  cb: fn(Event) -> actor.Next(state, msg),
-) {
-  case message {
-    notification_listener.Notification(pog.Notify(_, _, _, payload)) -> {
-      case json.parse(payload, using: event_decoder()) {
-        Ok(message) -> cb(message)
-        Error(_) -> {
-          notification_listener.stop(state)
-          actor.stop_abnormal("unexpected event")
-        }
-      }
-    }
-    notification_listener.Unlisten -> {
-      notification_listener.stop(state)
-      actor.stop()
-    }
-    notification_listener.Msg(_) -> {
-      panic as "unreachable"
-    }
-  }
 }
 
 fn push_field(state: State, field_id: Int) {
@@ -93,14 +66,10 @@ fn push_field(state: State, field_id: Int) {
   Ok(Nil)
 }
 
-fn on_message(
-  state: notification_listener.State(State),
-  message: notification_listener.Message(Message),
-) {
-  use message <- parse_message(state, message)
-  let assert Ok(Nil) = case message {
-    NewField(field_id, _) -> push_field(state.state, field_id)
-    EditField(field_id, _) -> push_field(state.state, field_id)
+fn on_notification(state: State, event: Event) {
+  let assert Ok(Nil) = case event {
+    NewField(field_id, _) -> push_field(state, field_id)
+    EditField(field_id, _) -> push_field(state, field_id)
   }
-  actor.continue(state)
+  notification_listener.continue(state)
 }

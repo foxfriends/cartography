@@ -1,5 +1,7 @@
+import gleam/dynamic/decode
 import gleam/erlang/process.{type Name}
 import gleam/erlang/reference
+import gleam/json
 import gleam/option.{type Option}
 import gleam/otp/actor
 import gleam/result
@@ -19,47 +21,76 @@ pub type Message(msg) {
   Msg(msg)
 }
 
-pub opaque type Builder(state, msg) {
+pub type Never
+
+pub opaque type Next(state) {
+  Continue(state)
+  Stop
+  StopAbnormal(String)
+}
+
+pub fn continue(state: state) {
+  Continue(state)
+}
+
+pub fn stop() {
+  Stop
+}
+
+pub fn stop_abnormal(reason: String) {
+  StopAbnormal(reason)
+}
+
+pub opaque type Builder(state, event, msg) {
   Builder(
     initial_state: state,
     channel: Option(#(pog.NotificationsConnection, String)),
-    handler: Option(
-      fn(State(state), Message(msg)) -> actor.Next(State(state), Message(msg)),
+    handler: Option(fn(state, msg) -> Next(state)),
+    event_handler: Option(
+      #(decode.Decoder(event), fn(state, event) -> Next(state)),
     ),
     name: Option(Name(Message(msg))),
   )
 }
 
-pub fn new(state: state) -> Builder(state, msg) {
+pub fn new(state: state) -> Builder(state, Never, Never) {
   Builder(
     initial_state: state,
     channel: option.None,
     handler: option.None,
+    event_handler: option.None,
     name: option.None,
   )
 }
 
 pub fn named(
-  builder: Builder(state, msg),
+  builder: Builder(state, event, msg),
   name: Name(Message(msg)),
-) -> Builder(state, msg) {
+) -> Builder(state, event, msg) {
   Builder(..builder, name: option.Some(name))
 }
 
 pub fn listen_to(
-  builder: Builder(state, msg),
+  builder: Builder(state, event, msg),
   notifications: pog.NotificationsConnection,
   channel: String,
-) -> Builder(state, msg) {
+) -> Builder(state, event, msg) {
   Builder(..builder, channel: option.Some(#(notifications, channel)))
 }
 
 pub fn on_message(
-  builder: Builder(state, msg),
-  handler: fn(State(state), Message(msg)) ->
-    actor.Next(State(state), Message(msg)),
-) -> Builder(state, msg) {
+  builder: Builder(state, event, _msg),
+  handler: fn(state, msg) -> Next(state),
+) -> Builder(state, event, msg) {
   Builder(..builder, handler: option.Some(handler))
+}
+
+pub fn on_notification(
+  builder: Builder(state, _event, msg),
+  decoder: decode.Decoder(event),
+  handler: fn(state, event) -> Next(state),
+) -> Builder(state, event, msg) {
+  Builder(..builder, event_handler: option.Some(#(decoder, handler)))
 }
 
 fn with(state: t, option: Option(v), apply: fn(t, v) -> t) -> t {
@@ -69,7 +100,7 @@ fn with(state: t, option: Option(v), apply: fn(t, v) -> t) -> t {
   }
 }
 
-pub fn stop(state: State(st)) {
+fn shutdown(state: State(st)) {
   pog.unlisten(state.notifications, state.reference)
 }
 
@@ -78,16 +109,21 @@ pub fn unlisten(listener: process.Subject(Message(msg))) {
 }
 
 pub fn start(
-  builder: Builder(state, msg),
+  builder: Builder(state, event, msg),
 ) -> Result(actor.Started(process.Subject(Message(msg))), actor.StartError) {
+  use #(notifications, channel) <- result.try(
+    option.to_result(builder.channel, "missing channel")
+    |> result.map_error(actor.InitFailed),
+  )
+  use #(event_decoder, event_handler) <- result.try(
+    option.to_result(builder.event_handler, "missing event handler")
+    |> result.map_error(actor.InitFailed),
+  )
+
   actor.new_with_initialiser(100, fn(subject) -> Result(
     actor.Initialised(State(state), Message(msg), process.Subject(Message(msg))),
     String,
   ) {
-    use #(notifications, channel) <- result.try(option.to_result(
-      builder.channel,
-      "missing channel",
-    ))
     let reference = pog.listen(notifications, channel)
 
     let selector: process.Selector(Message(msg)) =
@@ -109,6 +145,50 @@ pub fn start(
     )
   })
   |> with(builder.name, actor.named)
-  |> with(builder.handler, actor.on_message)
+  |> actor.on_message(fn(state, message) {
+    use delegate_message <- handle_generic(state, message, event_decoder)
+    let sub_next = case delegate_message {
+      Event(event) -> event_handler(state.state, event)
+      Message(msg) -> {
+        let assert option.Some(handler) = builder.handler
+        handler(state.state, msg)
+      }
+    }
+    case sub_next {
+      Stop -> actor.stop()
+      StopAbnormal(reason) -> actor.stop_abnormal(reason)
+      Continue(substate) -> actor.continue(State(..state, state: substate))
+    }
+  })
   |> actor.start()
+}
+
+fn handle_generic(
+  state: State(state),
+  message: Message(msg),
+  decoder: decode.Decoder(event),
+  delegate_fn: fn(DelegateMessage(event, msg)) ->
+    actor.Next(State(state), Message(msg)),
+) {
+  case message {
+    Notification(pog.Notify(_, _, _, payload)) -> {
+      case json.parse(payload, using: decoder) {
+        Ok(event) -> delegate_fn(Event(event))
+        Error(_) -> {
+          shutdown(state)
+          actor.stop_abnormal("unexpected event")
+        }
+      }
+    }
+    Unlisten -> {
+      shutdown(state)
+      actor.stop()
+    }
+    Msg(msg) -> delegate_fn(Message(msg))
+  }
+}
+
+type DelegateMessage(event, message) {
+  Event(event)
+  Message(message)
 }
