@@ -1,10 +1,13 @@
 import gleam/dynamic/decode
 import gleam/erlang/process.{type Name}
 import gleam/erlang/reference
+import gleam/io
 import gleam/json
 import gleam/option.{type Option}
 import gleam/otp/actor
 import gleam/result
+import gleam/string
+import palabres
 import pog
 
 pub type State(st) {
@@ -124,7 +127,14 @@ pub fn start(
     actor.Initialised(State(state), Message(msg), process.Subject(Message(msg))),
     String,
   ) {
-    let reference = pog.listen(notifications, channel)
+    palabres.info("starting database listener")
+    |> palabres.string("channel", channel)
+    |> palabres.log()
+
+    use reference <- result.try(
+      pog.listen(notifications, channel)
+      |> result.map_error(fn(_) { "failed to start listener" }),
+    )
 
     let selector: process.Selector(Message(msg)) =
       process.new_selector()
@@ -133,6 +143,10 @@ pub fn start(
         pog.notification_selector()
         |> process.map_selector(Notification),
       )
+      |> process.select_other(fn(dyn) {
+        io.println(string.inspect(dyn))
+        Unlisten
+      })
 
     Ok(
       actor.initialised(State(
@@ -177,7 +191,12 @@ fn handle_generic(
     actor.Next(State(state), Message(msg)),
 ) {
   case message {
-    Notification(pog.Notify(_, _, _, payload)) -> {
+    Notification(pog.Notify(_, _, channel, payload)) -> {
+      palabres.debug("database notification received")
+      |> palabres.string("channel", channel)
+      |> palabres.string("payload", payload)
+      |> palabres.log()
+
       case json.parse(payload, using: decoder) {
         Ok(event) -> delegate_fn(Event(event))
         Error(_) -> {

@@ -1,10 +1,12 @@
 import gleam/dynamic/decode
 import gleam/erlang/process
 import gleam/result
+import gleam/string
 import mist
 import models/field
 import notification_listener
 import output_message
+import palabres
 import pog
 import rows
 
@@ -67,6 +69,10 @@ fn push_field(state: State, field_id: Int) {
 }
 
 fn on_notification(state: State, event: Event) {
+  palabres.info("database fields event received")
+  |> palabres.string("event", string.inspect(event))
+  |> palabres.log()
+
   let assert Ok(Nil) = case event {
     NewField(field_id, _) -> push_field(state, field_id)
     EditField(field_id, _) -> push_field(state, field_id)
