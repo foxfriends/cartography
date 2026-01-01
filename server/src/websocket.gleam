@@ -37,6 +37,14 @@ fn parse_message(
 
   case parsed {
     Ok(message) -> {
+      palabres.info("message received")
+      |> palabres.string(
+        "timestamp",
+        timestamp.to_rfc3339(before, calendar.utc_offset),
+      )
+      |> palabres.string("socket_message", string.inspect(message))
+      |> palabres.log()
+
       let result = cb(message)
 
       let after = timestamp.system_time()
