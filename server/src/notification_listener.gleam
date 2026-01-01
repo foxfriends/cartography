@@ -155,8 +155,14 @@ pub fn start(
       }
     }
     case sub_next {
-      Stop -> actor.stop()
-      StopAbnormal(reason) -> actor.stop_abnormal(reason)
+      Stop -> {
+        shutdown(state)
+        actor.stop()
+      }
+      StopAbnormal(reason) -> {
+        shutdown(state)
+        actor.stop_abnormal(reason)
+      }
       Continue(substate) -> actor.continue(State(..state, state: substate))
     }
   })
