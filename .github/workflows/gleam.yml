@@ -1,0 +1,69 @@
+name: Gleam CI
+on: push
+
+env:
+  DATABASE_URL: postgresql://postgres:postgres@localhost/cartography
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Gleam
+        uses: erlef/setup-beam@v1
+        with:
+          gleam-version: "1.14.0"
+          otp-version: "27"
+      - name: Restore dependencies cache
+        uses: actions/cache@v4
+        with:
+          path: deps
+          key: ${{ runner.os }}-gleam-${{ hashFiles('**/manifest.toml') }}
+          restore-keys: ${{ runner.os }}-gleam-
+      - name: Install dependencies
+        run: gleam deps download
+        working-directory: ./server
+      - name: Run tests
+        run: gleam test
+        working-directory: ./server
+
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Gleam
+        uses: erlef/setup-beam@v1
+        with:
+          gleam-version: "1.14.0"
+          otp-version: "27"
+      - name: Restore dependencies cache
+        uses: actions/cache@v4
+        with:
+          path: deps
+          key: ${{ runner.os }}-gleam-${{ hashFiles('**/manifest.toml') }}
+          restore-keys: ${{ runner.os }}-gleam-
+      - name: Run format
+        run: gleam format --check
+        working-directory: ./server
+
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Gleam
+        uses: erlef/setup-beam@v1
+        with:
+          gleam-version: "1.14.0"
+          otp-version: "27"
+      - name: Restore dependencies cache
+        uses: actions/cache@v4
+        with:
+          path: deps
+          key: ${{ runner.os }}-gleam-${{ hashFiles('**/manifest.toml') }}
+          restore-keys: ${{ runner.os }}-gleam-
+      - name: Install dependencies
+        run: gleam deps download
+        working-directory: ./server
+      - name: Run check
+        run: gleam check
+        working-directory: ./server
