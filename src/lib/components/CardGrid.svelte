@@ -1,6 +1,4 @@
 <script lang="ts" generics="T extends CardT = CardT">
-  /* global T */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   import type { Card as CardT } from "$lib/data/cards";
   import type { Snippet } from "svelte";
   import Card from "./Card.svelte";

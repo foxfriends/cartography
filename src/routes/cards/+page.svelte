@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { resolve } from "$app/paths";
   import { cards } from "$lib/data/cards";
   import CardGrid from "$lib/components/CardGrid.svelte";
 
@@ -7,7 +8,7 @@
 
 <div class="layout">
   <div class="controls">
-    <a href="/" class="back-button">&larr; Back</a>
+    <a href={resolve("/")} class="back-button">&larr; Back</a>
     <div class="fields">
       <input type="search" placeholder="Search..." />
     </div>

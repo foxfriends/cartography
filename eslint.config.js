@@ -103,6 +103,7 @@ export default tsEslint.config(
       "build",
       ".svelte-kit",
       "package",
+      "server",
       "**/.env",
       "**/.env.*",
       "!**/.env.example",

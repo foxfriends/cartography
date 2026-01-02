@@ -1,12 +1,11 @@
 <script lang="ts" generics="T">
-  /* global T */
   import type { Snippet } from "svelte";
 
   const { items, item }: { items: T[]; item: Snippet<[T]> } = $props();
 </script>
 
 <div class="row">
-  {#each items as data}
+  {#each items as data (data)}
     {@render item(data)}
   {/each}
 </div>

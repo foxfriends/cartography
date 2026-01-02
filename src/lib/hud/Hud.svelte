@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { resolve } from "$app/paths";
   import { type DeckCard } from "$lib/engine/DeckCard";
   import { type ResourceType } from "$lib/data/resources";
   import { cards, type Card } from "$lib/data/cards";
@@ -94,7 +95,7 @@
   </div>
 
   <div class="menu" role="toolbar">
-    <a class="button" href="/">Menu</a>
+    <a class="button" href={resolve("/")}>Menu</a>
     <button onclick={reset}>Reset</button>
     <button onclick={onClickFlow}>
       Mode: {appState.mode}

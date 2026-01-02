@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { resolve } from "$app/paths";
   import { goto } from "$app/navigation";
   import type { Field } from "$lib/appserver/Field";
   import DragTile from "$lib/components/DragTile.svelte";
@@ -11,7 +12,7 @@
   const { fields } = $derived.by(getOverworld);
 
   async function viewField(field: Field) {
-    await goto(`/field/${field.id}`);
+    await goto(resolve(`/field/${field.id}`));
   }
 </script>
 

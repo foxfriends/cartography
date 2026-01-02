@@ -30,7 +30,8 @@
       mod(0px - var(--offset-y), var(--tile-height));
     background-repeat: repeat;
     background-size: var(--tile-width) var(--tile-height);
-    background-image: linear-gradient(
+    background-image:
+      linear-gradient(
         rgb(from var(--grid-lines-color) r g b / 12%),
         rgb(from var(--grid-lines-color) r g b / 12%) 1px,
         transparent 1px,

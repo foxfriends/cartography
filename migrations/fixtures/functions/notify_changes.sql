@@ -1,5 +1,4 @@
-CREATE
-OR REPLACE FUNCTION notify_changes_text_target () RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION notify_changes_text_target () RETURNS TRIGGER AS $$
 DECLARE
   v_process_new bool = (TG_OP = 'INSERT' OR TG_OP = 'UPDATE');
   v_process_old bool = (TG_OP = 'UPDATE' OR TG_OP = 'DELETE');
@@ -48,8 +47,7 @@ BEGIN
 end;
 $$ LANGUAGE PLPGSQL VOLATILE;
 
-CREATE
-OR REPLACE FUNCTION notify_changes_int_target () RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION notify_changes_int_target () RETURNS TRIGGER AS $$
 DECLARE
   v_process_new bool = (TG_OP = 'INSERT' OR TG_OP = 'UPDATE');
   v_process_old bool = (TG_OP = 'UPDATE' OR TG_OP = 'DELETE');

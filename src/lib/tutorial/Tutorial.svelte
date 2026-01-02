@@ -199,9 +199,9 @@
     here ourselves. We haven't even placed a single card yet!
   </p>
   <p>
-    I have the card for a <CardRef id="cat-neighbourhood" /> right here, I'll put it into your deck.
-    Since you're in charge here, I'll let you see about setting that up for us. Start by opening up the
-    deck view.
+    I have the card for a <CardRef id="cat-neighbourhood" /> right here, I'll put it into your deck. Since
+    you're in charge here, I'll let you see about setting that up for us. Start by opening up the deck
+    view.
   </p>
   <p class="info">The button to open the deck view is at the bottom right.</p>
 
@@ -229,8 +229,8 @@
 
 <TutorialDialog bind:this={arrangeNeighbourhood}>
   <p>
-    The <CardRef id="cat-neighbourhood" /> is now on the field, but it's sitting loose. Make sure to
-    properly set into the grid to ensure that it stays put.
+    The <CardRef id="cat-neighbourhood" /> is now on the field, but it's sitting loose. Make sure to properly
+    set into the grid to ensure that it stays put.
   </p>
   <p class="info">Click and drag cards to relocate them.</p>
 
@@ -268,8 +268,8 @@
     <ResourceRef id="flour" />.
   </p>
   <p>
-    If we want this <CardRef id="bakery" /> working, we'll need to get our hands on those resources.
-    I think I have a few more cards that might help with that, take a look and see what you can do.
+    If we want this <CardRef id="bakery" /> working, we'll need to get our hands on those resources. I
+    think I have a few more cards that might help with that, take a look and see what you can do.
   </p>
 
   {#snippet actions(dismiss)}
@@ -297,8 +297,8 @@
 
 <TutorialDialog bind:this={aboutTrade} onDismiss={aboutTradeReward}>
   <p>
-    The <CardRef id="wheat-farm" /> is producing, but without a <CardRef id="flour-mill" /> in town,
-    there's nothing for us to do with the <ResourceRef id="wheat" />.
+    The <CardRef id="wheat-farm" /> is producing, but without a <CardRef id="flour-mill" /> in town, there's
+    nothing for us to do with the <ResourceRef id="wheat" />.
   </p>
   <p>
     Luckily, I've got one last card here with me, it's a rare <CardRef id="trading-centre" /> card. You'll
@@ -338,9 +338,9 @@
 
 <TutorialDialog bind:this={aboutPacks}>
   <p>
-    The other thing the <CardRef id="trading-centre" /> allows you to trade for is more cards. For a
-    little bit of <MoneyRef />, you can buy a pack containing a few common cards which you can add
-    to your town.
+    The other thing the <CardRef id="trading-centre" /> allows you to trade for is more cards. For a little
+    bit of <MoneyRef />, you can buy a pack containing a few common cards which you can add to your
+    town.
   </p>
   <p class="info">Open up the shop with the button at the bottom right.</p>
 

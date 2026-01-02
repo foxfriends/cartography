@@ -25,27 +25,27 @@
   <div class="image"></div>
   <div class="info">
     {#if card.category === "residential"}
-      {#each card.population as pop}
+      {#each card.population as pop (pop.species)}
         <p>
           Houses {pop.quantity}
           <SpeciesRef id={pop.species} plural={pop.quantity !== 1} />
         </p>
       {/each}
     {:else if card.category === "production"}
-      {#each card.inputs as input}
+      {#each card.inputs as input (input.resource)}
         <p>
           Consumes {input.quantity}
           <ResourceRef id={input.resource} />
         </p>
       {/each}
-      {#each card.outputs as output}
+      {#each card.outputs as output (output.resource)}
         <p>
           Produces {output.quantity}
           <ResourceRef id={output.resource} />
         </p>
       {/each}
     {:else if card.category === "source"}
-      {#each card.source as source}
+      {#each card.source as source (source)}
         {#if source.type === "any"}
           <p>Produces anywhere</p>
         {/if}
@@ -53,7 +53,7 @@
           <p>Produces on <TerrainRef id={source.terrain} /></p>
         {/if}
       {/each}
-      {#each card.outputs as output}
+      {#each card.outputs as output (output.resource)}
         <p>
           Yields {output.quantity}
           <ResourceRef id={output.resource} />
