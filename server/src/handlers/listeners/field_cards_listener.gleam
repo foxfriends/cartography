@@ -1,9 +1,10 @@
 import gleam/dynamic/decode
 import gleam/erlang/process
+import gleam/int
 import gleam/result
 import gleam/string
 import mist
-import models/field
+import models/field_card
 import notification_listener
 import output_message
 import palabres
@@ -12,7 +13,7 @@ import rows
 
 type State {
   State(
-    account_id: String,
+    field_id: Int,
     message_id: String,
     conn: mist.WebsocketConnection,
     db: process.Name(pog.Message),
@@ -20,8 +21,8 @@ type State {
 }
 
 type Event {
-  NewField(target: Int, subject: String)
-  EditField(target: Int, subject: String)
+  PlaceCard(target: Int, subject: String)
+  UnplaceCard(target: Int, subject: String)
 }
 
 fn event_decoder() {
@@ -29,9 +30,9 @@ fn event_decoder() {
   use target <- decode.field("target", decode.int)
   use subject <- decode.field("subject", decode.string)
   case event {
-    "new_field" -> decode.success(NewField(target, subject))
-    "edit_field" -> decode.success(EditField(target, subject))
-    _ -> decode.failure(NewField(target, subject), "fields event")
+    "place_card" -> decode.success(PlaceCard(target, subject))
+    "unplace_card" -> decode.success(UnplaceCard(target, subject))
+    _ -> decode.failure(PlaceCard(target, subject), "field cards event")
   }
 }
 
@@ -39,24 +40,27 @@ pub fn start(
   notifications: pog.NotificationsConnection,
   conn: mist.WebsocketConnection,
   db: process.Name(pog.Message),
-  account_id: String,
+  field_id: Int,
   message_id: String,
 ) {
-  notification_listener.new(State(account_id:, conn:, db:, message_id:))
-  |> notification_listener.listen_to(notifications, "fields:" <> account_id)
+  notification_listener.new(State(field_id:, conn:, db:, message_id:))
+  |> notification_listener.listen_to(
+    notifications,
+    "field_cards:" <> int.to_string(field_id),
+  )
   |> notification_listener.on_notification(event_decoder(), on_notification)
   |> notification_listener.start()
 }
 
-fn push_field(state: State, field_id: Int) {
+fn push_field_card(state: State, field_card_id: Int) {
   let query =
-    pog.query("SELECT * FROM fields WHERE id = $1")
-    |> pog.parameter(pog.int(field_id))
-    |> pog.returning(field.from_sql_row())
+    pog.query("SELECT * FROM field_cards WHERE card_id = $1")
+    |> pog.parameter(pog.int(field_card_id))
+    |> pog.returning(field_card.from_sql_row())
   use field_rows <- rows.execute(query, pog.named_connection(state.db))
   use field <- rows.one(field_rows)
   use Nil <- result.try(
-    output_message.Field(field)
+    output_message.FieldCard(field)
     |> output_message.OutputMessage(state.message_id)
     |> output_message.send(state.conn)
     |> result.map_error(rows.HandlerError),
@@ -70,8 +74,12 @@ fn on_notification(state: State, event: Event) {
   |> palabres.log()
 
   let assert Ok(Nil) = case event {
-    NewField(field_id, _) -> push_field(state, field_id)
-    EditField(field_id, _) -> push_field(state, field_id)
+    PlaceCard(field_card_id, _) -> push_field_card(state, field_card_id)
+    UnplaceCard(field_card_id, _) ->
+      output_message.FieldCardStub(field_card_id)
+      |> output_message.OutputMessage(state.message_id)
+      |> output_message.send(state.conn)
+      |> result.map_error(rows.HandlerError)
   }
   notification_listener.continue(state)
 }

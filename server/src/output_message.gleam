@@ -9,6 +9,9 @@ pub type OutputMessageData {
   Fields(List(field.Field))
   FieldWithCards(field: field.Field, field_cards: List(field_card.FieldCard))
   Field(field: field.Field)
+  CardAccount(card_id: Int)
+  FieldCard(field_card.FieldCard)
+  FieldCardStub(card_id: Int)
 }
 
 pub type OutputMessage {
@@ -36,6 +39,24 @@ pub fn to_json(message: OutputMessage) -> json.Json {
       "field",
       json.object([
         #("field", field.to_json(field_data)),
+      ]),
+    )
+    CardAccount(card_id) -> #(
+      "card_account",
+      json.object([
+        #("card", json.object([#("id", json.int(card_id))])),
+      ]),
+    )
+    FieldCardStub(card_id) -> #(
+      "field_card",
+      json.object([
+        #("field_card", json.object([#("id", json.int(card_id))])),
+      ]),
+    )
+    FieldCard(field_card) -> #(
+      "field_card",
+      json.object([
+        #("field_card", field_card.to_json(field_card)),
       ]),
     )
   }
