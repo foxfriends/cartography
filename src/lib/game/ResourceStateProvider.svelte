@@ -1,5 +1,6 @@
 <script lang="ts" module>
   import { getContext, setContext, type Snippet } from "svelte";
+  import { SvelteMap } from "svelte/reactivity";
   import { resources, type ResourceType } from "$lib/data/resources";
   import { cards, type Population } from "$lib/data/cards";
   import { species, type SpeciesType } from "$lib/data/species";
@@ -82,7 +83,7 @@
 
   const cardProduction = $derived.by(() => {
     const cardProduction: Record<CardId, CardProduction> = {};
-    const remaining = new Map(
+    const remaining = new SvelteMap(
       Array.from(flowGraph.entries())
         .filter(([, inputs]) => inputs.length)
         .map(([id, inputs]) => [id, [...inputs]]),

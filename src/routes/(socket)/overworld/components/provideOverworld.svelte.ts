@@ -17,7 +17,7 @@ export function getOverworld() {
 export function provideOverworld() {
   const socket = getSocket();
 
-  let fields = $state(new SvelteMap<FieldId, Field>());
+  let fields = new SvelteMap<FieldId, Field>();
 
   socket.$on("auth", () => {
     const subscription = socket.subscribe("fields");

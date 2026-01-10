@@ -21,11 +21,11 @@ export function provideFieldState(fieldId: FieldId, initial?: Field) {
   const socket = getSocket();
 
   let field: Field | undefined = $state(initial);
-  let fieldCards = $state(new SvelteMap<CardId, FieldCard>());
+  let fieldCards = new SvelteMap<CardId, FieldCard>();
 
   socket.$on("auth", () => {
     const fieldSubscription = socket.subscribe("fields");
-    // const fieldCardsSubscription = socket.subscribe({ topic: "field_cards", field_id: fieldId });
+    const fieldCardsSubscription = socket.subscribe({ topic: "field_cards", field_id: fieldId });
 
     socket.getField(fieldId).$then(({ data }) => {
       field = data.field;

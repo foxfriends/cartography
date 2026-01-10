@@ -2,16 +2,21 @@ import globals from "globals";
 import eslint from "@eslint/js";
 import tsEslint from "typescript-eslint";
 import svelteEslint from "eslint-plugin-svelte";
-import svelteParser from "svelte-eslint-parser";
 import eslintConfigPrettier from "eslint-config-prettier";
+import svelteConfig from "./svelte.config.js";
 
 export default tsEslint.config(
   eslint.configs.recommended,
   ...tsEslint.configs.strict,
   ...tsEslint.configs.stylistic,
-  ...svelteEslint.configs["flat/recommended"],
+  ...svelteEslint.configs.recommended,
   eslintConfigPrettier,
-  ...svelteEslint.configs["flat/prettier"],
+  ...svelteEslint.configs.prettier,
+  {
+    languageOptions: {
+      globals: { ...globals.node, ...globals.browser },
+    },
+  },
   {
     rules: {
       "no-console": "warn",
@@ -79,21 +84,17 @@ export default tsEslint.config(
     },
   },
   {
-    files: ["*.svelte", "**/*.svelte"],
+    files: ["*.svelte", "**/*.svelte", "**/*.svelte.ts", "**/*.svelte.js"],
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        extraFileExtensions: [".svelte"],
+        parser: tsEslint.parser,
+        svelteConfig,
+      },
+    },
     rules: {
       "prefer-const": ["warn", { destructuring: "all" }],
-    },
-  },
-  {
-    languageOptions: {
-      ecmaVersion: 2024,
-      sourceType: "module",
-      globals: { ...globals.node, ...globals.browser },
-      parser: svelteParser,
-      parserOptions: {
-        parser: tsEslint.parser,
-        extraFileExtensions: [".svelte"],
-      },
     },
   },
   {
