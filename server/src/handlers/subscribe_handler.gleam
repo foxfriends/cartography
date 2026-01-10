@@ -38,5 +38,8 @@ pub fn handle(
       fn() { notification_listener.unlisten(listener.data) }
     }
   })
-  st |> state.add_listener(message_id, unsubscribe) |> mist.continue() |> Ok()
+  st
+  |> state.add_listener(message_id, unsubscribe)
+  |> mist.continue()
+  |> Ok()
 }
