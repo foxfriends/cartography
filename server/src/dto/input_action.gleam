@@ -23,7 +23,7 @@ pub fn decoder(message_type: String) {
       use id <- decode.field("id", decode.string)
       decode.success(Auth(id))
     }
-    "fields" -> decode_empty(GetFields)
+    "get_fields" -> decode_empty(GetFields)
     "get_field" -> {
       use field_id <- decode.field("field_id", decode.int)
       decode.success(GetField(field_id))

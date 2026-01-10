@@ -5,7 +5,8 @@
 <main>
   <h1>This game?</h1>
   <a href={resolve("/cards")}>See the cards</a>
-  <a href={resolve("/play")}>Just play</a>
+  <a href={resolve("/play")}>Just Play</a>
+  <a href={resolve("/demo")}>Try Demo</a>
 </main>
 
 <style>
