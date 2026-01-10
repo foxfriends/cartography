@@ -60,7 +60,6 @@ export function provideFieldState() {
 
   return {
     set fieldId(value: FieldId | undefined) {
-      console.log(value);
       fieldId = value;
     },
   };

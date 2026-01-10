@@ -95,6 +95,7 @@ export default tsEslint.config(
     },
     rules: {
       "prefer-const": ["warn", { destructuring: "all" }],
+      "svelte/no-unnecessary-state-wrap": ["error", { allowReassign: true }],
     },
   },
   {

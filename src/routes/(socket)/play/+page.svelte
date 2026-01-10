@@ -1,7 +1,5 @@
 <script lang="ts">
-  import { resolve } from "$app/paths";
-  import { goto } from "$app/navigation";
-  import { parseFieldId, type Field } from "$lib/appserver/Field";
+  import { type Field } from "$lib/appserver/Field";
   import DragTile from "$lib/components/DragTile.svelte";
   import DragWindow from "$lib/components/DragWindow.svelte";
   import GridLines from "$lib/components/GridLines.svelte";
