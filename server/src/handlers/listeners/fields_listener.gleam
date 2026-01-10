@@ -1,3 +1,5 @@
+import dto/output_action
+import dto/output_message
 import gleam/dynamic/decode
 import gleam/erlang/process
 import gleam/result
@@ -5,7 +7,6 @@ import gleam/string
 import mist
 import models/field
 import notification_listener
-import output_message
 import palabres
 import pog
 import rows
@@ -56,7 +57,7 @@ fn push_field(state: State, field_id: Int) {
   use field_rows <- rows.execute(query, pog.named_connection(state.db))
   use field <- rows.one(field_rows)
   use Nil <- result.try(
-    output_message.Field(field)
+    output_action.Field(field)
     |> output_message.OutputMessage(state.message_id)
     |> output_message.send(state.conn)
     |> result.map_error(rows.HandlerError),

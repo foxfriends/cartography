@@ -1,7 +1,7 @@
-import channel
+import dto/channel
 import gleam/dynamic/decode
 
-pub type MessageData {
+pub type InputAction {
   Auth(String)
   GetFields
   GetField(Int)
@@ -9,11 +9,7 @@ pub type MessageData {
   Unsubscribe
 }
 
-pub type InputMessage {
-  InputMessage(data: MessageData, id: String)
-}
-
-fn decode_empty(into: MessageData) {
+fn decode_empty(into: InputAction) {
   use _ <- decode.map(decode.dict(
     decode.failure(0, "empty object"),
     decode.failure(0, "empty object"),
@@ -21,7 +17,7 @@ fn decode_empty(into: MessageData) {
   into
 }
 
-fn decode_data(message_type: String) {
+pub fn decoder(message_type: String) {
   case message_type {
     "auth" -> {
       use id <- decode.field("id", decode.string)
@@ -37,11 +33,4 @@ fn decode_data(message_type: String) {
     "deck" -> decode_empty(GetFields)
     _ -> decode.failure(GetFields, "known message type")
   }
-}
-
-pub fn decoder() {
-  use message_type <- decode.field("type", decode.string)
-  use id <- decode.field("id", decode.string)
-  use data <- decode.field("data", decode_data(message_type))
-  decode.success(InputMessage(data, id))
 }

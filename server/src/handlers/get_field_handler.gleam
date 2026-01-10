@@ -1,16 +1,17 @@
+import dto/output_action
+import dto/output_message
 import gleam/dynamic/decode
 import gleam/result
 import gleam/string
 import mist
 import models/field
 import models/field_card
-import output_message
 import pog
 import rows
-import websocket_state
+import websocket/state
 
 pub fn handle(
-  state: websocket_state.State,
+  state: state.State,
   conn: mist.WebsocketConnection,
   message_id: String,
   field_id: Int,
@@ -39,7 +40,7 @@ pub fn handle(
     use #(field_data, field_cards) <- rows.one(result)
 
     use _ <- result.map(
-      output_message.FieldWithCards(field: field_data, field_cards:)
+      output_action.FieldWithCards(field: field_data, field_cards:)
       |> output_message.OutputMessage(id: message_id)
       |> output_message.send(conn)
       |> result.map_error(rows.HandlerError),

@@ -1,4 +1,6 @@
 import context.{type Context}
+import dto/input_action
+import dto/input_message
 import gleam/dict
 import gleam/http/request
 import gleam/json
@@ -13,10 +15,9 @@ import handlers/get_field_handler
 import handlers/get_fields_handler
 import handlers/subscribe_handler
 import handlers/unsubscribe_handler
-import input_message
 import mist.{type WebsocketConnection, type WebsocketMessage, Text}
 import palabres
-import websocket_state
+import websocket/state
 
 fn as_text(message: WebsocketMessage(_msg)) {
   case message {
@@ -78,22 +79,22 @@ fn parse_message(
 }
 
 fn handle_message(
-  state: websocket_state.State,
+  state: state.State,
   message: WebsocketMessage(_msg),
   conn: WebsocketConnection,
-) -> mist.Next(websocket_state.State, _msg) {
+) -> mist.Next(state.State, _msg) {
   let response = {
     use text <- result.try(as_text(message))
     use message <- parse_message(text)
     case message.data {
-      input_message.Auth(id) -> auth_handler.handle(state, conn, message.id, id)
-      input_message.GetFields ->
+      input_action.Auth(id) -> auth_handler.handle(state, conn, message.id, id)
+      input_action.GetFields ->
         get_fields_handler.handle(state, conn, message.id)
-      input_message.GetField(field_id) ->
+      input_action.GetField(field_id) ->
         get_field_handler.handle(state, conn, message.id, field_id)
-      input_message.Subscribe(channel) ->
+      input_action.Subscribe(channel) ->
         subscribe_handler.handle(state, conn, message.id, channel)
-      input_message.Unsubscribe ->
+      input_action.Unsubscribe ->
         unsubscribe_handler.handle(state, conn, message.id)
     }
   }
@@ -123,10 +124,7 @@ pub fn socket_handler(
     request: request,
     handler: handle_message,
     on_init: fn(_conn) {
-      #(
-        websocket_state.State(context, option.None, listeners: dict.new()),
-        option.None,
-      )
+      #(state.State(context, option.None, listeners: dict.new()), option.None)
     },
     on_close: fn(_state) {
       palabres.info("websocket connection closed")

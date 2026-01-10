@@ -1,12 +1,12 @@
 import gleam/dict
 import mist
-import websocket_state
+import websocket/state
 
 pub fn handle(
-  state: websocket_state.State,
+  state: state.State,
   _conn: mist.WebsocketConnection,
   message_id: String,
-) -> Result(mist.Next(websocket_state.State, _msg), String) {
+) -> Result(mist.Next(state.State, _msg), String) {
   case dict.get(state.listeners, message_id) {
     Ok(unsub) -> {
       unsub()

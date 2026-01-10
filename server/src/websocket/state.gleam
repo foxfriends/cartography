@@ -1,6 +1,7 @@
 import context
 import gleam/dict
 import gleam/option
+import pog
 
 pub type State {
   State(
@@ -18,4 +19,8 @@ pub fn account_id(
     option.Some(id) -> with_account_id(id)
     option.None -> Error("socket not authenticated")
   }
+}
+
+pub fn db_connection(state: State) -> pog.Connection {
+  pog.named_connection(state.context.db)
 }

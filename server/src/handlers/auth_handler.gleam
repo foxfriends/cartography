@@ -1,19 +1,20 @@
+import dto/output_action
+import dto/output_message
 import gleam/option
 import gleam/result
 import gleam/string
 import mist
 import models/account
-import output_message
 import pog
 import rows
-import websocket_state
+import websocket/state
 
 pub fn handle(
-  state: websocket_state.State,
+  state: state.State,
   conn: mist.WebsocketConnection,
   message_id: String,
   account_id: String,
-) -> Result(mist.Next(websocket_state.State, _msg), String) {
+) -> Result(mist.Next(state.State, _msg), String) {
   let assert Ok(acc) =
     pog.query(
       "INSERT INTO accounts (id) VALUES ($1) ON CONFLICT DO NOTHING RETURNING *",
@@ -37,14 +38,12 @@ pub fn handle(
     }
 
     use _ <- result.map(
-      output_message.Account(account.Account(id: acc.id))
+      output_action.Account(account.Account(id: acc.id))
       |> output_message.OutputMessage(id: message_id)
       |> output_message.send(conn)
       |> result.map_error(rows.HandlerError),
     )
-    Ok(mist.continue(
-      websocket_state.State(..state, account_id: option.Some(account_id)),
-    ))
+    Ok(mist.continue(state.State(..state, account_id: option.Some(account_id))))
   }
   |> result.map_error(string.inspect)
   |> result.flatten()

@@ -1,10 +1,9 @@
 import gleam/json
-import mist
 import models/account
 import models/field
 import models/field_card
 
-pub type OutputMessageData {
+pub type OutputAction {
   Account(account.Account)
   Fields(List(field.Field))
   FieldWithCards(field: field.Field, field_cards: List(field_card.FieldCard))
@@ -14,12 +13,8 @@ pub type OutputMessageData {
   FieldCardStub(card_id: Int)
 }
 
-pub type OutputMessage {
-  OutputMessage(data: OutputMessageData, id: String)
-}
-
-pub fn to_json(message: OutputMessage) -> json.Json {
-  let #(msg_type, data) = case message.data {
+pub fn to_json(message: OutputAction) -> #(String, json.Json) {
+  case message {
     Account(acc) -> #(
       "account",
       json.object([#("account", account.to_json(acc))]),
@@ -60,17 +55,4 @@ pub fn to_json(message: OutputMessage) -> json.Json {
       ]),
     )
   }
-  json.object([
-    #("type", json.string(msg_type)),
-    #("data", data),
-    #("id", json.string(message.id)),
-  ])
-}
-
-pub fn send(message: OutputMessage, conn: mist.WebsocketConnection) {
-  let message =
-    message
-    |> to_json()
-    |> json.to_string()
-  mist.send_text_frame(conn, message)
 }

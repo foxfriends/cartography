@@ -1,8 +1,9 @@
+import dto/output_action
+import dto/output_message
 import gleam/dynamic/decode
 import gleam/string
 import mist
 import notification_listener
-import output_message
 import palabres
 import pog
 
@@ -46,7 +47,7 @@ fn on_notification(state: State, event: Event) {
 
   let assert Ok(Nil) = case event {
     TransferCard(card_id, _) ->
-      output_message.CardAccount(card_id)
+      output_action.CardAccount(card_id)
       |> output_message.OutputMessage(state.message_id)
       |> output_message.send(state.conn)
   }
