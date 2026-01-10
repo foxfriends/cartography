@@ -11,7 +11,7 @@ import rows
 import websocket/state
 
 pub fn handle(
-  state: state.State,
+  st: state.State,
   conn: mist.WebsocketConnection,
   message_id: String,
   field_id: Int,
@@ -35,7 +35,7 @@ pub fn handle(
       )
       decode.success(#(field_data, field_cards_data))
     })
-    |> pog.execute(pog.named_connection(state.context.db))
+    |> pog.execute(state.db_connection(st))
   {
     use #(field_data, field_cards) <- rows.one(result)
 
@@ -46,7 +46,7 @@ pub fn handle(
       |> result.map_error(rows.HandlerError),
     )
 
-    Ok(mist.continue(state))
+    Ok(mist.continue(st))
   }
   |> result.map_error(string.inspect)
   |> result.flatten()

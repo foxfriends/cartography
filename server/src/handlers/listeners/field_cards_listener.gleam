@@ -1,7 +1,6 @@
 import dto/output_action
 import dto/output_message
 import gleam/dynamic/decode
-import gleam/erlang/process
 import gleam/int
 import gleam/result
 import gleam/string
@@ -11,13 +10,14 @@ import notification_listener
 import palabres
 import pog
 import rows
+import websocket/state.{type State as WebsocketState}
 
 type State {
   State(
     field_id: Int,
     message_id: String,
     conn: mist.WebsocketConnection,
-    db: process.Name(pog.Message),
+    db: pog.Connection,
   )
 }
 
@@ -38,15 +38,19 @@ fn event_decoder() {
 }
 
 pub fn start(
-  notifications: pog.NotificationsConnection,
+  st: WebsocketState,
   conn: mist.WebsocketConnection,
-  db: process.Name(pog.Message),
   field_id: Int,
   message_id: String,
 ) {
-  notification_listener.new(State(field_id:, conn:, db:, message_id:))
+  notification_listener.new(State(
+    field_id:,
+    conn:,
+    db: state.db_connection(st),
+    message_id:,
+  ))
   |> notification_listener.listen_to(
-    notifications,
+    state.notifications_connection(st),
     "field_cards:" <> int.to_string(field_id),
   )
   |> notification_listener.on_notification(event_decoder(), on_notification)
@@ -58,7 +62,7 @@ fn push_field_card(state: State, field_card_id: Int) {
     pog.query("SELECT * FROM field_cards WHERE card_id = $1")
     |> pog.parameter(pog.int(field_card_id))
     |> pog.returning(field_card.from_sql_row())
-  use field_rows <- rows.execute(query, pog.named_connection(state.db))
+  use field_rows <- rows.execute(query, state.db)
   use field <- rows.one(field_rows)
   use Nil <- result.try(
     output_action.FieldCard(field)

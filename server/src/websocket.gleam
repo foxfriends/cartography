@@ -1,7 +1,6 @@
 import context.{type Context}
 import dto/input_action
 import dto/input_message
-import gleam/dict
 import gleam/http/request
 import gleam/json
 import gleam/option
@@ -123,9 +122,7 @@ pub fn socket_handler(
   mist.websocket(
     request: request,
     handler: handle_message,
-    on_init: fn(_conn) {
-      #(state.State(context, option.None, listeners: dict.new()), option.None)
-    },
+    on_init: fn(_conn) { #(state.new(context), option.None) },
     on_close: fn(_state) {
       palabres.info("websocket connection closed")
       |> palabres.string(

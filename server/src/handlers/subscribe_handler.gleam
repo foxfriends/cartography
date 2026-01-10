@@ -1,5 +1,4 @@
 import dto/channel
-import gleam/dict
 import gleam/result
 import gleam/string
 import handlers/listeners/card_accounts_listener
@@ -19,47 +18,25 @@ pub fn handle(
   use unsubscribe <- result.try(case channel {
     channel.Fields -> {
       use listener <- result.map(
-        fields_listener.start(
-          st.context.notifications,
-          conn,
-          st.context.db,
-          account_id,
-          message_id,
-        )
+        fields_listener.start(st, conn, account_id, message_id)
         |> result.map_error(string.inspect),
       )
       fn() { notification_listener.unlisten(listener.data) }
     }
     channel.Deck -> {
       use listener <- result.map(
-        card_accounts_listener.start(
-          st.context.notifications,
-          conn,
-          account_id,
-          message_id,
-        )
+        card_accounts_listener.start(st, conn, account_id, message_id)
         |> result.map_error(string.inspect),
       )
       fn() { notification_listener.unlisten(listener.data) }
     }
     channel.FieldCards(field_id) -> {
       use listener <- result.map(
-        field_cards_listener.start(
-          st.context.notifications,
-          conn,
-          st.context.db,
-          field_id,
-          message_id,
-        )
+        field_cards_listener.start(st, conn, field_id, message_id)
         |> result.map_error(string.inspect),
       )
       fn() { notification_listener.unlisten(listener.data) }
     }
   })
-  Ok(mist.continue(
-    state.State(
-      ..st,
-      listeners: dict.insert(st.listeners, message_id, unsubscribe),
-    ),
-  ))
+  st |> state.add_listener(message_id, unsubscribe) |> mist.continue() |> Ok()
 }

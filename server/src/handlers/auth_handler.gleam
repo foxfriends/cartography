@@ -10,7 +10,7 @@ import rows
 import websocket/state
 
 pub fn handle(
-  state: state.State,
+  st: state.State,
   conn: mist.WebsocketConnection,
   message_id: String,
   account_id: String,
@@ -21,7 +21,7 @@ pub fn handle(
     )
     |> pog.parameter(pog.text(account_id))
     |> pog.returning(account.from_sql_row())
-    |> pog.execute(pog.named_connection(state.context.db))
+    |> pog.execute(state.db_connection(st))
   {
     use acc <- rows.one_or_none(acc)
     let assert Ok(acc) = case acc {
@@ -31,7 +31,7 @@ pub fn handle(
           pog.query("SELECT * FROM accounts WHERE id = $1")
           |> pog.parameter(pog.text(account_id))
           |> pog.returning(account.from_sql_row())
-          |> pog.execute(pog.named_connection(state.context.db))
+          |> pog.execute(state.db_connection(st))
         use acc <- rows.one(acc)
         Ok(acc)
       }
@@ -43,7 +43,9 @@ pub fn handle(
       |> output_message.send(conn)
       |> result.map_error(rows.HandlerError),
     )
-    Ok(mist.continue(state.State(..state, account_id: option.Some(account_id))))
+    state.authenticate(st, account_id)
+    |> mist.continue()
+    |> Ok()
   }
   |> result.map_error(string.inspect)
   |> result.flatten()

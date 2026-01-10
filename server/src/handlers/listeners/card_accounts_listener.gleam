@@ -5,7 +5,7 @@ import gleam/string
 import mist
 import notification_listener
 import palabres
-import pog
+import websocket/state.{type State as WebsocketState}
 
 type State {
   State(account_id: String, message_id: String, conn: mist.WebsocketConnection)
@@ -26,14 +26,14 @@ fn event_decoder() {
 }
 
 pub fn start(
-  notifications: pog.NotificationsConnection,
+  st: WebsocketState,
   conn: mist.WebsocketConnection,
   account_id: String,
   message_id: String,
 ) {
   notification_listener.new(State(account_id:, conn:, message_id:))
   |> notification_listener.listen_to(
-    notifications,
+    state.notifications_connection(st),
     "card_accounts:" <> account_id,
   )
   |> notification_listener.on_notification(event_decoder(), on_notification)
