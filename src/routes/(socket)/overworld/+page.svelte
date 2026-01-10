@@ -20,8 +20,8 @@
   <DragWindow>
     <GridLines />
 
-    {#each fields.values() as field (field.id)}
-      <DragTile x={field.grid_x} y={field.grid_y} onClick={() => viewField(field)}>
+    {#each fields.values() as field, i (field.id)}
+      <DragTile x={i} y={0} onClick={() => viewField(field)}>
         <div class="field-label">
           {#if field.name}
             {field.name}

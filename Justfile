@@ -95,3 +95,6 @@ _pre-commit:
 [confirm]
 reset:
     npx graphile-migrate reset --erase
+
+db: up
+    psql {{DATABASE_URL}}

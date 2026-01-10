@@ -271,11 +271,7 @@ COMMENT ON TABLE public.field_cards IS 'Tracks the location of cards placed into
 CREATE TABLE public.fields (
     id bigint NOT NULL,
     name character varying(64) DEFAULT ''::character varying NOT NULL,
-    account_id character varying(32) NOT NULL,
-    grid_x integer NOT NULL,
-    grid_y integer NOT NULL,
-    width integer GENERATED ALWAYS AS (8) STORED NOT NULL,
-    height integer GENERATED ALWAYS AS (8) STORED NOT NULL
+    account_id character varying(32) NOT NULL
 );
 
 
@@ -283,7 +279,7 @@ CREATE TABLE public.fields (
 -- Name: TABLE fields; Type: COMMENT; Schema: public; Owner: -
 --
 
-COMMENT ON TABLE public.fields IS 'Every card is played onto a field. Each account has any number of fields arranged in an infinite space.';
+COMMENT ON TABLE public.fields IS 'Every card is played onto a field. An account may have multiple fields, but likely only has one.';
 
 
 --
@@ -362,14 +358,6 @@ ALTER TABLE ONLY public.field_cards
 
 ALTER TABLE ONLY public.field_cards
     ADD CONSTRAINT field_cards_pkey PRIMARY KEY (card_id);
-
-
---
--- Name: fields fields_account_id_grid_x_grid_y_key; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.fields
-    ADD CONSTRAINT fields_account_id_grid_x_grid_y_key UNIQUE (account_id, grid_x, grid_y);
 
 
 --
