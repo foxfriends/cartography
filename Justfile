@@ -1,7 +1,10 @@
 set quiet
 set dotenv-load
 
+[group: "run"]
 default: dev
+
+[group: "dev"]
 fix: fmt (lint "fix")
 
 export CONCURRENTLY_KILL_OTHERS := "true"
@@ -15,14 +18,14 @@ ROOT_DATABASE_URL := env_var("ROOT_DATABASE_URL")
 database_name := if DATABASE_URL != "" { file_stem(DATABASE_URL) } else { "" }
 shadow_database_name := if SHADOW_DATABASE_URL != "" { file_stem(SHADOW_DATABASE_URL) } else { "" }
 
-[group: "dev"]
+[group: "run"]
 dev: up
     npx concurrently --names "sveltekit,migrate,server" \
         "npx vite dev --host" \
         "npx graphile-migrate watch" \
         "cd server && gleam run"
 
-[group: "dev"]
+[group: "run"]
 app: up
     npx concurrently --names "sveltekit,migrate,server,tauri" \
         "npx vite dev --host" \
@@ -55,12 +58,12 @@ down:
 stop:
     docker compose stop
 
-[group: "dev"]
+[group: "release"]
 build:
     npx svelte-kit sync
     npx vite build
 
-[group: "dev"]
+[group: "release"]
 build-app:
     npx tauri build
 
