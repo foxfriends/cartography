@@ -1,0 +1,14 @@
+--! Previous: sha1:377073ebca8a3c79b8e666c4cb005a8b375dd82a
+--! Hash: sha1:1c30308291350d7cfd97991f95730e8139f16355
+
+DROP TABLE IF EXISTS card_type_houses;
+
+DROP TABLE IF EXISTS card_type_employs;
+
+ALTER TABLE card_types
+DROP COLUMN IF EXISTS houses,
+DROP COLUMN IF EXISTS employs;
+
+ALTER TABLE card_types
+ADD COLUMN houses INT NOT NULL DEFAULT 0,
+ADD COLUMN employs INT NOT NULL DEFAULT 0;

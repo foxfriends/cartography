@@ -1,0 +1,92 @@
+import "trilogy:io" use println
+import "trilogy:array" use fold, map, zip
+import "trilogy:string" use replace_all, trim, join
+
+import "./resources.tri" use resource
+import "./species.tri" use species, species_needs
+import "./card_types.tri" use card_type, card_type_consumes, card_type_produces
+
+func uncurry f (a:b) = f a b
+func flip f a b = f b a
+
+func escape_single_quotes value = replace_all "'" "''" value
+
+slot comma = ","
+
+func value_line str = "\n  (${str})"
+
+func sql_escape value and typeof 'string = "'${escape_single_quotes value}'"
+func sql_escape value and typeof 'number = "${value}"
+func sql_escape value and typeof 'tuple = "${escape_each value}"
+func sql_escape 'values(values) = "VALUES ${join comma <| map (value_line << escape_each) values}"
+func sql_escape unit = "NULL"
+
+func escape_each [a] = "${sql_escape a}"
+func escape_each [a, ..b] = "${sql_escape a}, ${escape_each b}"
+func escape_each a:b = "${sql_escape a}, ${escape_each b}"
+func escape_each v = "${sql_escape v}"
+
+func sql [prefix, ..segments] interpolations =
+  segments
+  |> zip (map sql_escape interpolations)
+  |> map (uncurry (<>))
+  |> fold (flip (<>)) prefix
+
+rule optional_species(unit)
+rule optional_species(value) <- species(value)
+
+proc main!() {
+  let resources_values = 'values([id for resource(id)])
+  let species_values = 'values([id for species(id)])
+  let species_needs_values = 'values([
+    species_id:resource_id:quantity
+    for species_needs(species_id, resource_id, quantity)
+    and species(^species_id)
+    and resource(^resource_id)
+  ])
+  let card_types_values = 'values([
+    id:category:houses:employs
+    for card_type(id, category, houses, employs)
+  ])
+  let card_type_consumes_values = 'values([
+    card_type_id:resource_id:quantity
+    for card_type_consumes(card_type_id, resource_id, quantity)
+    and card_type(^card_type_id, _, _, _)
+    and resource(^resource_id)
+  ])
+  let card_type_produces_values = 'values([
+    card_type_id:resource_id:quantity
+    for card_type_produces(card_type_id, resource_id, quantity)
+    and card_type(^card_type_id, _, _, _)
+    and resource(^resource_id)
+  ])
+
+  println!(trim $sql"
+INSERT INTO resources (id)
+${resources_values}
+ON CONFLICT DO NOTHING;
+
+INSERT INTO species (id)
+${species_values}
+ON CONFLICT DO NOTHING;
+
+INSERT INTO species_needs (species_id, resource_id, quantity)
+${species_needs_values}
+ON CONFLICT (species_id, resource_id) DO UPDATE SET quantity = EXCLUDED.quantity;
+
+INSERT INTO card_types (id, category, houses, employs)
+${card_types_values}
+ON CONFLICT (id) DO UPDATE
+SET category = EXCLUDED.category,
+    houses = EXCLUDED.houses,
+    employs = EXCLUDED.employs;
+
+INSERT INTO card_type_consumes (card_type_id, resource_id, quantity)
+${card_type_consumes_values}
+ON CONFLICT (card_type_id, resource_id) DO UPDATE SET quantity = EXCLUDED.quantity;
+
+INSERT INTO card_type_produces (card_type_id, resource_id, quantity)
+${card_type_produces_values}
+ON CONFLICT (card_type_id, resource_id) DO UPDATE SET quantity = EXCLUDED.quantity;
+  ")
+}

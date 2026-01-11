@@ -1,0 +1,9 @@
+export species, species_needs
+
+rule species("rabbit")
+rule species("cat")
+rule species("bird")
+
+rule species_needs("rabbit", "salad", 1)
+rule species_needs("cat", "bread", 1)
+rule species_needs("bird", "grain", 1)

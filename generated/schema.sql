@@ -217,44 +217,6 @@ COMMENT ON TABLE public.card_type_consumes IS 'The types of resources that are c
 
 
 --
--- Name: card_type_employs; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.card_type_employs (
-    card_type_id text NOT NULL,
-    species_id text NOT NULL,
-    quantity integer NOT NULL,
-    CONSTRAINT card_type_employs_quantity_check CHECK ((quantity > 0))
-);
-
-
---
--- Name: TABLE card_type_employs; Type: COMMENT; Schema: public; Owner: -
---
-
-COMMENT ON TABLE public.card_type_employs IS 'The types of citizens that can work at this card type.';
-
-
---
--- Name: card_type_houses; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.card_type_houses (
-    card_type_id text NOT NULL,
-    species_id text NOT NULL,
-    quantity integer NOT NULL,
-    CONSTRAINT card_type_houses_quantity_check CHECK ((quantity > 0))
-);
-
-
---
--- Name: TABLE card_type_houses; Type: COMMENT; Schema: public; Owner: -
---
-
-COMMENT ON TABLE public.card_type_houses IS 'The types of citizens that this card type provides homes for.';
-
-
---
 -- Name: card_type_produces; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -280,6 +242,8 @@ COMMENT ON TABLE public.card_type_produces IS 'The types of resources that are p
 CREATE TABLE public.card_types (
     id text NOT NULL,
     category public.card_category NOT NULL,
+    houses integer DEFAULT 0 NOT NULL,
+    employs integer DEFAULT 0 NOT NULL,
     CONSTRAINT card_types_id_check CHECK (((0 < length(id)) AND (length(id) <= 64)))
 );
 
@@ -464,6 +428,15 @@ COMMENT ON TABLE public.species_needs IS 'The types of resources that this speci
 
 
 --
+-- Name: testing; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.testing (
+    species_id text
+);
+
+
+--
 -- Name: accounts accounts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -493,22 +466,6 @@ ALTER TABLE ONLY public.card_accounts
 
 ALTER TABLE ONLY public.card_type_consumes
     ADD CONSTRAINT card_type_consumes_pkey PRIMARY KEY (card_type_id, resource_id);
-
-
---
--- Name: card_type_employs card_type_employs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.card_type_employs
-    ADD CONSTRAINT card_type_employs_pkey PRIMARY KEY (card_type_id, species_id);
-
-
---
--- Name: card_type_houses card_type_houses_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.card_type_houses
-    ADD CONSTRAINT card_type_houses_pkey PRIMARY KEY (card_type_id, species_id);
 
 
 --
@@ -689,38 +646,6 @@ ALTER TABLE ONLY public.card_type_consumes
 
 
 --
--- Name: card_type_employs card_type_employs_card_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.card_type_employs
-    ADD CONSTRAINT card_type_employs_card_type_id_fkey FOREIGN KEY (card_type_id) REFERENCES public.card_types(id) ON UPDATE CASCADE ON DELETE CASCADE;
-
-
---
--- Name: card_type_employs card_type_employs_species_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.card_type_employs
-    ADD CONSTRAINT card_type_employs_species_id_fkey FOREIGN KEY (species_id) REFERENCES public.species(id) ON UPDATE CASCADE ON DELETE RESTRICT;
-
-
---
--- Name: card_type_houses card_type_houses_card_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.card_type_houses
-    ADD CONSTRAINT card_type_houses_card_type_id_fkey FOREIGN KEY (card_type_id) REFERENCES public.card_types(id) ON UPDATE CASCADE ON DELETE CASCADE;
-
-
---
--- Name: card_type_houses card_type_houses_species_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.card_type_houses
-    ADD CONSTRAINT card_type_houses_species_id_fkey FOREIGN KEY (species_id) REFERENCES public.species(id) ON UPDATE CASCADE ON DELETE RESTRICT;
-
-
---
 -- Name: card_type_produces card_type_produces_card_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -830,6 +755,14 @@ ALTER TABLE ONLY public.species_needs
 
 ALTER TABLE ONLY public.species_needs
     ADD CONSTRAINT species_needs_species_id_fkey FOREIGN KEY (species_id) REFERENCES public.species(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: testing testing_species_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.testing
+    ADD CONSTRAINT testing_species_id_fkey FOREIGN KEY (species_id) REFERENCES public.species(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --

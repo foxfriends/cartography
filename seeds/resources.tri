@@ -1,0 +1,10 @@
+export resource
+
+rule resource("bread")
+rule resource("flour")
+rule resource("grain")
+rule resource("water")
+rule resource("lettuce")
+rule resource("carrot")
+rule resource("tomato")
+rule resource("salad")
