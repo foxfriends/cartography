@@ -20,33 +20,33 @@ declare global {
     // interface PageData {}
     // interface Platform {}
   }
+}
 
-  declare namespace svelteHTML {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    interface HTMLAttributes<T extends EventTarget> {
-      oncardsreceived?: EventHandler<CardsReceivedEvent, T> | undefined | null;
-      oncardfielded?: EventHandler<CardFieldedEvent, T> | undefined | null;
-      oncardplaced?: EventHandler<CardPlacedEvent, T> | undefined | null;
-      ondeckopened?: EventHandler<DeckOpenedEvent, T> | undefined | null;
-      onshopopened?: EventHandler<ShopOpenedEvent, T> | undefined | null;
-      oncardfocus?: EventHandler<CardFocusEvent, T> | undefined | null;
-      onbuypack?: EventHandler<BuyPackEvent, T> | undefined | null;
-      onstartflow?: EventHandler<StartFlowEvent, T> | undefined | null;
-      oncreateflow?: EventHandler<CreateFlowEvent, T> | undefined | null;
-      ondeleteflow?: EventHandler<DeleteFlowEvent, T> | undefined | null;
-    }
+declare module "svelte/elements" {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  interface HTMLAttributes<T extends EventTarget> {
+    oncardsreceived?: EventHandler<CardsReceivedEvent, T> | undefined | null;
+    oncardfielded?: EventHandler<CardFieldedEvent, T> | undefined | null;
+    oncardplaced?: EventHandler<CardPlacedEvent, T> | undefined | null;
+    ondeckopened?: EventHandler<DeckOpenedEvent, T> | undefined | null;
+    onshopopened?: EventHandler<ShopOpenedEvent, T> | undefined | null;
+    oncardfocus?: EventHandler<CardFocusEvent, T> | undefined | null;
+    onbuypack?: EventHandler<BuyPackEvent, T> | undefined | null;
+    onstartflow?: EventHandler<StartFlowEvent, T> | undefined | null;
+    oncreateflow?: EventHandler<CreateFlowEvent, T> | undefined | null;
+    ondeleteflow?: EventHandler<DeleteFlowEvent, T> | undefined | null;
+  }
 
-    interface SvelteWindowAttributes {
-      oncardsreceived?: EventHandler<CardsReceivedEvent, Window> | undefined | null;
-      oncardfielded?: EventHandler<CardFieldedEvent, Window> | undefined | null;
-      oncardplaced?: EventHandler<CardPlacedEvent, Window> | undefined | null;
-      ondeckopened?: EventHandler<DeckOpenedEvent, Window> | undefined | null;
-      onshopopened?: EventHandler<ShopOpenedEvent, Window> | undefined | null;
-      oncardfocus?: EventHandler<CardFocusEvent, Window> | undefined | null;
-      onbuypack?: EventHandler<BuyPackEvent, Window> | undefined | null;
-      oncreateflow?: EventHandler<CreateFlowEvent, Window> | undefined | null;
-      ondeleteflow?: EventHandler<DeleteFlowEvent, Window> | undefined | null;
-    }
+  interface SvelteWindowAttributes {
+    oncardsreceived?: EventHandler<CardsReceivedEvent, Window> | undefined | null;
+    oncardfielded?: EventHandler<CardFieldedEvent, Window> | undefined | null;
+    oncardplaced?: EventHandler<CardPlacedEvent, Window> | undefined | null;
+    ondeckopened?: EventHandler<DeckOpenedEvent, Window> | undefined | null;
+    onshopopened?: EventHandler<ShopOpenedEvent, Window> | undefined | null;
+    oncardfocus?: EventHandler<CardFocusEvent, Window> | undefined | null;
+    onbuypack?: EventHandler<BuyPackEvent, Window> | undefined | null;
+    oncreateflow?: EventHandler<CreateFlowEvent, Window> | undefined | null;
+    ondeleteflow?: EventHandler<DeleteFlowEvent, Window> | undefined | null;
   }
 }
 
