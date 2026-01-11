@@ -43,11 +43,27 @@ export interface ProductionCard extends BaseCard {
   employees: number;
 }
 
+export interface TransportationCard extends BaseCard {
+  category: "transportation";
+  speed: number;
+}
+
+export interface AmenityCard extends BaseCard {
+  category: "amenity";
+  provides: Input[];
+}
+
 export interface TradeCard extends BaseCard {
   category: "trade";
 }
 
-export type Card = ProductionCard | SourceCard | ResidentialCard | TradeCard;
+export type Card =
+  | ProductionCard
+  | SourceCard
+  | ResidentialCard
+  | AmenityCard
+  | TradeCard
+  | TransportationCard;
 export type CardCategory = Card["category"];
 export type CardType = keyof typeof cards;
 

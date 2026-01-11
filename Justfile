@@ -89,6 +89,9 @@ migration:
     npx prettier migrations -w
     npx graphile-migrate commit
 
+unmigration:
+    npx graphile-migrate uncommit
+
 _pre-commit:
     npx graphile-migrate status
 
@@ -97,4 +100,4 @@ reset:
     npx graphile-migrate reset --erase
 
 db: up
-    psql {{DATABASE_URL}}
+    docker compose exec postgres psql {{DATABASE_URL}}

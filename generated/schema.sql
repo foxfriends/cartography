@@ -4,8 +4,8 @@
 
 \restrict aa4b4bc410c5cacbd97fc326d0f62806
 
--- Dumped from database version 17.7 (Debian 17.7-3.pgdg13+1)
--- Dumped by pg_dump version 17.7 (Debian 17.7-3.pgdg13+1)
+-- Dumped from database version 18.1 (Debian 18.1-1.pgdg13+2)
+-- Dumped by pg_dump version 18.1 (Debian 18.1-1.pgdg13+2)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -40,8 +40,10 @@ COMMENT ON EXTENSION citext IS 'data type for case-insensitive character strings
 CREATE TYPE public.card_category AS ENUM (
     'residential',
     'production',
+    'amenity',
     'source',
-    'trade'
+    'trade',
+    'transportation'
 );
 
 
@@ -166,7 +168,8 @@ SET default_table_access_method = heap;
 --
 
 CREATE TABLE public.accounts (
-    id character varying(32) NOT NULL
+    id public.citext NOT NULL,
+    CONSTRAINT accounts_id_check CHECK (((0 < length((id)::text)) AND (length((id)::text) <= 64)))
 );
 
 
@@ -183,7 +186,7 @@ COMMENT ON TABLE public.accounts IS 'Player/user accounts. Represents one person
 
 CREATE TABLE public.card_accounts (
     card_id bigint NOT NULL,
-    account_id character varying(32) NOT NULL
+    account_id public.citext NOT NULL
 );
 
 
@@ -195,14 +198,89 @@ COMMENT ON TABLE public.card_accounts IS 'Records owners of card. Each card has 
 
 
 --
+-- Name: card_type_consumes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.card_type_consumes (
+    card_type_id text NOT NULL,
+    resource_id text NOT NULL,
+    quantity integer NOT NULL,
+    CONSTRAINT card_type_consumes_quantity_check CHECK ((quantity > 0))
+);
+
+
+--
+-- Name: TABLE card_type_consumes; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.card_type_consumes IS 'The types of resources that are consumed by this card type, to produce its outputs.';
+
+
+--
+-- Name: card_type_employs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.card_type_employs (
+    card_type_id text NOT NULL,
+    species_id text NOT NULL,
+    quantity integer NOT NULL,
+    CONSTRAINT card_type_employs_quantity_check CHECK ((quantity > 0))
+);
+
+
+--
+-- Name: TABLE card_type_employs; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.card_type_employs IS 'The types of citizens that can work at this card type.';
+
+
+--
+-- Name: card_type_houses; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.card_type_houses (
+    card_type_id text NOT NULL,
+    species_id text NOT NULL,
+    quantity integer NOT NULL,
+    CONSTRAINT card_type_houses_quantity_check CHECK ((quantity > 0))
+);
+
+
+--
+-- Name: TABLE card_type_houses; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.card_type_houses IS 'The types of citizens that this card type provides homes for.';
+
+
+--
+-- Name: card_type_produces; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.card_type_produces (
+    card_type_id text NOT NULL,
+    resource_id text NOT NULL,
+    quantity integer NOT NULL,
+    CONSTRAINT card_type_produces_quantity_check CHECK ((quantity > 0))
+);
+
+
+--
+-- Name: TABLE card_type_produces; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.card_type_produces IS 'The types of resources that are produced by this card type, if all its inputs are satisfied.';
+
+
+--
 -- Name: card_types; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.card_types (
-    id character varying(64) NOT NULL,
-    name character varying(64) NOT NULL,
-    description text NOT NULL,
-    category public.card_category NOT NULL
+    id text NOT NULL,
+    category public.card_category NOT NULL,
+    CONSTRAINT card_types_id_check CHECK (((0 < length(id)) AND (length(id) <= 64)))
 );
 
 
@@ -219,7 +297,7 @@ COMMENT ON TABLE public.card_types IS 'Data representation of the types of cards
 
 CREATE TABLE public.cards (
     id bigint NOT NULL,
-    card_type_id character varying(64) NOT NULL
+    card_type_id text NOT NULL
 );
 
 
@@ -245,12 +323,47 @@ ALTER TABLE public.cards ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 
 
 --
+-- Name: citizens; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.citizens (
+    id bigint NOT NULL,
+    account_id public.citext NOT NULL,
+    species_id text NOT NULL,
+    card_id bigint,
+    name text NOT NULL,
+    CONSTRAINT citizens_name_check CHECK (((0 < length(name)) AND (length(name) < 64)))
+);
+
+
+--
+-- Name: TABLE citizens; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.citizens IS 'Citizens that are loyal to a player. These citizens may or may not be currently housed.';
+
+
+--
+-- Name: citizens_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.citizens ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.citizens_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
 -- Name: field_cards; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.field_cards (
     card_id bigint NOT NULL,
-    account_id character varying(32) NOT NULL,
+    account_id public.citext NOT NULL,
     field_id bigint NOT NULL,
     grid_x integer NOT NULL,
     grid_y integer NOT NULL
@@ -270,8 +383,9 @@ COMMENT ON TABLE public.field_cards IS 'Tracks the location of cards placed into
 
 CREATE TABLE public.fields (
     id bigint NOT NULL,
-    name character varying(64) DEFAULT ''::character varying NOT NULL,
-    account_id character varying(32) NOT NULL
+    name text NOT NULL,
+    account_id public.citext NOT NULL,
+    CONSTRAINT fields_name_check CHECK (((0 < length(name)) AND (length(name) <= 64)))
 );
 
 
@@ -294,6 +408,59 @@ ALTER TABLE public.fields ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
     NO MAXVALUE
     CACHE 1
 );
+
+
+--
+-- Name: resources; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.resources (
+    id text NOT NULL,
+    CONSTRAINT resources_id_check CHECK (((0 < length(id)) AND (length(id) <= 64)))
+);
+
+
+--
+-- Name: TABLE resources; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.resources IS 'Definitions of all types of resources that exist in the game.';
+
+
+--
+-- Name: species; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.species (
+    id text NOT NULL,
+    CONSTRAINT species_id_check CHECK (((0 < length(id)) AND (length(id) <= 64)))
+);
+
+
+--
+-- Name: TABLE species; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.species IS 'Definitions of all species of citizen that exist in the game.';
+
+
+--
+-- Name: species_needs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.species_needs (
+    species_id text NOT NULL,
+    resource_id text NOT NULL,
+    quantity integer NOT NULL,
+    CONSTRAINT species_needs_quantity_check CHECK ((quantity > 0))
+);
+
+
+--
+-- Name: TABLE species_needs; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.species_needs IS 'The types of resources that this species needs to consume per day in order to be satisfied.';
 
 
 --
@@ -321,6 +488,38 @@ ALTER TABLE ONLY public.card_accounts
 
 
 --
+-- Name: card_type_consumes card_type_consumes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.card_type_consumes
+    ADD CONSTRAINT card_type_consumes_pkey PRIMARY KEY (card_type_id, resource_id);
+
+
+--
+-- Name: card_type_employs card_type_employs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.card_type_employs
+    ADD CONSTRAINT card_type_employs_pkey PRIMARY KEY (card_type_id, species_id);
+
+
+--
+-- Name: card_type_houses card_type_houses_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.card_type_houses
+    ADD CONSTRAINT card_type_houses_pkey PRIMARY KEY (card_type_id, species_id);
+
+
+--
+-- Name: card_type_produces card_type_produces_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.card_type_produces
+    ADD CONSTRAINT card_type_produces_pkey PRIMARY KEY (card_type_id, resource_id);
+
+
+--
 -- Name: card_types card_types_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -334,6 +533,14 @@ ALTER TABLE ONLY public.card_types
 
 ALTER TABLE ONLY public.cards
     ADD CONSTRAINT cards_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: citizens citizens_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.citizens
+    ADD CONSTRAINT citizens_pkey PRIMARY KEY (id);
 
 
 --
@@ -374,6 +581,30 @@ ALTER TABLE ONLY public.fields
 
 ALTER TABLE ONLY public.fields
     ADD CONSTRAINT fields_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: resources resources_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.resources
+    ADD CONSTRAINT resources_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: species_needs species_needs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.species_needs
+    ADD CONSTRAINT species_needs_pkey PRIMARY KEY (species_id, resource_id);
+
+
+--
+-- Name: species species_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.species
+    ADD CONSTRAINT species_pkey PRIMARY KEY (id);
 
 
 --
@@ -442,6 +673,70 @@ ALTER TABLE ONLY public.card_accounts
 
 
 --
+-- Name: card_type_consumes card_type_consumes_card_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.card_type_consumes
+    ADD CONSTRAINT card_type_consumes_card_type_id_fkey FOREIGN KEY (card_type_id) REFERENCES public.card_types(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: card_type_consumes card_type_consumes_resource_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.card_type_consumes
+    ADD CONSTRAINT card_type_consumes_resource_id_fkey FOREIGN KEY (resource_id) REFERENCES public.resources(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: card_type_employs card_type_employs_card_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.card_type_employs
+    ADD CONSTRAINT card_type_employs_card_type_id_fkey FOREIGN KEY (card_type_id) REFERENCES public.card_types(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: card_type_employs card_type_employs_species_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.card_type_employs
+    ADD CONSTRAINT card_type_employs_species_id_fkey FOREIGN KEY (species_id) REFERENCES public.species(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: card_type_houses card_type_houses_card_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.card_type_houses
+    ADD CONSTRAINT card_type_houses_card_type_id_fkey FOREIGN KEY (card_type_id) REFERENCES public.card_types(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: card_type_houses card_type_houses_species_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.card_type_houses
+    ADD CONSTRAINT card_type_houses_species_id_fkey FOREIGN KEY (species_id) REFERENCES public.species(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: card_type_produces card_type_produces_card_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.card_type_produces
+    ADD CONSTRAINT card_type_produces_card_type_id_fkey FOREIGN KEY (card_type_id) REFERENCES public.card_types(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: card_type_produces card_type_produces_resource_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.card_type_produces
+    ADD CONSTRAINT card_type_produces_resource_id_fkey FOREIGN KEY (resource_id) REFERENCES public.resources(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
 -- Name: cards cards_card_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -450,11 +745,35 @@ ALTER TABLE ONLY public.cards
 
 
 --
+-- Name: citizens citizens_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.citizens
+    ADD CONSTRAINT citizens_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.accounts(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: citizens citizens_card_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.citizens
+    ADD CONSTRAINT citizens_card_id_fkey FOREIGN KEY (card_id) REFERENCES public.cards(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: citizens citizens_species_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.citizens
+    ADD CONSTRAINT citizens_species_id_fkey FOREIGN KEY (species_id) REFERENCES public.species(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
 -- Name: field_cards field_cards_account_id_card_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.field_cards
-    ADD CONSTRAINT field_cards_account_id_card_id_fkey FOREIGN KEY (account_id, card_id) REFERENCES public.card_accounts(account_id, card_id);
+    ADD CONSTRAINT field_cards_account_id_card_id_fkey FOREIGN KEY (account_id, card_id) REFERENCES public.card_accounts(account_id, card_id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -462,7 +781,7 @@ ALTER TABLE ONLY public.field_cards
 --
 
 ALTER TABLE ONLY public.field_cards
-    ADD CONSTRAINT field_cards_account_id_field_id_fkey FOREIGN KEY (account_id, field_id) REFERENCES public.fields(account_id, id);
+    ADD CONSTRAINT field_cards_account_id_field_id_fkey FOREIGN KEY (account_id, field_id) REFERENCES public.fields(account_id, id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -495,6 +814,22 @@ ALTER TABLE ONLY public.field_cards
 
 ALTER TABLE ONLY public.fields
     ADD CONSTRAINT fields_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.accounts(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: species_needs species_needs_resource_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.species_needs
+    ADD CONSTRAINT species_needs_resource_id_fkey FOREIGN KEY (resource_id) REFERENCES public.resources(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: species_needs species_needs_species_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.species_needs
+    ADD CONSTRAINT species_needs_species_id_fkey FOREIGN KEY (species_id) REFERENCES public.species(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
