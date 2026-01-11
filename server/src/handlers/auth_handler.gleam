@@ -1,3 +1,4 @@
+import db/rows
 import dto/output_action
 import dto/output_message
 import gleam/option
@@ -6,7 +7,6 @@ import gleam/string
 import mist
 import models/account
 import pog
-import rows
 import websocket/state
 
 pub fn handle(

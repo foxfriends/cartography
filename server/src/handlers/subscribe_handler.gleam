@@ -1,3 +1,4 @@
+import db/notification_listener
 import dto/channel
 import gleam/result
 import gleam/string
@@ -5,7 +6,6 @@ import handlers/listeners/card_accounts_listener
 import handlers/listeners/field_cards_listener
 import handlers/listeners/fields_listener
 import mist
-import notification_listener
 import websocket/state
 
 pub fn handle(

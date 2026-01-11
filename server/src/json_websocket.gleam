@@ -1,6 +1,4 @@
-import context.{type Context}
-import dto/input_action
-import dto/input_message
+import gleam/dynamic/decode
 import gleam/http/request
 import gleam/json
 import gleam/option
@@ -9,14 +7,8 @@ import gleam/string
 import gleam/time/calendar
 import gleam/time/duration
 import gleam/time/timestamp
-import handlers/auth_handler
-import handlers/get_field_handler
-import handlers/get_fields_handler
-import handlers/subscribe_handler
-import handlers/unsubscribe_handler
 import mist.{type WebsocketConnection, type WebsocketMessage, Text}
 import palabres
-import websocket/state
 
 fn as_text(message: WebsocketMessage(_msg)) {
   case message {
@@ -27,12 +19,13 @@ fn as_text(message: WebsocketMessage(_msg)) {
 
 fn parse_message(
   text: String,
-  cb: fn(input_message.InputMessage) -> Result(t, String),
+  decoder: decode.Decoder(event),
+  cb: fn(event) -> Result(t, String),
 ) -> Result(t, String) {
   let before = timestamp.system_time()
 
   let parsed =
-    json.parse(from: text, using: input_message.decoder())
+    json.parse(from: text, using: decoder)
     |> result.map_error(string.inspect)
 
   case parsed {
@@ -77,40 +70,31 @@ fn parse_message(
   }
 }
 
-fn handle_message(
-  state: state.State,
-  message: WebsocketMessage(_msg),
-  conn: WebsocketConnection,
-) -> mist.Next(state.State, _msg) {
-  let response = {
-    use text <- result.try(as_text(message))
-    use message <- parse_message(text)
-    case message.data {
-      input_action.Auth(id) -> auth_handler.handle(state, conn, message.id, id)
-      input_action.GetFields ->
-        get_fields_handler.handle(state, conn, message.id)
-      input_action.GetField(field_id) ->
-        get_field_handler.handle(state, conn, message.id, field_id)
-      input_action.Subscribe(channel) ->
-        subscribe_handler.handle(state, conn, message.id, channel)
-      input_action.Unsubscribe ->
-        unsubscribe_handler.handle(state, conn, message.id)
-    }
-  }
-  case response {
-    Ok(next) -> next
-    Error(error) -> {
-      palabres.error("websocket handler failed")
-      |> palabres.string("error", error)
-      |> palabres.log()
-      mist.stop_abnormal(error)
-    }
-  }
+pub opaque type Builder(state, event) {
+  Builder(
+    init: state,
+    decoder: decode.Decoder(event),
+    on_message: fn(state, event, WebsocketConnection) -> mist.Next(state, event),
+  )
 }
 
-pub fn socket_handler(
+pub fn new(init: state) -> Builder(state, Nil) {
+  Builder(init:, decoder: decode.success(Nil), on_message: fn(state, _, _) {
+    mist.continue(state)
+  })
+}
+
+pub fn message(
+  builder: Builder(state, _msg),
+  decoder: decode.Decoder(event),
+  on_message: fn(state, event, WebsocketConnection) -> mist.Next(state, event),
+) -> Builder(state, event) {
+  Builder(..builder, decoder:, on_message:)
+}
+
+pub fn start(
+  builder: Builder(state, event),
   request: request.Request(mist.Connection),
-  context: Context,
 ) {
   palabres.info("websocket connection received")
   |> palabres.string(
@@ -121,8 +105,23 @@ pub fn socket_handler(
 
   mist.websocket(
     request: request,
-    handler: handle_message,
-    on_init: fn(_conn) { #(state.new(context), option.None) },
+    handler: fn(state, message, conn) {
+      let response = {
+        use text <- result.try(as_text(message))
+        use message <- parse_message(text, builder.decoder)
+        Ok(builder.on_message(state, message, conn))
+      }
+      case response {
+        Ok(next) -> next
+        Error(error) -> {
+          palabres.error("websocket handler failed")
+          |> palabres.string("error", error)
+          |> palabres.log()
+          mist.stop_abnormal(error)
+        }
+      }
+    },
+    on_init: fn(_conn) { #(builder.init, option.None) },
     on_close: fn(_state) {
       palabres.info("websocket connection closed")
       |> palabres.string(

@@ -1,9 +1,9 @@
+import db/notification_listener
 import dto/output_action
 import dto/output_message
 import gleam/dynamic/decode
 import gleam/string
 import mist
-import notification_listener
 import palabres
 import websocket/state.{type State as WebsocketState}
 

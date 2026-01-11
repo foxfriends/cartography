@@ -1,3 +1,5 @@
+import db/notification_listener
+import db/rows
 import dto/output_action
 import dto/output_message
 import gleam/dynamic/decode
@@ -5,10 +7,8 @@ import gleam/result
 import gleam/string
 import mist
 import models/field
-import notification_listener
 import palabres
 import pog
-import rows
 import websocket/state.{type State as WebsocketState}
 
 type State {

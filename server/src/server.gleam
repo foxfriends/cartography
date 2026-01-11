@@ -1,4 +1,3 @@
-import context
 import envoy
 import gleam/erlang/process
 import gleam/int
@@ -8,8 +7,8 @@ import mist
 import palabres
 import palabres/options
 import pog
-
-import router
+import server/context
+import server/router
 
 pub fn main() -> Nil {
   options.defaults()

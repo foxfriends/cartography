@@ -1,3 +1,4 @@
+import db/rows
 import dto/output_action
 import dto/output_message
 import gleam/dynamic/decode
@@ -7,7 +8,6 @@ import mist
 import models/field
 import models/field_card
 import pog
-import rows
 import websocket/state
 
 pub fn handle(
