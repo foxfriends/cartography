@@ -11,8 +11,8 @@ pub type InputAction {
 
 fn decode_empty(into: InputAction) {
   use _ <- decode.map(decode.dict(
-    decode.failure(0, "empty object"),
-    decode.failure(0, "empty object"),
+    decode.failure(Nil, "empty object"),
+    decode.failure(Nil, "empty object"),
   ))
   into
 }
