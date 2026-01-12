@@ -4,7 +4,7 @@ import "trilogy:string" use replace_all, trim, join
 
 import "./resources.tri" use resource
 import "./species.tri" use species, species_needs
-import "./card_types.tri" use card_type, card_type_consumes, card_type_produces
+import "./tile_types.tri" use tile_type, tile_type_consumes, tile_type_produces
 
 func uncurry f (a:b) = f a b
 func flip f a b = f b a
@@ -37,6 +37,12 @@ rule optional_species(value) <- species(value)
 
 proc main!() {
   let resources_values = 'values([id for resource(id)])
+
+  let card_types_values = 'values([
+    ..[species_id:"citizen" for species(species_id)],
+    ..[tile_type_id:"tile" for tile_type(tile_type_id, _, _, _)]
+  ])
+
   let species_values = 'values([id for species(id)])
   let species_needs_values = 'values([
     species_id:resource_id:quantity
@@ -44,20 +50,20 @@ proc main!() {
     and species(^species_id)
     and resource(^resource_id)
   ])
-  let card_types_values = 'values([
+  let tile_types_values = 'values([
     id:category:houses:employs
-    for card_type(id, category, houses, employs)
+    for tile_type(id, category, houses, employs)
   ])
-  let card_type_consumes_values = 'values([
-    card_type_id:resource_id:quantity
-    for card_type_consumes(card_type_id, resource_id, quantity)
-    and card_type(^card_type_id, _, _, _)
+  let tile_type_consumes_values = 'values([
+    tile_type_id:resource_id:quantity
+    for tile_type_consumes(tile_type_id, resource_id, quantity)
+    and tile_type(^tile_type_id, _, _, _)
     and resource(^resource_id)
   ])
-  let card_type_produces_values = 'values([
-    card_type_id:resource_id:quantity
-    for card_type_produces(card_type_id, resource_id, quantity)
-    and card_type(^card_type_id, _, _, _)
+  let tile_type_produces_values = 'values([
+    tile_type_id:resource_id:quantity
+    for tile_type_produces(tile_type_id, resource_id, quantity)
+    and tile_type(^tile_type_id, _, _, _)
     and resource(^resource_id)
   ])
 
@@ -65,6 +71,10 @@ proc main!() {
 INSERT INTO resources (id)
 ${resources_values}
 ON CONFLICT DO NOTHING;
+
+INSERT INTO card_types (id, class)
+${card_types_values}
+ON CONFLICT (id) DO UPDATE SET class = EXCLUDED.class;
 
 INSERT INTO species (id)
 ${species_values}
@@ -74,19 +84,19 @@ INSERT INTO species_needs (species_id, resource_id, quantity)
 ${species_needs_values}
 ON CONFLICT (species_id, resource_id) DO UPDATE SET quantity = EXCLUDED.quantity;
 
-INSERT INTO card_types (id, category, houses, employs)
-${card_types_values}
+INSERT INTO tile_types (id, category, houses, employs)
+${tile_types_values}
 ON CONFLICT (id) DO UPDATE
 SET category = EXCLUDED.category,
     houses = EXCLUDED.houses,
     employs = EXCLUDED.employs;
 
-INSERT INTO card_type_consumes (card_type_id, resource_id, quantity)
-${card_type_consumes_values}
-ON CONFLICT (card_type_id, resource_id) DO UPDATE SET quantity = EXCLUDED.quantity;
+INSERT INTO tile_type_consumes (tile_type_id, resource_id, quantity)
+${tile_type_consumes_values}
+ON CONFLICT (tile_type_id, resource_id) DO UPDATE SET quantity = EXCLUDED.quantity;
 
-INSERT INTO card_type_produces (card_type_id, resource_id, quantity)
-${card_type_produces_values}
-ON CONFLICT (card_type_id, resource_id) DO UPDATE SET quantity = EXCLUDED.quantity;
+INSERT INTO tile_type_produces (tile_type_id, resource_id, quantity)
+${tile_type_produces_values}
+ON CONFLICT (tile_type_id, resource_id) DO UPDATE SET quantity = EXCLUDED.quantity;
   ")
 }

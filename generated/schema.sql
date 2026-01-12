@@ -34,10 +34,20 @@ COMMENT ON EXTENSION citext IS 'data type for case-insensitive character strings
 
 
 --
--- Name: card_category; Type: TYPE; Schema: public; Owner: -
+-- Name: card_class; Type: TYPE; Schema: public; Owner: -
 --
 
-CREATE TYPE public.card_category AS ENUM (
+CREATE TYPE public.card_class AS ENUM (
+    'tile',
+    'citizen'
+);
+
+
+--
+-- Name: tile_category; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.tile_category AS ENUM (
     'residential',
     'production',
     'amenity',
@@ -198,41 +208,21 @@ COMMENT ON TABLE public.card_accounts IS 'Records owners of card. Each card has 
 
 
 --
--- Name: card_type_consumes; Type: TABLE; Schema: public; Owner: -
+-- Name: card_sets; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.card_type_consumes (
-    card_type_id text NOT NULL,
-    resource_id text NOT NULL,
-    quantity integer NOT NULL,
-    CONSTRAINT card_type_consumes_quantity_check CHECK ((quantity > 0))
+CREATE TABLE public.card_sets (
+    id text NOT NULL,
+    release_date timestamp with time zone NOT NULL,
+    CONSTRAINT card_sets_id_check CHECK (((0 < length(id)) AND (length(id) <= 64)))
 );
 
 
 --
--- Name: TABLE card_type_consumes; Type: COMMENT; Schema: public; Owner: -
+-- Name: TABLE card_sets; Type: COMMENT; Schema: public; Owner: -
 --
 
-COMMENT ON TABLE public.card_type_consumes IS 'The types of resources that are consumed by this card type, to produce its outputs.';
-
-
---
--- Name: card_type_produces; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.card_type_produces (
-    card_type_id text NOT NULL,
-    resource_id text NOT NULL,
-    quantity integer NOT NULL,
-    CONSTRAINT card_type_produces_quantity_check CHECK ((quantity > 0))
-);
-
-
---
--- Name: TABLE card_type_produces; Type: COMMENT; Schema: public; Owner: -
---
-
-COMMENT ON TABLE public.card_type_produces IS 'The types of resources that are produced by this card type, if all its inputs are satisfied.';
+COMMENT ON TABLE public.card_sets IS 'Every card is initially released as part of some card set, which can be used for collectors to organize their collections.';
 
 
 --
@@ -241,9 +231,8 @@ COMMENT ON TABLE public.card_type_produces IS 'The types of resources that are p
 
 CREATE TABLE public.card_types (
     id text NOT NULL,
-    category public.card_category NOT NULL,
-    houses integer DEFAULT 0 NOT NULL,
-    employs integer DEFAULT 0 NOT NULL,
+    card_set_id text DEFAULT 'default'::text NOT NULL,
+    class public.card_class NOT NULL,
     CONSTRAINT card_types_id_check CHECK (((0 < length(id)) AND (length(id) <= 64)))
 );
 
@@ -291,11 +280,10 @@ ALTER TABLE public.cards ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 --
 
 CREATE TABLE public.citizens (
-    id bigint NOT NULL,
-    account_id public.citext NOT NULL,
     species_id text NOT NULL,
-    card_id bigint,
     name text NOT NULL,
+    home_tile_id bigint,
+    id bigint NOT NULL,
     CONSTRAINT citizens_name_check CHECK (((0 < length(name)) AND (length(name) < 64)))
 );
 
@@ -304,29 +292,15 @@ CREATE TABLE public.citizens (
 -- Name: TABLE citizens; Type: COMMENT; Schema: public; Owner: -
 --
 
-COMMENT ON TABLE public.citizens IS 'Citizens that are loyal to a player. These citizens may or may not be currently housed.';
+COMMENT ON TABLE public.citizens IS 'Citizens that are loyal to a player. Citizens each correspond to some card.';
 
 
 --
--- Name: citizens_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: field_tiles; Type: TABLE; Schema: public; Owner: -
 --
 
-ALTER TABLE public.citizens ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.citizens_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
---
--- Name: field_cards; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.field_cards (
-    card_id bigint NOT NULL,
+CREATE TABLE public.field_tiles (
+    tile_id bigint NOT NULL,
     account_id public.citext NOT NULL,
     field_id bigint NOT NULL,
     grid_x integer NOT NULL,
@@ -335,10 +309,10 @@ CREATE TABLE public.field_cards (
 
 
 --
--- Name: TABLE field_cards; Type: COMMENT; Schema: public; Owner: -
+-- Name: TABLE field_tiles; Type: COMMENT; Schema: public; Owner: -
 --
 
-COMMENT ON TABLE public.field_cards IS 'Tracks the location of cards placed into fields.';
+COMMENT ON TABLE public.field_tiles IS 'Tile cards that have been played onto a field.';
 
 
 --
@@ -375,6 +349,76 @@ ALTER TABLE public.fields ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 
 
 --
+-- Name: pack_banners; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.pack_banners (
+    id text NOT NULL,
+    start_date timestamp with time zone NOT NULL,
+    end_date timestamp with time zone,
+    CONSTRAINT pack_banners_id_check CHECK (((0 < length(id)) AND (length(id) <= 64)))
+);
+
+
+--
+-- Name: TABLE pack_banners; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.pack_banners IS 'Every pack that is opened is created using the template of some pack banner.';
+
+
+--
+-- Name: pack_contents; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.pack_contents (
+    pack_id bigint NOT NULL,
+    "position" integer NOT NULL,
+    card_id bigint NOT NULL
+);
+
+
+--
+-- Name: TABLE pack_contents; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.pack_contents IS 'Lists all cards that were part of each pack.';
+
+
+--
+-- Name: packs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.packs (
+    id bigint NOT NULL,
+    account_id public.citext NOT NULL,
+    pack_banner_id text NOT NULL,
+    opened_at timestamp with time zone
+);
+
+
+--
+-- Name: TABLE packs; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.packs IS 'A historical record of all packs opened by an account.';
+
+
+--
+-- Name: packs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.packs ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.packs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
 -- Name: resources; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -397,6 +441,7 @@ COMMENT ON TABLE public.resources IS 'Definitions of all types of resources that
 
 CREATE TABLE public.species (
     id text NOT NULL,
+    class public.card_class GENERATED ALWAYS AS ('citizen'::public.card_class) STORED NOT NULL,
     CONSTRAINT species_id_check CHECK (((0 < length(id)) AND (length(id) <= 64)))
 );
 
@@ -428,12 +473,80 @@ COMMENT ON TABLE public.species_needs IS 'The types of resources that this speci
 
 
 --
--- Name: testing; Type: TABLE; Schema: public; Owner: -
+-- Name: tile_type_consumes; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.testing (
-    species_id text
+CREATE TABLE public.tile_type_consumes (
+    tile_type_id text NOT NULL,
+    resource_id text NOT NULL,
+    quantity integer NOT NULL,
+    CONSTRAINT tile_type_consumes_quantity_check CHECK ((quantity > 0))
 );
+
+
+--
+-- Name: TABLE tile_type_consumes; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.tile_type_consumes IS 'The types of resources that are consumed by this tile type, to produce its outputs.';
+
+
+--
+-- Name: tile_type_produces; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.tile_type_produces (
+    tile_type_id text NOT NULL,
+    resource_id text NOT NULL,
+    quantity integer NOT NULL,
+    CONSTRAINT tile_type_produces_quantity_check CHECK ((quantity > 0))
+);
+
+
+--
+-- Name: TABLE tile_type_produces; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.tile_type_produces IS 'The types of resources that are produced by this tile type, if all its inputs are satisfied.';
+
+
+--
+-- Name: tile_types; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.tile_types (
+    id text NOT NULL,
+    class public.card_class GENERATED ALWAYS AS ('tile'::public.card_class) STORED NOT NULL,
+    category public.tile_category NOT NULL,
+    houses integer NOT NULL,
+    employs integer NOT NULL
+);
+
+
+--
+-- Name: TABLE tile_types; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.tile_types IS 'Contains additional information about card types that correspond to tiles.';
+
+
+--
+-- Name: tiles; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.tiles (
+    id bigint NOT NULL,
+    tile_type_id text NOT NULL,
+    name text NOT NULL,
+    CONSTRAINT tiles_name_check CHECK (((0 < length(name)) AND (length(name) <= 64)))
+);
+
+
+--
+-- Name: TABLE tiles; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.tiles IS 'Contains tile-specific information, corresponding to some card.';
 
 
 --
@@ -461,19 +574,19 @@ ALTER TABLE ONLY public.card_accounts
 
 
 --
--- Name: card_type_consumes card_type_consumes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: card_sets card_sets_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.card_type_consumes
-    ADD CONSTRAINT card_type_consumes_pkey PRIMARY KEY (card_type_id, resource_id);
+ALTER TABLE ONLY public.card_sets
+    ADD CONSTRAINT card_sets_pkey PRIMARY KEY (id);
 
 
 --
--- Name: card_type_produces card_type_produces_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: card_types card_types_id_class_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.card_type_produces
-    ADD CONSTRAINT card_type_produces_pkey PRIMARY KEY (card_type_id, resource_id);
+ALTER TABLE ONLY public.card_types
+    ADD CONSTRAINT card_types_id_class_key UNIQUE (id, class);
 
 
 --
@@ -482,6 +595,14 @@ ALTER TABLE ONLY public.card_type_produces
 
 ALTER TABLE ONLY public.card_types
     ADD CONSTRAINT card_types_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: cards cards_id_card_type_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.cards
+    ADD CONSTRAINT cards_id_card_type_id_key UNIQUE (id, card_type_id);
 
 
 --
@@ -501,27 +622,11 @@ ALTER TABLE ONLY public.citizens
 
 
 --
--- Name: field_cards field_cards_field_id_card_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: field_tiles field_tiles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.field_cards
-    ADD CONSTRAINT field_cards_field_id_card_id_key UNIQUE (field_id, card_id);
-
-
---
--- Name: field_cards field_cards_field_id_grid_x_grid_y_key; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.field_cards
-    ADD CONSTRAINT field_cards_field_id_grid_x_grid_y_key UNIQUE (field_id, grid_x, grid_y);
-
-
---
--- Name: field_cards field_cards_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.field_cards
-    ADD CONSTRAINT field_cards_pkey PRIMARY KEY (card_id);
+ALTER TABLE ONLY public.field_tiles
+    ADD CONSTRAINT field_tiles_pkey PRIMARY KEY (tile_id);
 
 
 --
@@ -538,6 +643,30 @@ ALTER TABLE ONLY public.fields
 
 ALTER TABLE ONLY public.fields
     ADD CONSTRAINT fields_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: pack_banners pack_banners_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pack_banners
+    ADD CONSTRAINT pack_banners_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: pack_contents pack_contents_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pack_contents
+    ADD CONSTRAINT pack_contents_pkey PRIMARY KEY (pack_id, "position");
+
+
+--
+-- Name: packs packs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.packs
+    ADD CONSTRAINT packs_pkey PRIMARY KEY (id);
 
 
 --
@@ -565,6 +694,38 @@ ALTER TABLE ONLY public.species
 
 
 --
+-- Name: tile_type_consumes tile_type_consumes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tile_type_consumes
+    ADD CONSTRAINT tile_type_consumes_pkey PRIMARY KEY (tile_type_id, resource_id);
+
+
+--
+-- Name: tile_type_produces tile_type_produces_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tile_type_produces
+    ADD CONSTRAINT tile_type_produces_pkey PRIMARY KEY (tile_type_id, resource_id);
+
+
+--
+-- Name: tile_types tile_types_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tile_types
+    ADD CONSTRAINT tile_types_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: tiles tiles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tiles
+    ADD CONSTRAINT tiles_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: accounts_id_case_insensitive; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -576,20 +737,6 @@ CREATE UNIQUE INDEX accounts_id_case_insensitive ON public.accounts USING btree 
 --
 
 CREATE INDEX card_accounts_account_id_index ON public.card_accounts USING btree (account_id);
-
-
---
--- Name: field_cards _500_subscription_card_moved; Type: TRIGGER; Schema: public; Owner: -
---
-
-CREATE TRIGGER _500_subscription_card_moved AFTER INSERT OR UPDATE ON public.field_cards FOR EACH ROW EXECUTE FUNCTION public.notify_changes_int_target('place_card', 'field_cards:$1', 'field_id', 'card_id');
-
-
---
--- Name: field_cards _500_subscription_card_removed; Type: TRIGGER; Schema: public; Owner: -
---
-
-CREATE TRIGGER _500_subscription_card_removed AFTER DELETE ON public.field_cards FOR EACH ROW EXECUTE FUNCTION public.notify_changes_int_target('unplace_card', 'field_cards:$1', 'field_id', 'card_id');
 
 
 --
@@ -630,35 +777,11 @@ ALTER TABLE ONLY public.card_accounts
 
 
 --
--- Name: card_type_consumes card_type_consumes_card_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: card_types card_types_card_set_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.card_type_consumes
-    ADD CONSTRAINT card_type_consumes_card_type_id_fkey FOREIGN KEY (card_type_id) REFERENCES public.card_types(id) ON UPDATE CASCADE ON DELETE CASCADE;
-
-
---
--- Name: card_type_consumes card_type_consumes_resource_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.card_type_consumes
-    ADD CONSTRAINT card_type_consumes_resource_id_fkey FOREIGN KEY (resource_id) REFERENCES public.resources(id) ON UPDATE CASCADE ON DELETE RESTRICT;
-
-
---
--- Name: card_type_produces card_type_produces_card_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.card_type_produces
-    ADD CONSTRAINT card_type_produces_card_type_id_fkey FOREIGN KEY (card_type_id) REFERENCES public.card_types(id) ON UPDATE CASCADE ON DELETE CASCADE;
-
-
---
--- Name: card_type_produces card_type_produces_resource_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.card_type_produces
-    ADD CONSTRAINT card_type_produces_resource_id_fkey FOREIGN KEY (resource_id) REFERENCES public.resources(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE ONLY public.card_types
+    ADD CONSTRAINT card_types_card_set_id_fkey FOREIGN KEY (card_set_id) REFERENCES public.card_sets(id) ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 --
@@ -670,19 +793,19 @@ ALTER TABLE ONLY public.cards
 
 
 --
--- Name: citizens citizens_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: citizens citizens_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.citizens
-    ADD CONSTRAINT citizens_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.accounts(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT citizens_id_fkey FOREIGN KEY (id) REFERENCES public.cards(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
--- Name: citizens citizens_card_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: citizens citizens_id_species_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.citizens
-    ADD CONSTRAINT citizens_card_id_fkey FOREIGN KEY (card_id) REFERENCES public.cards(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT citizens_id_species_id_fkey FOREIGN KEY (id, species_id) REFERENCES public.cards(id, card_type_id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -694,43 +817,43 @@ ALTER TABLE ONLY public.citizens
 
 
 --
--- Name: field_cards field_cards_account_id_card_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: field_tiles field_tiles_account_id_field_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.field_cards
-    ADD CONSTRAINT field_cards_account_id_card_id_fkey FOREIGN KEY (account_id, card_id) REFERENCES public.card_accounts(account_id, card_id) ON UPDATE CASCADE ON DELETE CASCADE;
-
-
---
--- Name: field_cards field_cards_account_id_field_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.field_cards
-    ADD CONSTRAINT field_cards_account_id_field_id_fkey FOREIGN KEY (account_id, field_id) REFERENCES public.fields(account_id, id) ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE ONLY public.field_tiles
+    ADD CONSTRAINT field_tiles_account_id_field_id_fkey FOREIGN KEY (account_id, field_id) REFERENCES public.fields(account_id, id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
--- Name: field_cards field_cards_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: field_tiles field_tiles_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.field_cards
-    ADD CONSTRAINT field_cards_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.accounts(id) ON UPDATE CASCADE ON DELETE CASCADE;
-
-
---
--- Name: field_cards field_cards_card_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.field_cards
-    ADD CONSTRAINT field_cards_card_id_fkey FOREIGN KEY (card_id) REFERENCES public.cards(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE ONLY public.field_tiles
+    ADD CONSTRAINT field_tiles_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.accounts(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
--- Name: field_cards field_cards_field_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: field_tiles field_tiles_account_id_tile_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.field_cards
-    ADD CONSTRAINT field_cards_field_id_fkey FOREIGN KEY (field_id) REFERENCES public.fields(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE ONLY public.field_tiles
+    ADD CONSTRAINT field_tiles_account_id_tile_id_fkey FOREIGN KEY (account_id, tile_id) REFERENCES public.card_accounts(account_id, card_id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: field_tiles field_tiles_field_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.field_tiles
+    ADD CONSTRAINT field_tiles_field_id_fkey FOREIGN KEY (field_id) REFERENCES public.fields(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: field_tiles field_tiles_tile_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.field_tiles
+    ADD CONSTRAINT field_tiles_tile_id_fkey FOREIGN KEY (tile_id) REFERENCES public.tiles(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -739,6 +862,54 @@ ALTER TABLE ONLY public.field_cards
 
 ALTER TABLE ONLY public.fields
     ADD CONSTRAINT fields_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.accounts(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: pack_contents pack_contents_card_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pack_contents
+    ADD CONSTRAINT pack_contents_card_id_fkey FOREIGN KEY (card_id) REFERENCES public.cards(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: pack_contents pack_contents_pack_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pack_contents
+    ADD CONSTRAINT pack_contents_pack_id_fkey FOREIGN KEY (pack_id) REFERENCES public.packs(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: packs packs_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.packs
+    ADD CONSTRAINT packs_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.accounts(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: packs packs_pack_banner_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.packs
+    ADD CONSTRAINT packs_pack_banner_id_fkey FOREIGN KEY (pack_banner_id) REFERENCES public.pack_banners(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: species species_id_class_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.species
+    ADD CONSTRAINT species_id_class_fkey FOREIGN KEY (id, class) REFERENCES public.card_types(id, class) ON UPDATE RESTRICT ON DELETE CASCADE;
+
+
+--
+-- Name: species species_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.species
+    ADD CONSTRAINT species_id_fkey FOREIGN KEY (id) REFERENCES public.card_types(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -758,11 +929,75 @@ ALTER TABLE ONLY public.species_needs
 
 
 --
--- Name: testing testing_species_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: tile_type_consumes tile_type_consumes_resource_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.testing
-    ADD CONSTRAINT testing_species_id_fkey FOREIGN KEY (species_id) REFERENCES public.species(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE ONLY public.tile_type_consumes
+    ADD CONSTRAINT tile_type_consumes_resource_id_fkey FOREIGN KEY (resource_id) REFERENCES public.resources(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: tile_type_consumes tile_type_consumes_tile_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tile_type_consumes
+    ADD CONSTRAINT tile_type_consumes_tile_type_id_fkey FOREIGN KEY (tile_type_id) REFERENCES public.tile_types(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: tile_type_produces tile_type_produces_resource_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tile_type_produces
+    ADD CONSTRAINT tile_type_produces_resource_id_fkey FOREIGN KEY (resource_id) REFERENCES public.resources(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: tile_type_produces tile_type_produces_tile_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tile_type_produces
+    ADD CONSTRAINT tile_type_produces_tile_type_id_fkey FOREIGN KEY (tile_type_id) REFERENCES public.tile_types(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: tile_types tile_types_id_class_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tile_types
+    ADD CONSTRAINT tile_types_id_class_fkey FOREIGN KEY (id, class) REFERENCES public.card_types(id, class) ON UPDATE RESTRICT ON DELETE CASCADE;
+
+
+--
+-- Name: tile_types tile_types_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tile_types
+    ADD CONSTRAINT tile_types_id_fkey FOREIGN KEY (id) REFERENCES public.card_types(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: tiles tiles_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tiles
+    ADD CONSTRAINT tiles_id_fkey FOREIGN KEY (id) REFERENCES public.cards(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: tiles tiles_id_tile_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tiles
+    ADD CONSTRAINT tiles_id_tile_type_id_fkey FOREIGN KEY (id, tile_type_id) REFERENCES public.cards(id, card_type_id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: tiles tiles_tile_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tiles
+    ADD CONSTRAINT tiles_tile_type_id_fkey FOREIGN KEY (tile_type_id) REFERENCES public.tile_types(id) ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 --
