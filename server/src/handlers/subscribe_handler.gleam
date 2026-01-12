@@ -30,7 +30,7 @@ pub fn handle(
       )
       fn() { notification_listener.unlisten(listener.data) }
     }
-    channel.FieldCards(field_id) -> {
+    channel.FieldTiles(field_id) -> {
       use listener <- result.map(
         field_cards_listener.start(st, conn, field_id, message_id)
         |> result.map_error(string.inspect),

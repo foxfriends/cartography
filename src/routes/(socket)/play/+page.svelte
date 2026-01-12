@@ -10,7 +10,7 @@
   const setFieldState = provideFieldState();
 
   const { fields } = $derived.by(getOverworldState);
-  const { field, fieldCards } = $derived.by(getFieldState);
+  const { field, fieldTiles } = $derived.by(getFieldState);
 
   async function viewField(field: Field) {
     setFieldState.fieldId = field.id;
@@ -22,11 +22,11 @@
     <GridLines />
 
     {#if field}
-      {#each fieldCards.values() as fieldCard (fieldCard.card_id)}
+      {#each fieldTiles.values() as fieldTile (fieldTile.tile_id)}
         <DragTile
-          x={fieldCard.grid_x ?? 0}
-          y={fieldCard.grid_y ?? 0}
-          loose={fieldCard.grid_x === undefined || fieldCard.grid_y === undefined}
+          x={fieldTile.grid_x ?? 0}
+          y={fieldTile.grid_y ?? 0}
+          loose={fieldTile.grid_x === undefined || fieldTile.grid_y === undefined}
         >
           <div class="field-label">
             {#if field.name}

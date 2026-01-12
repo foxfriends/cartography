@@ -1,16 +1,16 @@
 import gleam/json
 import models/account
 import models/field
-import models/field_card
+import models/field_tile
 
 pub type OutputAction {
   Account(account.Account)
   Fields(List(field.Field))
-  FieldWithCards(field: field.Field, field_cards: List(field_card.FieldCard))
+  FieldWithTiles(field: field.Field, field_tiles: List(field_tile.FieldTile))
   Field(field: field.Field)
   CardAccount(card_id: Int)
-  FieldCard(field_card.FieldCard)
-  FieldCardStub(card_id: Int)
+  FieldTile(field_tile.FieldTile)
+  FieldTileStub(card_id: Int)
 }
 
 pub fn to_json(message: OutputAction) -> #(String, json.Json) {
@@ -23,11 +23,11 @@ pub fn to_json(message: OutputAction) -> #(String, json.Json) {
       "fields",
       json.object([#("fields", json.array(fields, field.to_json))]),
     )
-    FieldWithCards(field_data, field_cards) -> #(
+    FieldWithTiles(field_data, field_tiles) -> #(
       "field",
       json.object([
         #("field", field.to_json(field_data)),
-        #("field_cards", json.array(field_cards, field_card.to_json)),
+        #("field_tiles", json.array(field_tiles, field_tile.to_json)),
       ]),
     )
     Field(field_data) -> #(
@@ -42,16 +42,16 @@ pub fn to_json(message: OutputAction) -> #(String, json.Json) {
         #("card", json.object([#("id", json.int(card_id))])),
       ]),
     )
-    FieldCardStub(card_id) -> #(
-      "field_card",
+    FieldTileStub(card_id) -> #(
+      "field_tile",
       json.object([
-        #("field_card", json.object([#("id", json.int(card_id))])),
+        #("field_tile", json.object([#("id", json.int(card_id))])),
       ]),
     )
-    FieldCard(field_card) -> #(
-      "field_card",
+    FieldTile(field_tile) -> #(
+      "field_tile",
       json.object([
-        #("field_card", field_card.to_json(field_card)),
+        #("field_tile", field_tile.to_json(field_tile)),
       ]),
     )
   }

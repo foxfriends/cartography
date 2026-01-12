@@ -1,6 +1,6 @@
 import type { CardId } from "$lib/appserver/Card";
 import type { Field, FieldId } from "$lib/appserver/Field";
-import type { FieldCard } from "$lib/appserver/FieldCard";
+import type { FieldTile } from "$lib/appserver/FieldTile";
 import { getSocket } from "$lib/appserver/provideSocket.svelte";
 import { getContext, setContext } from "svelte";
 import { SvelteMap } from "svelte/reactivity";
@@ -10,7 +10,7 @@ const FIELD_STATE = Symbol("Field State");
 interface FieldState {
   get fieldId(): FieldId | undefined;
   get field(): Field | undefined;
-  get fieldCards(): FieldCard[];
+  get fieldTiles(): FieldTile[];
 }
 
 export function getFieldState() {
@@ -23,20 +23,20 @@ export function provideFieldState() {
 
   let fieldId: FieldId | undefined = $state();
   let field: Field | undefined = $state();
-  let fieldCards = $state(new SvelteMap<CardId, FieldCard>());
+  let fieldTiles = $state(new SvelteMap<CardId, FieldTile>());
 
   socket.$on("auth", () => {
     $effect(() => {
       if (fieldId) {
-        // const subscription = socket.subscribe({ topic: "field_cards", field_id: fieldId });
+        // const subscription = socket.subscribe({ topic: "field_tiles", field_id: fieldId });
 
         socket.getField(fieldId).$then(({ data }) => {
           field = data.field;
-          fieldCards = new SvelteMap(data.field_cards.map((card) => [card.card_id, card]));
+          fieldTiles = new SvelteMap(data.field_tiles.map((tile) => [tile.tile_id, tile]));
         });
 
         // subscription.$on("next", ({ message }) => {
-        //   fieldCards.set(message.data.field_card.card_id, message.data.field_card);
+        //   fieldTiles.set(message.data.field_card.card_id, message.data.field_card);
         // });
 
         return () => {
@@ -53,8 +53,8 @@ export function provideFieldState() {
     get field() {
       return field;
     },
-    get fieldCards() {
-      return fieldCards;
+    get fieldTiles() {
+      return fieldTiles;
     },
   });
 

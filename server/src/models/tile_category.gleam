@@ -1,6 +1,6 @@
 import gleam/dynamic/decode
 
-pub type CardCategory {
+pub type TileCategory {
   Residential
   Production
   Amenity
@@ -22,7 +22,7 @@ pub fn decoder() {
   }
 }
 
-pub fn to_string(category: CardCategory) {
+pub fn to_string(category: TileCategory) {
   case category {
     Residential -> "residential"
     Production -> "production"

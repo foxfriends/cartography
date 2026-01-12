@@ -1,29 +1,20 @@
 import gleam/dynamic/decode
 import gleam/json
-import models/card_category
+import models/card_class
 
 pub type CardType {
-  CardType(
-    id: String,
-    category: card_category.CardCategory,
-    houses: Int,
-    employs: Int,
-  )
+  CardType(id: String, class: card_class.CardClass)
 }
 
 pub fn from_sql_row() {
   use id <- decode.field(0, decode.string)
-  use category <- decode.field(1, card_category.decoder())
-  use houses <- decode.field(2, decode.int)
-  use employs <- decode.field(3, decode.int)
-  decode.success(CardType(id:, category:, houses:, employs:))
+  use class <- decode.field(1, card_class.decoder())
+  decode.success(CardType(id:, class:))
 }
 
 pub fn to_json(card_type: CardType) {
   json.object([
     #("id", json.string(card_type.id)),
-    #("category", json.string(card_category.to_string(card_type.category))),
-    #("houses", json.int(card_type.houses)),
-    #("employs", json.int(card_type.employs)),
+    #("class", json.string(card_class.to_string(card_type.class))),
   ])
 }

@@ -2,7 +2,7 @@
 
 import type { Account } from "../Account";
 import type { Field } from "../Field";
-import type { FieldCard } from "../FieldCard";
+import type { FieldTile } from "../FieldTile";
 import type { Card } from "../Card";
 
 export interface MessageReplyMap {
@@ -26,7 +26,7 @@ export interface AccountMessage extends AnyMessage {
 
 export interface FieldMessage extends AnyMessage {
   type: "field";
-  data: { field: Field; field_cards: FieldCard[] };
+  data: { field: Field; field_tiles: FieldTile[] };
 }
 
 export interface FieldsMessage extends AnyMessage {
@@ -34,10 +34,10 @@ export interface FieldsMessage extends AnyMessage {
   data: { fields: Field[] };
 }
 
-export interface FieldCardMessage extends AnyMessage {
-  type: "field_card";
+export interface FieldTileMessage extends AnyMessage {
+  type: "field_tile";
 
-  data: { field_card: FieldCard };
+  data: { field_tile: FieldTile };
 }
 
 export interface CardMessage extends AnyMessage {
@@ -49,5 +49,5 @@ export type Message =
   | AccountMessage
   | FieldMessage
   | CardMessage
-  | FieldCardMessage
+  | FieldTileMessage
   | FieldsMessage;

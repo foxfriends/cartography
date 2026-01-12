@@ -1,6 +1,6 @@
 import { ReactiveEventTarget } from "$lib/ReactiveEventTarget.svelte";
 import type { FieldId } from "../Field";
-import type { CardMessage, FieldCardMessage, FieldMessage } from "./Message";
+import type { CardMessage, FieldTileMessage, FieldMessage } from "./Message";
 import { MessageEvent } from "./MessageEvent";
 import { NextEvent } from "./NextEvent";
 import { type SocketV1 } from "./SocketV1";
@@ -10,7 +10,7 @@ interface SubscriptionEventMap<C extends Channel> {
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention -- this is a server owned field
-export type Channel = "deck" | "fields" | { topic: "field_cards"; field_id: FieldId };
+export type Channel = "deck" | "fields" | { topic: "field_tiles"; field_id: FieldId };
 
 export type Topic<C extends Channel> = C extends string
   ? C
@@ -22,7 +22,7 @@ export interface SubscriptionMessageMap {
   fields: FieldMessage;
   deck: CardMessage;
   // eslint-disable-next-line @typescript-eslint/naming-convention -- this is a server owned field
-  field_cards: FieldCardMessage;
+  field_tiles: FieldTileMessage;
 }
 
 export class Subscription<C extends Channel> extends ReactiveEventTarget<SubscriptionEventMap<C>> {
