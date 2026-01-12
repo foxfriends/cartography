@@ -105,6 +105,10 @@ migrate:
     npx graphile-migrate migrate --forceActions
 
 [group: "database"]
+migration-dev:
+    npx graphile-migrate watch
+
+[group: "database"]
 migration:
     npx prettier migrations -w
     npx graphile-migrate commit
