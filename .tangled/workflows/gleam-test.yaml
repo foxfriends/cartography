@@ -15,6 +15,7 @@ dependencies:
     - rebar3
 
 steps:
-  command: |
-    cd server
-    gleam test
+  - name: "Gleam test"
+    command: |
+      cd server
+      gleam test
