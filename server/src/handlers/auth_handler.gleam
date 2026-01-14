@@ -1,4 +1,5 @@
 import db/rows
+import db/sql
 import dto/output_action
 import dto/output_message
 import gleam/option
@@ -6,7 +7,6 @@ import gleam/result
 import gleam/string
 import mist
 import models/account
-import pog
 import websocket/state
 
 pub fn handle(
@@ -15,30 +15,21 @@ pub fn handle(
   message_id: String,
   account_id: String,
 ) -> Result(mist.Next(state.State, _msg), String) {
-  let assert Ok(acc) =
-    pog.query(
-      "INSERT INTO accounts (id) VALUES ($1) ON CONFLICT DO NOTHING RETURNING *",
-    )
-    |> pog.parameter(pog.text(account_id))
-    |> pog.returning(account.from_sql_row())
-    |> pog.execute(state.db_connection(st))
   {
+    let assert Ok(acc) = sql.create_account(state.db_connection(st), account_id)
     use acc <- rows.one_or_none(acc)
-    let assert Ok(acc) = case acc {
-      option.Some(acc) -> Ok(acc)
+    let assert Ok(account_id) = case acc {
+      option.Some(acc) -> Ok(acc.id)
       option.None -> {
         let assert Ok(acc) =
-          pog.query("SELECT * FROM accounts WHERE id = $1")
-          |> pog.parameter(pog.text(account_id))
-          |> pog.returning(account.from_sql_row())
-          |> pog.execute(state.db_connection(st))
+          sql.get_account(state.db_connection(st), account_id)
         use acc <- rows.one(acc)
-        Ok(acc)
+        Ok(acc.id)
       }
     }
 
     use _ <- result.map(
-      output_action.Account(account.Account(id: acc.id))
+      output_action.Account(account.Account(id: account_id))
       |> output_message.OutputMessage(id: message_id)
       |> output_message.send(conn)
       |> result.map_error(rows.HandlerError),

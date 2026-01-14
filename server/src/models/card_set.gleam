@@ -8,19 +8,6 @@ pub type CardSet {
   CardSet(id: String, release_date: timestamp.Timestamp)
 }
 
-pub fn from_sql_row() {
-  use id <- decode.field(0, decode.string)
-  use release_date <- decode.field(1, decode.string)
-  case timestamp.parse_rfc3339(release_date) {
-    Ok(release_date) -> decode.success(CardSet(id:, release_date:))
-    Error(error) ->
-      decode.failure(
-        CardSet(id:, release_date: timestamp.unix_epoch),
-        string.inspect(error),
-      )
-  }
-}
-
 pub fn to_json(card_set: CardSet) {
   json.object([
     #("id", json.string(card_set.id)),

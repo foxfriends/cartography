@@ -11,15 +11,6 @@ pub type FieldTile {
   )
 }
 
-pub fn from_sql_row() {
-  use tile_id <- decode.field(0, decode.int)
-  use account_id <- decode.field(1, decode.string)
-  use field_id <- decode.field(2, decode.int)
-  use grid_x <- decode.field(3, decode.int)
-  use grid_y <- decode.field(4, decode.int)
-  decode.success(FieldTile(tile_id:, account_id:, field_id:, grid_x:, grid_y:))
-}
-
 pub fn to_json(field_tile: FieldTile) {
   json.object([
     #("tile_id", json.int(field_tile.tile_id)),

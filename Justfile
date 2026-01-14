@@ -19,7 +19,7 @@ database_name := if DATABASE_URL != "" { file_stem(DATABASE_URL) } else { "" }
 shadow_database_name := if SHADOW_DATABASE_URL != "" { file_stem(SHADOW_DATABASE_URL) } else { "" }
 
 [group: "run"]
-dev: up
+dev: up squirrel
     npx concurrently --names "sveltekit,migrate,server" \
         "npx vite dev --host" \
         "npx graphile-migrate watch" \
@@ -103,6 +103,11 @@ test:
 [group: "database"]
 migrate:
     npx graphile-migrate migrate --forceActions
+
+[group: "database"]
+[working-directory: "server"]
+squirrel: up migrate
+    gleam run -m squirrel
 
 [group: "database"]
 migration-dev:

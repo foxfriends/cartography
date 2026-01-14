@@ -1,8 +1,9 @@
+import db/sql
 import dto/output_action
 import dto/output_message
+import gleam/list
 import mist
 import models/field
-import pog
 import websocket/state
 
 pub fn handle(
@@ -12,13 +13,11 @@ pub fn handle(
 ) -> Result(mist.Next(state.State, _msg), String) {
   use account_id <- state.account_id(st)
   let assert Ok(result) =
-    pog.query("SELECT * FROM fields WHERE account_id = $1")
-    |> pog.parameter(pog.text(account_id))
-    |> pog.returning(field.from_sql_row())
-    |> pog.execute(state.db_connection(st))
-
+    sql.list_fields_for_account(state.db_connection(st), account_id)
   let assert Ok(_) =
-    output_action.Fields(result.rows)
+    result.rows
+    |> list.map(field.from_list_fields_for_account)
+    |> output_action.Fields()
     |> output_message.OutputMessage(id: message_id)
     |> output_message.send(conn)
 

@@ -7,21 +7,6 @@ env:
   ROOT_DATABASE_URL: postgresql://postgres:postgres@localhost/postgres
 
 jobs:
-  status:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          cache: npm
-          node-version-file: .node-version
-      - name: Install node_modules
-        run: npm ci
-      - name: Run status
-        run: npx graphile-migrate status --skipDatabase
-
   migrate:
     runs-on: ubuntu-latest
     services:
@@ -45,7 +30,18 @@ jobs:
         with:
           cache: npm
           node-version-file: .node-version
+      - name: Set up Gleam
+        uses: erlef/setup-beam@v1
+        with:
+          gleam-version: "1.14.0"
+          otp-version: "27"
+          rebar3-version: "3.25.1"
       - name: Install node_modules
         run: npm ci
+      - name: Check status
+        run: npx graphile-migrate status --skipDatabase
       - name: Run migrate
         run: npx graphile-migrate migrate
+      - name: Check squirrel
+        run: gleam run -m squirrel check
+        working-directory: ./server
