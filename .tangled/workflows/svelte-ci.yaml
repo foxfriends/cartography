@@ -6,8 +6,6 @@ engine: "nixery"
 
 dependencies:
   nixpkgs:
-    - gleam
-    - rebar3
     - nodejs
 
 environment:
