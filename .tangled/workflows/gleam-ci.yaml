@@ -15,6 +15,14 @@ dependencies:
     - rebar3
 
 steps:
+  - name: "Gleam format"
+    command: |
+      cd server
+      gleam format --check
+  - name: "Gleam check"
+    command: |
+      cd server
+      gleam check
   - name: "Gleam test"
     command: |
       cd server
