@@ -1,0 +1,7 @@
+import "./species.tri" use species
+import "./tile_types.tri" use tile_type
+
+export card_type
+
+rule card_type(species_id, card_set_id, "citizen") <- species(species_id, card_set_id)
+rule card_type(tile_type_id, card_set_id, "tile") <- tile_type(tile_type_id, card_set_id, _, _, _)

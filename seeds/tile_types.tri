@@ -1,31 +1,31 @@
 export tile_type, tile_type_consumes, tile_type_produces
 
-rule tile_type("cat-colony", "residential", 3, 0)
+rule tile_type("cat-colony", "base", "residential", 3, 0)
 
-rule tile_type("rabbit-warren", "residential", 3, 0)
+rule tile_type("rabbit-warren", "base", "residential", 3, 0)
 
-rule tile_type("bird-nest", "residential", 3, 0)
+rule tile_type("bird-nest", "base", "residential", 3, 0)
 
-rule tile_type("water-well", "source", 0, 1)
+rule tile_type("water-well", "base", "source", 0, 1)
 rule tile_type_produces("water-well", "water", 10)
 
 rule farm("carrot")
 rule farm("tomato")
 rule farm("lettuce")
 rule farm("grain")
-rule tile_type(resource <> "-farm", "production", 0, 3) <- farm(resource)
+rule tile_type(resource <> "-farm", "base", "production", 0, 3) <- farm(resource)
 rule tile_type_produces(resource <> "-farm", resource, 5) <- farm(resource)
 
-rule tile_type("flour-mill", "production", 0, 2)
+rule tile_type("flour-mill", "base", "production", 0, 2)
 rule tile_type_consumes("flour-mill", "grain", 1)
 rule tile_type_produces("flour-mill", "flour", 10)
 
-rule tile_type("bread-bakery", "amenity", 0, 2)
+rule tile_type("bread-bakery", "base", "amenity", 0, 2)
 rule tile_type_consumes("bread-bakery", "flour", 3)
 rule tile_type_consumes("bread-bakery", "water", 2)
 rule tile_type_produces("bread-bakery", "bread", 5)
 
-rule tile_type("salad-shop", "amenity", 0, 2)
+rule tile_type("salad-shop", "base", "amenity", 0, 2)
 rule tile_type_consumes("salad-shop", "tomato", 1)
 rule tile_type_consumes("salad-shop", "lettuce", 1)
 rule tile_type_consumes("salad-shop", "carrot", 1)

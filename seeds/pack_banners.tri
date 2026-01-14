@@ -1,0 +1,12 @@
+import "./card_types.tri" use card_type
+
+export pack_banner, pack_banner_card
+
+rule pack_banner("default", "2026-01-01T00:00:00Z", "2026-01-01T00:00:00Z")
+
+rule pack_banner("base-standard", "2026-01-01T00:00:00Z", unit)
+
+rule pack_banner_card("base-standard", card_type_id, 3) <- card_type(card_type_id, "base", "tile")
+rule pack_banner_card("base-standard", card_type_id, 1) <- card_type(card_type_id, "base", "citizen")
+
+rule pack_banner("halloween-2026", "2026-10-01T00:00:00Z", "2026-10-31T23:59:59Z")

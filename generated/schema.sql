@@ -237,6 +237,25 @@ ALTER TABLE public.fields ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 
 
 --
+-- Name: pack_banner_cards; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.pack_banner_cards (
+    pack_banner_id text NOT NULL,
+    card_type_id text NOT NULL,
+    frequency integer NOT NULL,
+    CONSTRAINT pack_banner_cards_frequency_check CHECK ((frequency > 0))
+);
+
+
+--
+-- Name: TABLE pack_banner_cards; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.pack_banner_cards IS 'Lists relative frequencies of cards available to be pulled from each banner.';
+
+
+--
 -- Name: pack_banners; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -534,6 +553,14 @@ ALTER TABLE ONLY public.fields
 
 
 --
+-- Name: pack_banner_cards pack_banner_cards_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pack_banner_cards
+    ADD CONSTRAINT pack_banner_cards_pkey PRIMARY KEY (pack_banner_id, card_type_id);
+
+
+--
 -- Name: pack_banners pack_banners_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -611,13 +638,6 @@ ALTER TABLE ONLY public.tile_types
 
 ALTER TABLE ONLY public.tiles
     ADD CONSTRAINT tiles_pkey PRIMARY KEY (id);
-
-
---
--- Name: accounts_id_case_insensitive; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE UNIQUE INDEX accounts_id_case_insensitive ON public.accounts USING btree (lower((id)::text));
 
 
 --
@@ -729,6 +749,22 @@ ALTER TABLE ONLY public.field_tiles
 
 ALTER TABLE ONLY public.fields
     ADD CONSTRAINT fields_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.accounts(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: pack_banner_cards pack_banner_cards_card_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pack_banner_cards
+    ADD CONSTRAINT pack_banner_cards_card_type_id_fkey FOREIGN KEY (card_type_id) REFERENCES public.card_types(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: pack_banner_cards pack_banner_cards_pack_banner_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pack_banner_cards
+    ADD CONSTRAINT pack_banner_cards_pack_banner_id_fkey FOREIGN KEY (pack_banner_id) REFERENCES public.pack_banners(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --

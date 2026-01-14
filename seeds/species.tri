@@ -1,8 +1,8 @@
 export species, species_needs
 
-rule species("rabbit")
-rule species("cat")
-rule species("bird")
+rule species("rabbit", "base")
+rule species("cat", "base")
+rule species("bird", "base")
 
 rule species_needs("rabbit", "salad", 1)
 rule species_needs("cat", "bread", 1)

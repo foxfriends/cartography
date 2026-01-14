@@ -2,12 +2,12 @@ import "trilogy:io" use println
 import "trilogy:array" use fold, map, zip
 import "trilogy:string" use replace_all, trim, join
 
+import "./card_sets.tri" use card_set
+import "./card_types.tri" use card_type
 import "./resources.tri" use resource
 import "./species.tri" use species, species_needs
 import "./tile_types.tri" use tile_type, tile_type_consumes, tile_type_produces
-
-func uncurry f (a:b) = f a b
-func flip f a b = f b a
+import "./pack_banners.tri" use pack_banner, pack_banner_card
 
 func escape_single_quotes value = replace_all "'" "''" value
 
@@ -26,63 +26,93 @@ func escape_each [a, ..b] = "${sql_escape a}, ${escape_each b}"
 func escape_each a:b = "${sql_escape a}, ${escape_each b}"
 func escape_each v = "${sql_escape v}"
 
-func sql [prefix, ..segments] interpolations =
-  segments
-  |> zip (map sql_escape interpolations)
-  |> map (uncurry (<>))
-  |> fold (flip (<>)) prefix
+func sql [prefix, ..segments] [interpolation, ..rest] = prefix <> sql_escape interpolation <> sql segments rest
+func sql [prefix] [] = prefix
 
 rule optional_species(unit)
 rule optional_species(value) <- species(value)
 
 proc main!() {
+  let card_sets_values = 'values([id:release_date for card_set(id, release_date)])
+
   let resources_values = 'values([id for resource(id)])
 
   let card_types_values = 'values([
-    ..[species_id:"citizen" for species(species_id)],
-    ..[tile_type_id:"tile" for tile_type(tile_type_id, _, _, _)]
+    card_type_id:card_set_id:card_class
+    for card_type(card_type_id, card_set_id, card_class)
   ])
 
-  let species_values = 'values([id for species(id)])
+  let pack_banners_values = 'values([
+    pack_banner_id:start_at:end_at
+    for pack_banner(pack_banner_id, start_at, end_at)
+  ])
+
+  let pack_banner_cards_values = 'values([
+    pack_banner_id:card_type_id:frequency
+    for pack_banner_card(pack_banner_id, card_type_id, frequency)
+  ])
+
+  let species_values = 'values([id for species(id, _)])
   let species_needs_values = 'values([
     species_id:resource_id:quantity
     for species_needs(species_id, resource_id, quantity)
-    and species(^species_id)
+    and species(^species_id, _)
     and resource(^resource_id)
   ])
   let tile_types_values = 'values([
     id:category:houses:employs
-    for tile_type(id, category, houses, employs)
+    for tile_type(id, _, category, houses, employs)
   ])
   let tile_type_consumes_values = 'values([
     tile_type_id:resource_id:quantity
     for tile_type_consumes(tile_type_id, resource_id, quantity)
-    and tile_type(^tile_type_id, _, _, _)
+    and tile_type(^tile_type_id, _, _, _, _)
     and resource(^resource_id)
   ])
   let tile_type_produces_values = 'values([
     tile_type_id:resource_id:quantity
     for tile_type_produces(tile_type_id, resource_id, quantity)
-    and tile_type(^tile_type_id, _, _, _)
+    and tile_type(^tile_type_id, _, _, _, _)
     and resource(^resource_id)
   ])
 
   println!(trim $sql"
+BEGIN;
+
 INSERT INTO resources (id)
 ${resources_values}
 ON CONFLICT DO NOTHING;
 
-INSERT INTO card_types (id, class)
+INSERT INTO card_sets (id, release_date)
+${card_sets_values}
+ON CONFLICT (id) DO UPDATE
+SET release_date = EXCLUDED.release_date;
+
+INSERT INTO card_types (id, card_set_id, class)
 ${card_types_values}
-ON CONFLICT (id) DO UPDATE SET class = EXCLUDED.class;
+ON CONFLICT (id) DO UPDATE
+SET class = EXCLUDED.class,
+    card_set_id = EXCLUDED.card_set_id;
 
 INSERT INTO species (id)
 ${species_values}
 ON CONFLICT DO NOTHING;
 
+INSERT INTO pack_banners (id, start_date, end_date)
+${pack_banners_values}
+ON CONFLICT (id) DO UPDATE
+SET start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date;
+
+INSERT INTO pack_banner_cards (pack_banner_id, card_type_id, frequency)
+${pack_banner_cards_values}
+ON CONFLICT (pack_banner_id, card_type_id) DO UPDATE
+SET frequency = EXCLUDED.frequency;
+
 INSERT INTO species_needs (species_id, resource_id, quantity)
 ${species_needs_values}
-ON CONFLICT (species_id, resource_id) DO UPDATE SET quantity = EXCLUDED.quantity;
+ON CONFLICT (species_id, resource_id) DO UPDATE
+SET quantity = EXCLUDED.quantity;
 
 INSERT INTO tile_types (id, category, houses, employs)
 ${tile_types_values}
@@ -93,10 +123,14 @@ SET category = EXCLUDED.category,
 
 INSERT INTO tile_type_consumes (tile_type_id, resource_id, quantity)
 ${tile_type_consumes_values}
-ON CONFLICT (tile_type_id, resource_id) DO UPDATE SET quantity = EXCLUDED.quantity;
+ON CONFLICT (tile_type_id, resource_id) DO UPDATE
+SET quantity = EXCLUDED.quantity;
 
 INSERT INTO tile_type_produces (tile_type_id, resource_id, quantity)
 ${tile_type_produces_values}
-ON CONFLICT (tile_type_id, resource_id) DO UPDATE SET quantity = EXCLUDED.quantity;
+ON CONFLICT (tile_type_id, resource_id) DO UPDATE
+SET quantity = EXCLUDED.quantity;
+
+COMMIT;
   ")
 }
