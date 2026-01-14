@@ -25,12 +25,10 @@ steps:
   - name: Start Postgres
     command: |
       useradd --system postgres
-      su - postgres
-      pg_ctl initdb -U postgres -A trust
-      pg_ctl start
+      sudo -U postgres -- pg_ctl initdb -U postgres -A trust
+      sudo -U postgres -- pg_ctl start
   - name: Run migrate
     command: |
       npx graphile-migrate migrate
   - name: Stop postgres
-      su - postgres
-      pg_ctl stop
+      sudo -U postgres -- pg_ctl stop
