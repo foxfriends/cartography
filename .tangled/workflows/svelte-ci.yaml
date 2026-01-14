@@ -1,0 +1,36 @@
+when:
+  - event: ["push"]
+    branch: ["*"]
+
+engine: "nixery"
+
+dependencies:
+  nixpkgs:
+    - gleam
+    - rebar3
+    - nodejs
+
+environment:
+  PUBLIC_SERVER_URL: "http://localhost:4000"
+  PUBLIC_SERVER_WS_URL: "ws://localhost:4000"
+
+steps:
+  - name: "Install node modules"
+    command: |
+      npm ci
+      npx svelte-kit sync
+  - name: "Run prettier"
+    command: |
+      npx prettier . --check
+  - name: "Run eslint"
+    command: |
+      npx eslint . --max-warnings 0
+  - name: "Run svelte-check"
+    command: |
+      npx svelte-check --tsconfig ./tsconfig.json
+  - name: "Build"
+    command: |
+      npx vite build
+  - name: "Run tests"
+    run: |
+      npm test
