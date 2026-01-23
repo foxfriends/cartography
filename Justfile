@@ -23,6 +23,7 @@ dev: up squirrel
     npx concurrently --names "sveltekit,migrate,server" \
         "npx vite dev --host" \
         "npx graphile-migrate watch" \
+        "cd api && watchexec -e .gleam,.toml,.js,.erl gleam build --target javascript" \
         "cd server && gleam run"
 
 [group: "run"]
@@ -30,14 +31,18 @@ app: up
     npx concurrently --names "sveltekit,migrate,server,tauri" \
         "npx vite dev --host" \
         "npx graphile-migrate watch" \
+        "cd api && watchexec -e .gleam,.toml,.js,.erl gleam build --target javascript" \
         "cd server && gleam run" \
         "npx tauri dev"
 
 [group: "dev"]
-init: get
-    cp .env.example .env.local
+init:
+    mise install
+    cargo install watchexec-cli --locked
+    cp -n .env.example .env.local
     cd .git/hooks && ln -sf ../../.hooks/* .
     if [ ! -f .env ]; then ln -s .env.local .env; fi
+    just get
     just up
 
 [group: "dev"]
@@ -73,10 +78,11 @@ clean:
 
 [group: "dev"]
 check:
+    cd api && gleam check
+    cd server && gleam check
     npx svelte-kit sync
     npx svelte-check --tsconfig ./tsconfig.json
     cd src-tauri && cargo check
-    cd server && gleam check
 
 [group: "dev"]
 watch:
@@ -90,14 +96,16 @@ lint mode="check":
 
 [group: "dev"]
 fmt:
+    cd api && gleam format
+    cd server && gleam format
     npx prettier --write . --cache
     cd src-tauri && cargo fmt
-    cd server && gleam format
 
 [group: "dev"]
 test:
-    npm test
+    cd api && gleam test
     cd server && gleam test
+    npm test
     cd src-tauri && cargo test
 
 [group: "database"]
