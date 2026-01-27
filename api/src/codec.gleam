@@ -7,12 +7,15 @@ pub type CodecError(decoding_error, encoding_error) {
 }
 
 pub opaque type Codec(from, to, from_error, to_error) {
-  Codec(from_coder: Coder(from, from_error), to_coder: Coder(to, to_error))
+  Codec(
+    from_coder: Coder(from, from_error, from_error),
+    to_coder: Coder(to, to_error, to_error),
+  )
 }
 
 pub fn codec(
-  from from_coder: Coder(from, from_error),
-  to to_coder: Coder(to, to_error),
+  from from_coder: Coder(from, from_error, from_error),
+  to to_coder: Coder(to, to_error, to_error),
 ) -> Codec(from, to, from_error, to_error) {
   Codec(from_coder:, to_coder:)
 }

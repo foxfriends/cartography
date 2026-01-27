@@ -1,0 +1,25 @@
+{
+  "name": "cartography-api",
+  "version": "0.0.1",
+  "description": "Cartography API",
+  "private": true,
+  "directories": {
+    "lib": "./build/dev/javascript"
+  },
+  "exports": {
+    "./coder": {
+      "import": "./build/dev/javascript/cartography_api/coder.mjs",
+      "types": "./build/dev/javascript/cartography_api/coder.d.ts"
+    },
+    "./request": {
+      "import": "./build/dev/javascript/cartography_api/request.mjs",
+      "types": "./build/dev/javascript/cartography_api/request.d.ts"
+    },
+    "./response": {
+      "import": "./build/dev/javascript/cartography_api/response.mjs",
+      "types": "./build/dev/javascript/cartography_api/response.d.ts"
+    }
+  },
+  "author": "Cameron Eldridge <cameldridge@gmail.com>",
+  "license": "ISC"
+}

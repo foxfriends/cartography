@@ -1,36 +1,197 @@
 import codable.{type Codable}
 import gleam/bit_array
-import gleam/dict
+import gleam/dict.{type Dict}
 import gleam/dynamic/decode
 import gleam/function
 import gleam/json.{type Json} as gleam_json
 import gleam/list
 import gleam/option
 import gleam/result
+@target(erlang)
 import glepack/data as glepack_data
+@target(erlang)
 import glepack/decode as glepack_decode
+@target(erlang)
 import glepack/encode as glepack_encode
 import glepack/error as glepack_error
 
-pub opaque type Coder(encoding, err) {
+pub opaque type Coder(encoding, encode_err, decode_err) {
   Coder(
-    encode: fn(Codable) -> Result(encoding, err),
-    decode: fn(encoding) -> Result(Codable, err),
+    encode: fn(Codable) -> Result(encoding, encode_err),
+    decode: fn(encoding) -> Result(Codable, decode_err),
   )
 }
 
 pub fn encode(
   data: Codable,
-  codec: Coder(encoding, err),
-) -> Result(encoding, err) {
+  codec: Coder(encoding, encode_err, decode_err),
+) -> Result(encoding, encode_err) {
   codec.encode(data)
 }
 
 pub fn decode(
   data: encoding,
-  codec: Coder(encoding, err),
-) -> Result(Codable, err) {
+  codec: Coder(encoding, encode_err, decode_err),
+) -> Result(Codable, decode_err) {
   codec.decode(data)
+}
+
+pub opaque type EnumEncoderBuilder(t, ee, de) {
+  EnumEncoderBuilder(cases: List(VariantCoder(t, ee, de)), error: ee)
+}
+
+pub opaque type VariantCoder(t, ee, de) {
+  VariantCoder(tag: String, coder: Coder(t, ee, de))
+}
+
+pub type EncoderError(e) {
+  ExpectedNil
+  ExpectedBool
+  ExpectedInt
+  ExpectedFloat
+  ExpectedString
+  ExpectedBinary
+  ExpectedList
+  ExpectedStruct
+  ListEncoderError(e)
+  StructEncoderError(String, e)
+  StructVariantError(e)
+}
+
+pub type Bijection(t, u) {
+  Bijection(from: fn(t) -> u, to: fn(u) -> t)
+}
+
+pub fn map(coder: Coder(t, ee, de), bimap: Bijection(t, u)) -> Coder(u, ee, de) {
+  Coder(
+    encode: fn(codable) {
+      use value <- result.map(coder.encode(codable))
+      bimap.from(value)
+    },
+    decode: fn(value) { coder.decode(bimap.to(value)) },
+  )
+}
+
+pub fn nil(codable: Codable) -> Result(Nil, EncoderError(e)) {
+  case codable {
+    codable.Nil -> Ok(Nil)
+    _ -> Error(ExpectedNil)
+  }
+}
+
+pub fn bool(codable: Codable) -> Result(Bool, EncoderError(e)) {
+  case codable {
+    codable.Bool(value) -> Ok(value)
+    _ -> Error(ExpectedBool)
+  }
+}
+
+pub fn int(codable: Codable) -> Result(Int, EncoderError(e)) {
+  case codable {
+    codable.Int(value) -> Ok(value)
+    _ -> Error(ExpectedInt)
+  }
+}
+
+pub fn float(codable: Codable) -> Result(Float, EncoderError(e)) {
+  case codable {
+    codable.Float(value) -> Ok(value)
+    _ -> Error(ExpectedFloat)
+  }
+}
+
+pub fn string(codable: Codable) -> Result(Float, EncoderError(e)) {
+  case codable {
+    codable.Float(value) -> Ok(value)
+    _ -> Error(ExpectedString)
+  }
+}
+
+pub fn binary(codable: Codable) -> Result(BitArray, EncoderError(e)) {
+  case codable {
+    codable.Binary(value) -> Ok(value)
+    _ -> Error(ExpectedBinary)
+  }
+}
+
+pub fn list(coder: Coder(t, ee, de)) {
+  fn(codable: Codable) -> Result(List(t), EncoderError(ee)) {
+    case codable {
+      codable.List(value) ->
+        list.map(value, coder.encode)
+        |> result.all()
+        |> result.map_error(ListEncoderError)
+      _ -> Error(ExpectedList)
+    }
+  }
+}
+
+pub fn record(coder: Coder(t, ee, de)) {
+  fn(codable: Codable) -> Result(Dict(String, t), EncoderError(ee)) {
+    case codable {
+      codable.Record(value) ->
+        dict.to_list(value)
+        |> list.map(fn(kv) {
+          let #(k, v) = kv
+          use v <- result.map(coder.encode(v))
+          #(k, v)
+        })
+        |> result.all()
+        |> result.map(dict.from_list)
+        |> result.map_error(ListEncoderError)
+      _ -> Error(ExpectedList)
+    }
+  }
+}
+
+pub fn enum(error: ee) -> EnumEncoderBuilder(t, ee, de) {
+  EnumEncoderBuilder(cases: [], error:)
+}
+
+pub fn variant(
+  enum_encoder: EnumEncoderBuilder(t, ee, de),
+  tag: String,
+  coder: Coder(t, ee, de),
+) -> EnumEncoderBuilder(t, ee, de) {
+  EnumEncoderBuilder(..enum_encoder, cases: [
+    VariantCoder(tag, coder),
+    ..enum_encoder.cases
+  ])
+}
+
+fn encode_variant(
+  tag: String,
+  payload: Codable,
+  cases: List(VariantCoder(t, ee, de)),
+  error: ee,
+) -> Result(t, EncoderError(ee)) {
+  case cases {
+    [] -> Error(StructVariantError(error))
+    [VariantCoder(case_tag, coder), ..cases] -> {
+      case case_tag == tag {
+        True ->
+          coder.encode(payload)
+          |> result.map_error(fn(error) { StructEncoderError(tag, error) })
+        False -> encode_variant(tag, payload, cases, error)
+      }
+    }
+  }
+}
+
+pub fn encode_with(
+  enum_encoder: EnumEncoderBuilder(t, ee, de),
+  decoder: fn(t) -> Result(Codable, de),
+) -> Coder(t, EncoderError(ee), de) {
+  Coder(
+    encode: fn(input) {
+      case input {
+        codable.Struct(tag, payload) ->
+          encode_variant(tag, payload, enum_encoder.cases, enum_encoder.error)
+        _ -> Error(ExpectedStruct)
+      }
+    },
+    decode: decoder,
+  )
 }
 
 pub type JsonError {
@@ -133,11 +294,13 @@ pub type MessagePackError {
   UnknownExtension(Int)
 }
 
+@target(erlang)
 pub const messagepack = Coder(
   encode: encode_messagepack,
   decode: decode_messagepack,
 )
 
+@target(erlang)
 fn codable_to_messagepack(codable: Codable) -> glepack_data.Value {
   case codable {
     codable.Nil -> glepack_data.Nil
@@ -165,6 +328,7 @@ fn codable_to_messagepack(codable: Codable) -> glepack_data.Value {
   }
 }
 
+@target(erlang)
 fn messagepack_to_codable(
   value: glepack_data.Value,
 ) -> Result(Codable, MessagePackError) {
@@ -211,6 +375,7 @@ fn messagepack_to_codable(
   }
 }
 
+@target(erlang)
 fn encode_messagepack(codable: Codable) -> Result(BitArray, MessagePackError) {
   let assert Ok(bits) =
     codable_to_messagepack(codable)
@@ -218,6 +383,7 @@ fn encode_messagepack(codable: Codable) -> Result(BitArray, MessagePackError) {
   Ok(bits)
 }
 
+@target(erlang)
 fn decode_messagepack(bit_array: BitArray) -> Result(Codable, MessagePackError) {
   use #(value, trailer) <- result.try(
     glepack_decode.value(bit_array) |> result.map_error(MessagePackError),

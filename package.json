@@ -33,7 +33,8 @@
   "type": "module",
   "dependencies": {
     "core-js": "^3.38.1",
-    "seedrandom": "^3.0.5"
+    "seedrandom": "^3.0.5",
+    "cartography-api": "file:./api"
   },
   "engines": {
     "node": "22.21.1",

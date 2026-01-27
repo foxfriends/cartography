@@ -5,6 +5,7 @@ import { Subscription, type Channel } from "./Subscription";
 import type { Message, MessageReplyMap } from "./Message";
 import { ReactiveEventTarget } from "$lib/ReactiveEventTarget.svelte";
 import type { FieldId } from "../Field";
+import { type Request$ } from "cartography-api/request";
 
 interface SocketV1EventMap {
   message: MessageEvent;

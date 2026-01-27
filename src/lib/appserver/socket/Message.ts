@@ -5,6 +5,10 @@ import type { Field } from "../Field";
 import type { FieldTile } from "../FieldTile";
 import type { Card } from "../Card";
 
+import { type Request$ } from "cartography-api/request";
+
+let t: Request$["constructor"]["name"];
+
 export interface MessageReplyMap {
   auth: AccountMessage;
   get_fields: FieldsMessage;
