@@ -30,17 +30,7 @@ pub fn main() -> Nil {
     |> pog.pool_size(10)
     |> pog.supervised()
 
-  let notifications_name = process.new_name("notifications")
-  let assert Ok(db_config) = pog.url_config(notifications_name, database_url)
-  let database_notifications =
-    db_config
-    |> pog.notifications_supervised()
-
-  let context =
-    context.Context(
-      db_name,
-      pog.named_notifications_connection(notifications_name),
-    )
+  let context = context.Context(db_name)
   let server =
     mist.new(fn(req) { router.handler(req, context) })
     |> mist.port(port)
@@ -49,7 +39,6 @@ pub fn main() -> Nil {
   let assert Ok(_) =
     sup.new(sup.OneForOne)
     |> sup.add(database)
-    |> sup.add(database_notifications)
     |> sup.add(server)
     |> sup.start()
 

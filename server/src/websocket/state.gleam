@@ -33,10 +33,6 @@ pub fn db_connection(state: State) -> pog.Connection {
   pog.named_connection(state.context.db)
 }
 
-pub fn notifications_connection(state: State) -> pog.NotificationsConnection {
-  state.context.notifications
-}
-
 pub fn add_listener(
   state: State,
   channel: String,
