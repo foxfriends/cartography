@@ -10,14 +10,16 @@ pub type Error {
   InvalidTag
 }
 
-fn authenticate_coder() -> coder.Coder(Request, Error) {
-  coder.map(coder.string, coder.Bijection(from: Authenticate))
-}
-
-pub fn coder() -> coder.Coder(Request, Error) {
+pub fn coder() -> coder.Coder(Request, coder.EncoderError(Error), e) {
   coder.enum(InvalidTag)
-  |> coder.variant("Authenticate", authenticate_coder())
-  |> coder.variant("DebugAddCard", debug_add_card_coder())
+  |> coder.variant(
+    "Authenticate",
+    coder.map_encoder(coder.string, Authenticate),
+  )
+  |> coder.variant(
+    "DebugAddCard",
+    coder.map_encoder(coder.string, DebugAddCard),
+  )
   |> coder.encode_with(fn(request) {
     Ok(case request {
       Authenticate(auth_token) ->

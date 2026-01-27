@@ -15,10 +15,16 @@ import glepack/decode as glepack_decode
 import glepack/encode as glepack_encode
 import glepack/error as glepack_error
 
+pub type Encoder(encoding, error) =
+  fn(Codable) -> Result(encoding, error)
+
+pub type Decoder(encoding, error) =
+  fn(encoding) -> Result(Codable, error)
+
 pub opaque type Coder(encoding, encode_err, decode_err) {
   Coder(
-    encode: fn(Codable) -> Result(encoding, encode_err),
-    decode: fn(encoding) -> Result(Codable, decode_err),
+    encode: Encoder(encoding, encode_err),
+    decode: Decoder(encoding, decode_err),
   )
 }
 
@@ -36,12 +42,12 @@ pub fn decode(
   codec.decode(data)
 }
 
-pub opaque type EnumEncoderBuilder(t, ee, de) {
-  EnumEncoderBuilder(cases: List(VariantCoder(t, ee, de)), error: ee)
+pub opaque type EnumEncoderBuilder(t, ee) {
+  EnumEncoderBuilder(cases: List(VariantCoder(t, EncoderError(ee))), error: ee)
 }
 
-pub opaque type VariantCoder(t, ee, de) {
-  VariantCoder(tag: String, coder: Coder(t, ee, de))
+pub opaque type VariantCoder(t, ee) {
+  VariantCoder(tag: String, encoder: Encoder(t, ee))
 }
 
 pub type EncoderError(e) {
@@ -62,14 +68,21 @@ pub type Bijection(t, u) {
   Bijection(from: fn(t) -> u, to: fn(u) -> t)
 }
 
-pub fn map(coder: Coder(t, ee, de), bimap: Bijection(t, u)) -> Coder(u, ee, de) {
-  Coder(
-    encode: fn(codable) {
-      use value <- result.map(coder.encode(codable))
-      bimap.from(value)
-    },
-    decode: fn(value) { coder.decode(bimap.to(value)) },
-  )
+pub fn map_encoder(
+  encoder: Encoder(t, e),
+  transform: fn(t) -> u,
+) -> Encoder(u, e) {
+  fn(codable) {
+    use value <- result.map(encoder(codable))
+    transform(value)
+  }
+}
+
+pub fn map_decoder(
+  decoder: Decoder(u, e),
+  transform: fn(t) -> u,
+) -> Decoder(t, e) {
+  fn(value) { decoder(transform(value)) }
 }
 
 pub fn nil(codable: Codable) -> Result(Nil, EncoderError(e)) {
@@ -100,9 +113,9 @@ pub fn float(codable: Codable) -> Result(Float, EncoderError(e)) {
   }
 }
 
-pub fn string(codable: Codable) -> Result(Float, EncoderError(e)) {
+pub fn string(codable: Codable) -> Result(String, EncoderError(e)) {
   case codable {
-    codable.Float(value) -> Ok(value)
+    codable.String(value) -> Ok(value)
     _ -> Error(ExpectedString)
   }
 }
@@ -114,19 +127,18 @@ pub fn binary(codable: Codable) -> Result(BitArray, EncoderError(e)) {
   }
 }
 
-pub fn list(coder: Coder(t, ee, de)) {
+pub fn list(coder: Coder(t, EncoderError(ee), de)) {
   fn(codable: Codable) -> Result(List(t), EncoderError(ee)) {
     case codable {
       codable.List(value) ->
         list.map(value, coder.encode)
         |> result.all()
-        |> result.map_error(ListEncoderError)
       _ -> Error(ExpectedList)
     }
   }
 }
 
-pub fn record(coder: Coder(t, ee, de)) {
+pub fn record(coder: Coder(t, EncoderError(ee), de)) {
   fn(codable: Codable) -> Result(Dict(String, t), EncoderError(ee)) {
     case codable {
       codable.Record(value) ->
@@ -138,23 +150,22 @@ pub fn record(coder: Coder(t, ee, de)) {
         })
         |> result.all()
         |> result.map(dict.from_list)
-        |> result.map_error(ListEncoderError)
       _ -> Error(ExpectedList)
     }
   }
 }
 
-pub fn enum(error: ee) -> EnumEncoderBuilder(t, ee, de) {
+pub fn enum(error: ee) -> EnumEncoderBuilder(t, ee) {
   EnumEncoderBuilder(cases: [], error:)
 }
 
 pub fn variant(
-  enum_encoder: EnumEncoderBuilder(t, ee, de),
+  enum_encoder: EnumEncoderBuilder(t, ee),
   tag: String,
-  coder: Coder(t, ee, de),
-) -> EnumEncoderBuilder(t, ee, de) {
+  encoder: Encoder(t, EncoderError(ee)),
+) -> EnumEncoderBuilder(t, ee) {
   EnumEncoderBuilder(..enum_encoder, cases: [
-    VariantCoder(tag, coder),
+    VariantCoder(tag, encoder),
     ..enum_encoder.cases
   ])
 }
@@ -162,16 +173,14 @@ pub fn variant(
 fn encode_variant(
   tag: String,
   payload: Codable,
-  cases: List(VariantCoder(t, ee, de)),
+  cases: List(VariantCoder(t, EncoderError(ee))),
   error: ee,
 ) -> Result(t, EncoderError(ee)) {
   case cases {
     [] -> Error(StructVariantError(error))
-    [VariantCoder(case_tag, coder), ..cases] -> {
+    [VariantCoder(case_tag, encoder), ..cases] -> {
       case case_tag == tag {
-        True ->
-          coder.encode(payload)
-          |> result.map_error(fn(error) { StructEncoderError(tag, error) })
+        True -> encoder(payload)
         False -> encode_variant(tag, payload, cases, error)
       }
     }
@@ -179,7 +188,7 @@ fn encode_variant(
 }
 
 pub fn encode_with(
-  enum_encoder: EnumEncoderBuilder(t, ee, de),
+  enum_encoder: EnumEncoderBuilder(t, ee),
   decoder: fn(t) -> Result(Codable, de),
 ) -> Coder(t, EncoderError(ee), de) {
   Coder(
