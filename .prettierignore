@@ -22,4 +22,6 @@ yarn.lock
 /server/_build
 /server/build
 
+/api/build
+
 /server-ex

@@ -102,7 +102,7 @@ export default tsEslint.config(
     ignores: [
       "**/.DS_Store",
       "**/node_modules",
-      "build",
+      "**/build",
       ".svelte-kit",
       "package",
       "server",

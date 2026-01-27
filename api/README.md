@@ -6,6 +6,7 @@
 ```sh
 gleam add cartography_api@1
 ```
+
 ```gleam
 import cartography_api
 

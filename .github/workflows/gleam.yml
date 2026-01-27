@@ -24,9 +24,12 @@ jobs:
       - name: Install dependencies
         run: gleam deps download
         working-directory: ./server
-      - name: Run tests
+      - name: Test server
         run: gleam test
         working-directory: ./server
+      - name: Test API
+        run: gleam test
+        working-directory: ./api
 
   format:
     runs-on: ubuntu-latest
@@ -44,9 +47,12 @@ jobs:
           path: deps
           key: ${{ runner.os }}-gleam-${{ hashFiles('**/manifest.toml') }}
           restore-keys: ${{ runner.os }}-gleam-
-      - name: Run format
+      - name: Format server
         run: gleam format --check
         working-directory: ./server
+      - name: Format API
+        run: gleam format --check
+        working-directory: ./api
 
   check:
     runs-on: ubuntu-latest
@@ -67,6 +73,9 @@ jobs:
       - name: Install dependencies
         run: gleam deps download
         working-directory: ./server
-      - name: Run check
+      - name: Check server
         run: gleam check
         working-directory: ./server
+      - name: Check API
+        run: gleam check
+        working-directory: ./api
