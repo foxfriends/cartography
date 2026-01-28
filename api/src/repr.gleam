@@ -1,5 +1,6 @@
 import gleam/dynamic/decode.{type Decoder}
 import gleam/json.{type Json}
+import youid/uuid.{type Uuid}
 
 pub fn struct(payload: Json, tag: String) -> Json {
   json.object([
@@ -27,4 +28,12 @@ pub fn struct_payload(
   cb: fn(f) -> Decoder(t),
 ) -> Decoder(t) {
   decode.field("#payload", decoder, cb)
+}
+
+pub fn uuid() -> Decoder(Uuid) {
+  use str <- decode.then(decode.string)
+  case uuid.from_string(str) {
+    Ok(uuid) -> decode.success(uuid)
+    Error(Nil) -> decode.failure(uuid.nil, "uuid")
+  }
 }

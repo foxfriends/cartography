@@ -2,9 +2,12 @@ import { MessageEvent } from "./MessageEvent";
 import { AuthEvent } from "./AuthEvent";
 import { OneOff } from "./OneOff.svelte";
 import { Subscription, type Channel } from "./Subscription";
-import type { Message, MessageReplyMap } from "./Message";
+import type { MessageReply } from "./Message";
 import { ReactiveEventTarget } from "$lib/ReactiveEventTarget.svelte";
 import type { FieldId } from "../Field";
+import { Result$isOk, Result$Ok$0 } from "cartography-api/prelude";
+import * as Request from "cartography-api/request";
+import * as Response from "cartography-api/response";
 
 interface SocketV1EventMap {
   message: MessageEvent;
@@ -40,10 +43,10 @@ export class SocketV1 extends ReactiveEventTarget<SocketV1EventMap> {
         this.#socket.close(1003, "Only text messages are supported");
         this.dispatchEvent(new Event("error"));
       }
-      try {
-        const message = JSON.parse(data) as Message;
-        this.dispatchEvent(new MessageEvent(message));
-      } catch {
+      const message = Response.from_string(data);
+      if (Result$isOk(message)) {
+        this.dispatchEvent(new MessageEvent(Result$Ok$0(message)!));
+      } else {
         this.#socket.close(4000, "Invalid JSON received");
         this.dispatchEvent(new Event("error"));
       }
@@ -74,39 +77,17 @@ export class SocketV1 extends ReactiveEventTarget<SocketV1EventMap> {
     this.#socket.addEventListener("close", onClose);
   }
 
-  #sendMessage<T extends keyof MessageReplyMap>(
-    type: T,
-    data: unknown = {},
-    id: string = window.crypto.randomUUID(),
-  ) {
-    this.#socket.send(JSON.stringify({ type, data, id }));
-    return new OneOff<T>(this, id);
+  #sendMessage<T extends Request.Request$>(request: T, id: string = window.crypto.randomUUID()) {
+    this.#socket.send(Request.to_string(Request.message(request, id)));
+    return new OneOff<MessageReply<T>>(this, id);
   }
 
   auth(data: { id: string }) {
-    this.#sendMessage("auth", data)
+    this.#sendMessage<Request.Authenticate>(Request.authenticate(data.id) as Request.Authenticate)
       .reply()
       .then((event) => {
-        this.dispatchEvent(new AuthEvent(event.data.account));
+        this.dispatchEvent(new AuthEvent(event[0]));
       });
-  }
-
-  getFields() {
-    return this.#sendMessage("get_fields");
-  }
-
-  getField(id: FieldId) {
-    return this.#sendMessage("get_field", { field_id: id });
-  }
-
-  unsubscribe(id: string) {
-    this.#sendMessage("unsubscribe", {}, id);
-  }
-
-  subscribe<C extends Channel>(channel: C) {
-    const id = window.crypto.randomUUID();
-    this.#sendMessage("subscribe", { channel }, id);
-    return new Subscription<C>(this, id);
   }
 
   close(code?: number, reason?: string) {

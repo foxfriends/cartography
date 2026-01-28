@@ -9,15 +9,27 @@
   "exports": {
     "./coder": {
       "import": "./build/dev/javascript/cartography_api/coder.mjs",
-      "types": "./build/dev/javascript/cartography_api/coder.d.ts"
+      "types": "./build/dev/javascript/cartography_api/coder.d.mts"
     },
     "./request": {
       "import": "./build/dev/javascript/cartography_api/request.mjs",
-      "types": "./build/dev/javascript/cartography_api/request.d.ts"
+      "types": "./build/dev/javascript/cartography_api/request.d.mts"
     },
     "./response": {
       "import": "./build/dev/javascript/cartography_api/response.mjs",
-      "types": "./build/dev/javascript/cartography_api/response.d.ts"
+      "types": "./build/dev/javascript/cartography_api/response.d.mts"
+    },
+    "./account": {
+      "import": "./build/dev/javascript/cartography_api/account.mjs",
+      "types": "./build/dev/javascript/cartography_api/account.d.mts"
+    },
+    "./game_state": {
+      "import": "./build/dev/javascript/cartography_api/game_state.mjs",
+      "types": "./build/dev/javascript/cartography_api/game_state.d.mts"
+    },
+    "./prelude": {
+      "import": "./build/dev/javascript/prelude.mjs",
+      "types": "./build/dev/javascript/prelude.d.mts"
     }
   },
   "author": "Cameron Eldridge <cameldridge@gmail.com>",
