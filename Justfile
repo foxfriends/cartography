@@ -48,6 +48,8 @@ init:
 [group: "dev"]
 get:
     npm install
+    cd server && gleam deps download
+    cd api && gleam deps download
 
 [group: "docker"]
 up: && migrate
