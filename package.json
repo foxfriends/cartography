@@ -11,6 +11,7 @@
     "@sveltejs/kit": "^2.49.5",
     "@sveltejs/vite-plugin-svelte": "^6.2.1",
     "@tauri-apps/cli": "^2.0.0-rc.18",
+    "@types/json-patch": "^0.0.33",
     "@types/node": "^22.9.1",
     "@types/seedrandom": "^3.0.8",
     "concurrently": "^9.0.1",
@@ -32,9 +33,11 @@
   },
   "type": "module",
   "dependencies": {
+    "cartography-api": "file:./api",
     "core-js": "^3.38.1",
+    "json-patch": "^0.7.0",
     "seedrandom": "^3.0.5",
-    "cartography-api": "file:./api"
+    "typebox": "^1.0.80"
   },
   "engines": {
     "node": "22.21.1",

@@ -1,4 +1,4 @@
-import type { Account } from "cartography-api/account";
+import type { Account } from "./SocketV1Protocol";
 
 export class AuthEvent extends Event {
   account: Account;

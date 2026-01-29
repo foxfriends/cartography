@@ -1,9 +1,9 @@
-import type { Message$ } from "cartography-api/response";
+import type { ResponseMessage } from "./SocketV1Protocol";
 
 export class MessageEvent extends Event {
-  message: Message$;
+  message: ResponseMessage;
 
-  constructor(message: Message$) {
+  constructor(message: ResponseMessage) {
     super("message");
     this.message = message;
   }

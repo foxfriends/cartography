@@ -83,6 +83,7 @@ pub fn to_json(game_state: GameState) -> Json {
                       json.nullable(home_tile_id, fn(id) { json.int(id.id) }),
                     ),
                   ])
+                  |> repr.struct("Citizen")
                 _ -> panic as "unreachable"
               }
             })

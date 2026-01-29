@@ -1,4 +1,3 @@
-import * as Response from "cartography-api/response";
 import type { MessageEvent } from "./MessageEvent";
 import { type SocketV1 } from "./SocketV1";
 
@@ -17,8 +16,10 @@ export class OneOff<T> extends EventTarget {
       abort?.throwIfAborted();
 
       const handler = (event: MessageEvent) => {
-        if (Response.id(event.message) === this.id) {
-          resolve(Response.response(event.message) as T);
+        if (event.message.id === this.id) {
+          // NOTE: would be nice to do a runtime assertion here, but the mapping is currently
+          // only defined as a type. Not hard to shift to a value, just lazy.
+          resolve(event.message.response as T);
           this.#socket.removeEventListener("message", handler);
           abort?.removeEventListener("abort", onabort);
         }
