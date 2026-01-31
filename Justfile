@@ -23,7 +23,6 @@ dev: up squirrel
     npx concurrently --names "sveltekit,migrate,server" \
         "npx vite dev --host" \
         "npx graphile-migrate watch" \
-        "cd api && watchexec -e .gleam,.toml,.js,.erl gleam build --target javascript" \
         "cd server && gleam run"
 
 [group: "run"]
@@ -31,7 +30,6 @@ app: up
     npx concurrently --names "sveltekit,migrate,server,tauri" \
         "npx vite dev --host" \
         "npx graphile-migrate watch" \
-        "cd api && watchexec -e .gleam,.toml,.js,.erl gleam build --target javascript" \
         "cd server && gleam run" \
         "npx tauri dev"
 
@@ -67,7 +65,6 @@ stop:
 
 [group: "release"]
 build:
-    cd api && gleam build --target javascript
     npx svelte-kit sync
     npx vite build
 
