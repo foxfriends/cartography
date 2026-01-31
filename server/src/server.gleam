@@ -1,7 +1,8 @@
+import bus
 import envoy
 import gleam/erlang/process
 import gleam/int
-import gleam/otp/static_supervisor as sup
+import gleam/otp/static_supervisor
 import gleam/result
 import mist
 import palabres
@@ -30,17 +31,20 @@ pub fn main() -> Nil {
     |> pog.pool_size(10)
     |> pog.supervised()
 
-  let context = context.Context(db_name)
+  let #(bus_process, bus_handles) = bus.supervised()
+
+  let context = context.Context(db_name, bus_handles)
   let server =
-    mist.new(fn(req) { router.handler(req, context) })
+    mist.new(router.handler(_, context))
     |> mist.port(port)
     |> mist.supervised()
 
   let assert Ok(_) =
-    sup.new(sup.OneForOne)
-    |> sup.add(database)
-    |> sup.add(server)
-    |> sup.start()
+    static_supervisor.new(static_supervisor.OneForOne)
+    |> static_supervisor.add(database)
+    |> static_supervisor.add(server)
+    |> static_supervisor.add(bus_process)
+    |> static_supervisor.start()
 
   process.sleep_forever()
 }

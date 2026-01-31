@@ -1,3 +1,4 @@
+import bus
 import gleam/dict
 import gleam/option
 import pog
@@ -31,6 +32,10 @@ pub fn authenticate(state: State, account_id: String) -> State {
 
 pub fn db_connection(state: State) -> pog.Connection {
   pog.named_connection(state.context.db)
+}
+
+pub fn bus(state: State) -> bus.Bus {
+  state.context.bus
 }
 
 pub fn add_listener(

@@ -24,7 +24,7 @@ interface SocketV1EventMap {
 }
 
 export class SocketV1 extends ReactiveEventTarget<SocketV1EventMap> {
-  static readonly PROTOCOL = ["v1.cartography.app"];
+  static readonly PROTOCOL = ["v1-json.cartography.app", "v1-messagepack.cartography.app"];
 
   #socket: WebSocket;
   #url: string;

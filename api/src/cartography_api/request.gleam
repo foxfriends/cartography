@@ -1,4 +1,4 @@
-import cartography_api/game_state.{type FieldId}
+import cartography_api/game_state.{type CardTypeId, type FieldId}
 import cartography_api/internal/repr
 import gleam/dynamic/decode
 import gleam/json
@@ -19,7 +19,7 @@ pub type Request {
   ListFields
   WatchField(field_id: FieldId)
   Unsubscribe
-  DebugAddCard(card_id: String)
+  DebugAddCard(card_id: CardTypeId)
 }
 
 pub fn to_json(message: Message) -> json.Json {
@@ -34,7 +34,7 @@ pub fn to_json(message: Message) -> json.Json {
       |> repr.struct("WatchField")
     Unsubscribe -> repr.struct(json.null(), "Unsubscribe")
     DebugAddCard(card_id) ->
-      json.string(card_id)
+      json.string(card_id.id)
       |> repr.struct("DebugAddCard")
   }
   json.object([#("id", json.string(uuid.to_string(id))), #("request", request)])
@@ -67,7 +67,7 @@ pub fn decoder() {
       }
       "DebugAddCard" -> {
         use payload <- repr.struct_payload(decode.string)
-        decode.success(DebugAddCard(payload))
+        decode.success(DebugAddCard(game_state.CardTypeId(payload)))
       }
       _ -> {
         decode.failure(Unsubscribe, "valid #tag")

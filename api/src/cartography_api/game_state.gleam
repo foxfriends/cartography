@@ -17,6 +17,7 @@ pub type CardId {
 }
 
 pub type CardTypeId {
+  CardTypeId(id: String)
   TileTypeId(id: String)
   SpeciesId(id: String)
 }

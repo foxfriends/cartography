@@ -46,6 +46,132 @@ RETURNING
   |> pog.execute(db)
 }
 
+/// A row you get from running the `create_citizen` query
+/// defined in `./src/db/sql/create_citizen.sql`.
+///
+/// > 🐿️ This type definition was generated automatically using v4.6.0 of the
+/// > [squirrel package](https://github.com/giacomocavalieri/squirrel).
+///
+pub type CreateCitizenRow {
+  CreateCitizenRow(card_id: Int, account_id: String)
+}
+
+/// Runs the `create_citizen` query
+/// defined in `./src/db/sql/create_citizen.sql`.
+///
+/// > 🐿️ This function was generated automatically using v4.6.0 of
+/// > the [squirrel package](https://github.com/giacomocavalieri/squirrel).
+///
+pub fn create_citizen(
+  db: pog.Connection,
+  arg_1: String,
+  arg_2: String,
+) -> Result(pog.Returned(CreateCitizenRow), pog.QueryError) {
+  let decoder = {
+    use card_id <- decode.field(0, decode.int)
+    use account_id <- decode.field(1, decode.string)
+    decode.success(CreateCitizenRow(card_id:, account_id:))
+  }
+
+  "WITH
+  cards_inserted AS (
+    INSERT INTO
+      cards (card_type_id)
+    VALUES
+      ($1)
+    RETURNING
+      *
+  ),
+  citizens_inserted AS (
+    INSERT INTO
+      citizens (id, species_id, name)
+    SELECT
+      card.id,
+      card.card_type_id,
+      ''
+    FROM
+      cards_inserted card
+  )
+INSERT INTO
+  card_accounts (card_id, account_id)
+SELECT
+  card.id,
+  $2
+FROM
+  cards_inserted card
+RETURNING
+  *;
+"
+  |> pog.query
+  |> pog.parameter(pog.text(arg_1))
+  |> pog.parameter(pog.text(arg_2))
+  |> pog.returning(decoder)
+  |> pog.execute(db)
+}
+
+/// A row you get from running the `create_tile` query
+/// defined in `./src/db/sql/create_tile.sql`.
+///
+/// > 🐿️ This type definition was generated automatically using v4.6.0 of the
+/// > [squirrel package](https://github.com/giacomocavalieri/squirrel).
+///
+pub type CreateTileRow {
+  CreateTileRow(card_id: Int, account_id: String)
+}
+
+/// Runs the `create_tile` query
+/// defined in `./src/db/sql/create_tile.sql`.
+///
+/// > 🐿️ This function was generated automatically using v4.6.0 of
+/// > the [squirrel package](https://github.com/giacomocavalieri/squirrel).
+///
+pub fn create_tile(
+  db: pog.Connection,
+  arg_1: String,
+  arg_2: String,
+) -> Result(pog.Returned(CreateTileRow), pog.QueryError) {
+  let decoder = {
+    use card_id <- decode.field(0, decode.int)
+    use account_id <- decode.field(1, decode.string)
+    decode.success(CreateTileRow(card_id:, account_id:))
+  }
+
+  "WITH
+  cards_inserted AS (
+    INSERT INTO
+      cards (card_type_id)
+    VALUES
+      ($1)
+    RETURNING
+      *
+  ),
+  tiles_inserted AS (
+    INSERT INTO
+      tiles (id, tile_type_id, name)
+    SELECT
+      card.id,
+      card.card_type_id,
+      ''
+    FROM
+      cards_inserted card
+  )
+INSERT INTO
+  card_accounts (card_id, account_id)
+SELECT
+  card.id,
+  $2
+FROM
+  cards_inserted card
+RETURNING
+  *;
+"
+  |> pog.query
+  |> pog.parameter(pog.text(arg_1))
+  |> pog.parameter(pog.text(arg_2))
+  |> pog.returning(decoder)
+  |> pog.execute(db)
+}
+
 /// A row you get from running the `get_account` query
 /// defined in `./src/db/sql/get_account.sql`.
 ///
@@ -77,6 +203,46 @@ FROM
   accounts
 WHERE
   id = $1
+"
+  |> pog.query
+  |> pog.parameter(pog.text(arg_1))
+  |> pog.returning(decoder)
+  |> pog.execute(db)
+}
+
+/// A row you get from running the `get_card_type` query
+/// defined in `./src/db/sql/get_card_type.sql`.
+///
+/// > 🐿️ This type definition was generated automatically using v4.6.0 of the
+/// > [squirrel package](https://github.com/giacomocavalieri/squirrel).
+///
+pub type GetCardTypeRow {
+  GetCardTypeRow(id: String, card_set_id: String, class: CardClass)
+}
+
+/// Runs the `get_card_type` query
+/// defined in `./src/db/sql/get_card_type.sql`.
+///
+/// > 🐿️ This function was generated automatically using v4.6.0 of
+/// > the [squirrel package](https://github.com/giacomocavalieri/squirrel).
+///
+pub fn get_card_type(
+  db: pog.Connection,
+  arg_1: String,
+) -> Result(pog.Returned(GetCardTypeRow), pog.QueryError) {
+  let decoder = {
+    use id <- decode.field(0, decode.string)
+    use card_set_id <- decode.field(1, decode.string)
+    use class <- decode.field(2, card_class_decoder())
+    decode.success(GetCardTypeRow(id:, card_set_id:, class:))
+  }
+
+  "SELECT
+  *
+FROM
+  card_types
+WHERE
+  id = $1;
 "
   |> pog.query
   |> pog.parameter(pog.text(arg_1))
@@ -205,4 +371,25 @@ WHERE
   |> pog.parameter(pog.text(arg_1))
   |> pog.returning(decoder)
   |> pog.execute(db)
+}
+
+// --- Enums -------------------------------------------------------------------
+
+/// Corresponds to the Postgres `card_class` enum.
+///
+/// > 🐿️ This type definition was generated automatically using v4.6.0 of the
+/// > [squirrel package](https://github.com/giacomocavalieri/squirrel).
+///
+pub type CardClass {
+  Citizen
+  Tile
+}
+
+fn card_class_decoder() -> decode.Decoder(CardClass) {
+  use card_class <- decode.then(decode.string)
+  case card_class {
+    "citizen" -> decode.success(Citizen)
+    "tile" -> decode.success(Tile)
+    _ -> decode.failure(Citizen, "CardClass")
+  }
 }
