@@ -15,7 +15,9 @@ pub fn supervised() {
     supervision.supervisor(fn() {
       static_supervisor.new(static_supervisor.OneForOne)
       |> static_supervisor.add(
-        pubsub.supervised(pubsub.named(card_accounts_channel)),
+        pubsub.new()
+        |> pubsub.named(card_accounts_channel)
+        |> pubsub.supervised(),
       )
       |> static_supervisor.start()
     })
