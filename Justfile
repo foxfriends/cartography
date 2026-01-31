@@ -25,6 +25,10 @@ dev: up squirrel
         "npx graphile-migrate watch" \
         "cd server && gleam run"
 
+[working-directory: "server"]
+server: up squirrel
+    gleam run
+
 [group: "run"]
 app: up
     npx concurrently --names "sveltekit,migrate,server,tauri" \
