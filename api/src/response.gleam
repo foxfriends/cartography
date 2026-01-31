@@ -8,12 +8,12 @@ import squirtle.{type Patch}
 import youid/uuid.{type Uuid}
 
 pub opaque type Message {
-  Message(id: Uuid, response: Response)
+  Message(nonce: Int, id: Uuid, response: Response)
 }
 
-pub fn message(response: Response, id: String) -> Message {
+pub fn message(response: Response, id: String, nonce: Int) -> Message {
   let assert Ok(id) = uuid.from_string(id)
-  Message(id:, response:)
+  Message(nonce:, id:, response:)
 }
 
 pub fn id(message: Message) -> String {
@@ -25,6 +25,8 @@ pub fn response(message: Message) -> Response {
 }
 
 /// A response is sent from the server to the client.
+///
+/// A response does not necessarily respond to something, it might just be a pushed notification.
 pub opaque type Response {
   Authenticated(Account)
   PutData(GameState)
@@ -32,7 +34,7 @@ pub opaque type Response {
 }
 
 pub fn to_json(message: Message) -> json.Json {
-  let Message(id, response) = message
+  let Message(nonce, id, response) = message
   let response = case response {
     Authenticated(account) ->
       account.to_json(account)
@@ -48,6 +50,7 @@ pub fn to_json(message: Message) -> json.Json {
       |> repr.struct("PatchData")
   }
   json.object([
+    #("nonce", json.int(nonce)),
     #("id", json.string(uuid.to_string(id))),
     #("response", response),
   ])
@@ -61,6 +64,7 @@ pub fn to_string(message: Message) -> String {
 
 pub fn from_string(string: String) -> Result(Message, json.DecodeError) {
   json.parse(string, {
+    use nonce <- decode.field("nonce", decode.int)
     use id <- decode.field("id", repr.uuid())
     use response <- decode.field("response", {
       use tag <- repr.struct_tag(PatchData([]))
@@ -84,7 +88,7 @@ pub fn from_string(string: String) -> Result(Message, json.DecodeError) {
         }
       }
     })
-    decode.success(Message(id:, response:))
+    decode.success(Message(nonce:, id:, response:))
   })
 }
 

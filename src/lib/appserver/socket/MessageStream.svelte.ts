@@ -1,7 +1,7 @@
 import type { MessageEvent } from "./MessageEvent";
 import { type SocketV1 } from "./SocketV1";
 
-export class OneOff<T> extends EventTarget {
+export class MessageStream<T> extends EventTarget {
   #socket: SocketV1;
   id: string;
 
@@ -35,6 +35,23 @@ export class OneOff<T> extends EventTarget {
     });
   }
 
+  replies(callback: (message: T) => void) {
+    const handler = (event: MessageEvent) => {
+      if (event.message.id === this.id) {
+        // NOTE: would be nice to do a runtime assertion here, but the mapping is currently
+        // only defined as a type. Not hard to shift to a value, just lazy.
+        callback(event.message.response as T);
+      }
+    };
+
+    return {
+      unsubscribe: () => {
+        this.#socket.unsubscribe(this.id);
+        this.#socket.removeEventListener("message", handler);
+      },
+    };
+  }
+
   $then(callback: (event: T) => void): void {
     $effect(() => {
       const abort = new AbortController();
@@ -50,6 +67,13 @@ export class OneOff<T> extends EventTarget {
       );
 
       return () => abort.abort("unmounted");
+    });
+  }
+
+  $subscribe(callback: (event: T) => void): void {
+    $effect(() => {
+      const subscription = this.replies(callback);
+      return () => subscription.unsubscribe();
     });
   }
 }

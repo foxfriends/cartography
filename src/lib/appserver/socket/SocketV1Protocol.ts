@@ -5,6 +5,7 @@
  * When in doubt the Gleam code is authoritative and this end should be updated.
  */
 
+import type { OpPatch } from "json-patch";
 import Type, { type StaticDecode, type TSchema } from "typebox";
 
 declare const __BRAND: unique symbol;
@@ -39,50 +40,42 @@ const JsonPointer = Type.String({
 /**
  * Adapted from: https://github.com/fge/sample-json-schemas/blob/master/json-patch/json-patch.json
  */
-export const JsonPatch = Type.Array(
-  Type.Intersect(
-    [
-      Type.Object({ path: JsonPointer }, { description: "Members common to all operations" }),
-      Type.Union([
-        Type.Object(
-          { op: Type.Literal("add"), value: Type.Unknown() },
-          { description: "add operation. Value can be any JSON value." },
-        ),
-        Type.Object(
-          { op: Type.Literal("remove") },
-          { description: "remove operation. Only a path is specified." },
-        ),
-        Type.Object(
-          { op: Type.Literal("replace"), value: Type.Unknown() },
-          { description: "replace operation. Value can be any JSON value." },
-        ),
-        Type.Object(
-          { op: Type.Literal("move"), from: JsonPointer },
-          { description: 'move operation. "from" is a JSON Pointer.' },
-        ),
-        Type.Object(
-          { op: Type.Literal("copy"), from: JsonPointer },
-          { description: 'copy operation. "from" is a JSON Pointer.' },
-        ),
-        Type.Object(
-          { op: Type.Literal("test"), value: Type.Unknown() },
-          { description: "test operation. Value can be any JSON value." },
-        ),
-        Type.Object(
-          { op: Type.Literal("_get"), value: Type.Unknown() },
-          { description: "_get operation. Value can be any JSON value." },
-        ),
-      ]),
-    ],
-    { description: "one JSON Patch operation" },
-  ),
-  {
-    title: "JSON Patch",
-    description: "A JSON Schema describing a JSON Patch",
-    $schema: "http://json-schema.org/draft-04/schema#",
-    notes: ["Only required members are accounted for, other members are ignored"],
-  },
+const JsonPatchT = Type.Intersect(
+  [
+    Type.Object({ path: JsonPointer }, { description: "Members common to all operations" }),
+    Type.Union([
+      Type.Object(
+        { op: Type.Literal("add"), value: Type.Unknown() },
+        { description: "add operation. Value can be any JSON value." },
+      ),
+      Type.Object(
+        { op: Type.Literal("remove") },
+        { description: "remove operation. Only a path is specified." },
+      ),
+      Type.Object(
+        { op: Type.Literal("replace"), value: Type.Unknown() },
+        { description: "replace operation. Value can be any JSON value." },
+      ),
+      Type.Object(
+        { op: Type.Literal("move"), from: JsonPointer },
+        { description: 'move operation. "from" is a JSON Pointer.' },
+      ),
+      Type.Object(
+        { op: Type.Literal("copy"), from: JsonPointer },
+        { description: 'copy operation. "from" is a JSON Pointer.' },
+      ),
+      Type.Object(
+        { op: Type.Literal("test"), value: Type.Unknown() },
+        { description: "test operation. Value can be any JSON value." },
+      ),
+    ]),
+  ],
+  { description: "one JSON Patch operation" },
 );
+
+export const JsonPatch = Type.Codec(JsonPatchT)
+  .Decode((value) => value as unknown as OpPatch)
+  .Encode((value) => value as StaticDecode<typeof JsonPatchT>);
 
 export const AccountId = Branded("AccountId", Type.String());
 export type AccountId = StaticDecode<typeof AccountId>;
@@ -101,6 +94,9 @@ export type TileTypeId = StaticDecode<typeof TileTypeId>;
 
 export const SpeciesId = Branded("SpeciesId", Type.String());
 export type SpeciesId = StaticDecode<typeof SpeciesId>;
+
+export const FieldId = Branded("FieldId", Type.Integer());
+export type FieldId = StaticDecode<typeof FieldId>;
 
 export const CardTypeId = Type.Union([TileTypeId, SpeciesId]);
 export type CardTypeId = StaticDecode<typeof CardTypeId>;
@@ -143,10 +139,16 @@ export type GameState = StaticDecode<typeof GameState>;
 export const Authenticate = Struct("Authenticate", Type.String());
 export type Authenticate = StaticDecode<typeof Authenticate>;
 
+export const WatchField = Struct("WatchField", FieldId);
+export type WatchField = StaticDecode<typeof WatchField>;
+
+export const Unsubscribe = Struct("Unsubscribe", Type.Null());
+export type Unsubscribe = StaticDecode<typeof Unsubscribe>;
+
 export const DebugAddCard = Struct("DebugAddCard", Type.String());
 export type DebugAddCard = StaticDecode<typeof DebugAddCard>;
 
-export const Request = Type.Union([Authenticate, DebugAddCard]);
+export const Request = Type.Union([Authenticate, WatchField, Unsubscribe, DebugAddCard]);
 export type Request = StaticDecode<typeof Request>;
 
 export const Authenticated = Struct("Authenticated", Account);

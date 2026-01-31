@@ -1,10 +1,11 @@
 import { MessageEvent } from "./MessageEvent";
 import { AuthEvent } from "./AuthEvent";
-import { OneOff } from "./OneOff.svelte";
+import { MessageStream } from "./MessageStream.svelte";
 import { ReactiveEventTarget } from "$lib/ReactiveEventTarget.svelte";
 import Value from "typebox/value";
 import {
   construct,
+  FieldId,
   Request,
   RequestMessage,
   ResponseMessage,
@@ -82,7 +83,7 @@ export class SocketV1 extends ReactiveEventTarget<SocketV1EventMap> {
   #sendMessage<T extends Request>(request: T, id: string = window.crypto.randomUUID()) {
     const encoded = Value.Encode(RequestMessage, { id, request });
     this.#socket.send(JSON.stringify(encoded));
-    return new OneOff<
+    return new MessageStream<
       T["#tag"] extends keyof SocketV1Protocol ? SocketV1Protocol[T["#tag"]] : never
     >(this, id);
   }
@@ -93,6 +94,14 @@ export class SocketV1 extends ReactiveEventTarget<SocketV1EventMap> {
       .then((event) => {
         this.dispatchEvent(new AuthEvent(event["#payload"]));
       });
+  }
+
+  $watchField(data: { id: FieldId }) {
+    this.#sendMessage(construct("WatchField", data.id)).$subscribe(() => {});
+  }
+
+  unsubscribe(id: string) {
+    this.#sendMessage(construct("Unsubscribe", null), id);
   }
 
   close(code?: number, reason?: string) {
