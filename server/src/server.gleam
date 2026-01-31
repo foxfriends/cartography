@@ -42,8 +42,8 @@ pub fn main() -> Nil {
   let assert Ok(_) =
     static_supervisor.new(static_supervisor.OneForOne)
     |> static_supervisor.add(database)
-    |> static_supervisor.add(server)
     |> static_supervisor.add(bus_process)
+    |> static_supervisor.add(server)
     |> static_supervisor.start()
 
   process.sleep_forever()

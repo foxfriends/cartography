@@ -1,7 +1,6 @@
 import cartography_api/game_state.{type CardId}
 import gleam/erlang/process
 import gleam/otp/static_supervisor
-import gleam/otp/supervision
 import pubsub
 
 pub opaque type Bus {
@@ -9,18 +8,16 @@ pub opaque type Bus {
 }
 
 pub fn supervised() {
-  let card_accounts_channel = process.new_name("CardAccountsChannel")
+  let card_accounts_channel = process.new_name("card_accounts_channel")
 
   let child_spec =
-    supervision.supervisor(fn() {
-      static_supervisor.new(static_supervisor.OneForOne)
-      |> static_supervisor.add(
-        pubsub.new()
-        |> pubsub.named(card_accounts_channel)
-        |> pubsub.supervised(),
-      )
-      |> static_supervisor.start()
-    })
+    static_supervisor.new(static_supervisor.OneForOne)
+    |> static_supervisor.add(
+      pubsub.new()
+      |> pubsub.named(card_accounts_channel)
+      |> pubsub.supervised(),
+    )
+    |> static_supervisor.supervised()
 
   #(child_spec, Bus(card_accounts_channel:))
 }
