@@ -4,7 +4,7 @@ services:
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_PASSWORD=postgres
+      POSTGRES_PASSWORD: "postgres"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 2s
@@ -12,3 +12,41 @@ services:
       retries: 5
     volumes:
       - ./generated:/generated
+  glitchtip-postgres:
+    image: postgres:18
+    container_name: glitchtip-postgres
+    environment:
+      POSTGRES_PASSWORD: "postgres"
+    volumes:
+      - glitchtip-postgres:/var/lib/postgresql
+    networks:
+      - glitchtip
+  glitchtip:
+    image: glitchtip/glitchtip
+    container_name: glitchtip
+    depends_on:
+    - postgres
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@glitchtip-postgres:5432/postgres
+      VALKEY_URL: "" # Set to enable Valkey. Ex: redis://valkey:6379
+      SECRET_KEY: d453bcfd7e5a00e45503f2566b11f1818a8508f667836673785731ff6965b181
+      PORT: 8000
+      EMAIL_URL: consolemail:// # Example smtp://email:password@smtp_url:port https://glitchtip.com/documentation/install#configuration
+      GLITCHTIP_DOMAIN: http://localhost:8000 # Change this to your domain
+      DEFAULT_FROM_EMAIL: cam@eldridge.cam # Change this to your email
+      CELERY_WORKER_AUTOSCALE: "1,2" # Scale between 1 and 2 to prevent excessive memory usage. Change it or remove to set it to the number of cpu cores.
+    command: ./bin/run-all-in-one.sh
+    volumes:
+      - glitchtip:/code/uploads
+    networks:
+      - glitchtip
+
+volumes:
+  glitchtip-postgres:
+  glitchtip:
+
+networks:
+  glitchtip:
+    driver: bridge
