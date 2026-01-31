@@ -1,18 +1,18 @@
+import cartography_api/account
+import cartography_api/response
 import db/rows
 import db/sql
-import dto/output_action
-import dto/output_message
 import gleam/option
 import gleam/result
 import gleam/string
 import mist
-import models/account
 import websocket/state
+import youid/uuid
 
 pub fn handle(
   st: state.State,
   conn: mist.WebsocketConnection,
-  message_id: String,
+  message_id: uuid.Uuid,
   account_id: String,
 ) -> Result(mist.Next(state.State, _msg), String) {
   {
@@ -28,10 +28,13 @@ pub fn handle(
       }
     }
 
+    let message =
+      account.Account(id: account_id)
+      |> response.Authenticated()
+      |> response.message(message_id, 0)
+      |> response.to_string()
     use _ <- result.map(
-      output_action.Account(account.Account(id: account_id))
-      |> output_message.OutputMessage(id: message_id)
-      |> output_message.send(conn)
+      mist.send_text_frame(conn, message)
       |> result.map_error(rows.HandlerError),
     )
     state.authenticate(st, account_id)

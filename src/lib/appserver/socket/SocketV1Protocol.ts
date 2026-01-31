@@ -11,7 +11,7 @@ import Type, { type StaticDecode, type TSchema } from "typebox";
 declare const __BRAND: unique symbol;
 type Branded<Brand, T> = T & { [__BRAND]: Brand };
 
-function Branded<Brand, T extends TSchema>(brand: Brand, value: T) {
+function Branded<Brand extends string, T extends TSchema>(brand: Brand, value: T) {
   return Type.Codec(value)
     .Decode((val) => val as Branded<Brand, StaticDecode<T>>)
     .Encode((val) => val as StaticDecode<T>);
@@ -125,19 +125,28 @@ export const FieldCitizen = Type.Object({ id: CitizenId, x: Type.Integer(), y: T
 export type FieldCitizen = StaticDecode<typeof FieldCitizen>;
 
 export const Field = Type.Object({
-  tiles: Type.Array(FieldTile),
-  citizens: Type.Array(FieldCitizen),
+  id: FieldId,
+  name: Type.String(),
 });
 export type Field = StaticDecode<typeof Field>;
 
+export const GameStateField = Type.Object({
+  tiles: Type.Array(FieldTile),
+  citizens: Type.Array(FieldCitizen),
+});
+export type GameStateField = StaticDecode<typeof GameStateField>;
+
 export const GameState = Type.Object({
   deck: Type.Array(Card),
-  field: Field,
+  field: GameStateField,
 });
 export type GameState = StaticDecode<typeof GameState>;
 
 export const Authenticate = Struct("Authenticate", Type.String());
 export type Authenticate = StaticDecode<typeof Authenticate>;
+
+export const ListFields = Struct("ListFields", Type.Null());
+export type ListFields = StaticDecode<typeof ListFields>;
 
 export const WatchField = Struct("WatchField", FieldId);
 export type WatchField = StaticDecode<typeof WatchField>;
@@ -148,11 +157,20 @@ export type Unsubscribe = StaticDecode<typeof Unsubscribe>;
 export const DebugAddCard = Struct("DebugAddCard", Type.String());
 export type DebugAddCard = StaticDecode<typeof DebugAddCard>;
 
-export const Request = Type.Union([Authenticate, WatchField, Unsubscribe, DebugAddCard]);
+export const Request = Type.Union([
+  Authenticate,
+  ListFields,
+  WatchField,
+  Unsubscribe,
+  DebugAddCard,
+]);
 export type Request = StaticDecode<typeof Request>;
 
 export const Authenticated = Struct("Authenticated", Account);
 export type Authenticated = StaticDecode<typeof Authenticated>;
+
+export const Fields = Struct("Fields", Type.Array(Field));
+export type Fields = StaticDecode<typeof Fields>;
 
 export const PutState = Struct("PutState", GameState);
 export type PutState = StaticDecode<typeof PutState>;
@@ -160,11 +178,19 @@ export type PutState = StaticDecode<typeof PutState>;
 export const PatchState = Struct("PatchState", Type.Array(JsonPatch));
 export type PatchState = StaticDecode<typeof PatchState>;
 
-export const Response = Type.Union([Authenticated, PutState, PatchState]);
+export const Response = Type.Union([Authenticated, Fields, PutState, PatchState]);
 export type Response = StaticDecode<typeof Response>;
 
+export type Once<T> = Branded<"Once", T>;
+export type Stream<T> = Branded<"Stream", T>;
+
+export type OnceType<T> = T extends Once<infer R> ? R : never;
+export type StreamType<T> = T extends Stream<infer R> ? R : never;
+
 export interface SocketV1Protocol {
-  Authenticate: Authenticated;
+  Authenticate: Once<Authenticated>;
+  ListFields: Once<Fields>;
+  WatchField: Stream<PutState | PatchState>;
 }
 
 export const RequestMessage = Type.Object({
@@ -175,6 +201,7 @@ export type RequestMessage = StaticDecode<typeof RequestMessage>;
 
 export const ResponseMessage = Type.Object({
   id: Type.String({ format: "uuid" }),
+  nonce: Type.Integer(),
   response: Response,
 });
 export type ResponseMessage = StaticDecode<typeof ResponseMessage>;

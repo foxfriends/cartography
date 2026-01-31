@@ -4,13 +4,17 @@ import { MessageStream } from "./MessageStream.svelte";
 import { ReactiveEventTarget } from "$lib/ReactiveEventTarget.svelte";
 import Value from "typebox/value";
 import {
+  Account,
   construct,
+  Field,
   FieldId,
+  GameState,
   Request,
   RequestMessage,
   ResponseMessage,
   type SocketV1Protocol,
 } from "./SocketV1Protocol";
+import jsonpatch from "json-patch";
 
 interface SocketV1EventMap {
   message: MessageEvent;
@@ -24,6 +28,8 @@ export class SocketV1 extends ReactiveEventTarget<SocketV1EventMap> {
 
   #socket: WebSocket;
   #url: string;
+
+  account: Account | undefined = $state();
 
   constructor(url: string) {
     super();
@@ -47,9 +53,9 @@ export class SocketV1 extends ReactiveEventTarget<SocketV1EventMap> {
         this.dispatchEvent(new Event("error"));
       }
       try {
-        const message = Value.Decode(ResponseMessage, data);
+        const message = Value.Decode(ResponseMessage, JSON.parse(data));
         this.dispatchEvent(new MessageEvent(message));
-      } catch {
+      } catch (error) {
         this.#socket.close(4000, "Invalid JSON received");
         this.dispatchEvent(new Event("error"));
       }
@@ -92,12 +98,27 @@ export class SocketV1 extends ReactiveEventTarget<SocketV1EventMap> {
     this.#sendMessage(construct("Authenticate", data.id))
       .reply()
       .then((event) => {
+        this.account = event["#payload"];
         this.dispatchEvent(new AuthEvent(event["#payload"]));
       });
   }
 
-  $watchField(data: { id: FieldId }) {
-    this.#sendMessage(construct("WatchField", data.id)).$subscribe(() => {});
+  async listFields(): Promise<Field[]> {
+    const event = await this.#sendMessage(construct("ListFields", null)).reply();
+    return event["#payload"];
+  }
+
+  $watchField(data: { id: FieldId }, subscriber: (gameState: GameState | undefined) => void) {
+    let gameState: GameState | undefined = undefined;
+    this.#sendMessage(construct("WatchField", data.id)).$subscribe((response) => {
+      if (response["#tag"] === "PutState") {
+        gameState = response["#payload"];
+      } else if (response["#tag"] === "PatchState") {
+        const patches = response["#payload"];
+        gameState = jsonpatch.apply(gameState, patches);
+      }
+      subscriber(gameState);
+    });
   }
 
   unsubscribe(id: string) {

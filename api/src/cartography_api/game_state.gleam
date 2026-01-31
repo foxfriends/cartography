@@ -1,8 +1,8 @@
+import cartography_api/internal/repr
 import gleam/dynamic/decode
 import gleam/json.{type Json}
 import gleam/list
 import gleam/option.{type Option}
-import repr
 import squirtle
 
 /// Defines a shared game state data model, which the server manages on behalf of a client

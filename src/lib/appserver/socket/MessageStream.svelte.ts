@@ -1,5 +1,6 @@
 import type { MessageEvent } from "./MessageEvent";
-import { type SocketV1 } from "./SocketV1";
+import { type SocketV1 } from "./SocketV1.svelte";
+import type { OnceType, StreamType } from "./SocketV1Protocol";
 
 export class MessageStream<T> extends EventTarget {
   #socket: SocketV1;
@@ -12,14 +13,14 @@ export class MessageStream<T> extends EventTarget {
   }
 
   async reply(abort?: AbortSignal) {
-    return new Promise<T>((resolve, reject) => {
+    return new Promise<OnceType<T>>((resolve, reject) => {
       abort?.throwIfAborted();
 
       const handler = (event: MessageEvent) => {
         if (event.message.id === this.id) {
           // NOTE: would be nice to do a runtime assertion here, but the mapping is currently
           // only defined as a type. Not hard to shift to a value, just lazy.
-          resolve(event.message.response as T);
+          resolve(event.message.response as OnceType<T>);
           this.#socket.removeEventListener("message", handler);
           abort?.removeEventListener("abort", onabort);
         }
@@ -35,12 +36,12 @@ export class MessageStream<T> extends EventTarget {
     });
   }
 
-  replies(callback: (message: T) => void) {
+  replies(callback: (message: StreamType<T>) => void) {
     const handler = (event: MessageEvent) => {
       if (event.message.id === this.id) {
         // NOTE: would be nice to do a runtime assertion here, but the mapping is currently
         // only defined as a type. Not hard to shift to a value, just lazy.
-        callback(event.message.response as T);
+        callback(event.message.response as StreamType<T>);
       }
     };
 
@@ -52,7 +53,7 @@ export class MessageStream<T> extends EventTarget {
     };
   }
 
-  $then(callback: (event: T) => void): void {
+  $then(callback: (event: OnceType<T>) => void): void {
     $effect(() => {
       const abort = new AbortController();
 
@@ -70,7 +71,7 @@ export class MessageStream<T> extends EventTarget {
     });
   }
 
-  $subscribe(callback: (event: T) => void): void {
+  $subscribe(callback: (event: StreamType<T>) => void): void {
     $effect(() => {
       const subscription = this.replies(callback);
       return () => subscription.unsubscribe();

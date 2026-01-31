@@ -1,23 +1,20 @@
-import { getContext, setContext } from "svelte";
+import { createContext } from "svelte";
 import { PUBLIC_SERVER_WS_URL } from "$env/static/public";
-import { SocketV1 } from "./socket/SocketV1";
-
-const SOCKET = Symbol("Socket");
+import { SocketV1 } from "./socket/SocketV1.svelte";
 
 interface SocketContext {
   get socket(): SocketV1;
 }
 
-export function getSocket(): SocketV1 {
-  const context = getContext(SOCKET) as SocketContext;
-  return context.socket;
-}
+const [getSocket, setSocket] = createContext<SocketContext>();
+
+export { getSocket };
 
 export function provideSocket() {
-  let socket: SocketV1;
+  const context = $state<{ socket: SocketV1 }>({ socket: undefined! });
 
   $effect.pre(() => {
-    socket = new SocketV1(`${PUBLIC_SERVER_WS_URL}/websocket`);
+    const socket = (context.socket = new SocketV1(`${PUBLIC_SERVER_WS_URL}/websocket`));
 
     socket.addEventListener("open", () => {
       socket.auth({ id: "foxfriends" });
@@ -26,9 +23,5 @@ export function provideSocket() {
     return () => socket.close();
   });
 
-  setContext(SOCKET, {
-    get socket() {
-      return socket;
-    },
-  } satisfies SocketContext);
+  setSocket(context);
 }

@@ -1,78 +1,14 @@
 <script lang="ts">
-  import { type Field } from "$lib/appserver/Field";
-  import DragTile from "$lib/components/DragTile.svelte";
-  import DragWindow from "$lib/components/DragWindow.svelte";
-  import GridLines from "$lib/components/GridLines.svelte";
-  import { getOverworldState, provideOverworldState } from "./components/provideOverworld.svelte";
-  import { getFieldState, provideFieldState } from "./components/provideFieldState.svelte";
+  import { getSocket } from "$lib/appserver/provideSocket.svelte";
+  import PlayPage from "./components/PlayPage.svelte";
 
-  provideOverworldState();
-  const setFieldState = provideFieldState();
-
-  const { fields } = $derived.by(getOverworldState);
-  const { field, fieldTiles } = $derived.by(getFieldState);
-
-  async function viewField(field: Field) {
-    setFieldState.fieldId = field.id;
-  }
+  const { socket } = $derived.by(getSocket);
 </script>
 
-<main class="void" role="application">
-  <DragWindow>
-    <GridLines />
-
-    {#if field}
-      {#each fieldTiles.values() as fieldTile (fieldTile.tile_id)}
-        <DragTile
-          x={fieldTile.grid_x ?? 0}
-          y={fieldTile.grid_y ?? 0}
-          loose={fieldTile.grid_x === undefined || fieldTile.grid_y === undefined}
-        >
-          <div class="field-label">
-            {#if field.name}
-              {field.name}
-            {:else}
-              Field {field.id}
-            {/if}
-          </div>
-        </DragTile>
-      {/each}
-    {:else}
-      {#each fields.values() as field, i (field.id)}
-        <DragTile x={i} y={0} onClick={() => viewField(field)}>
-          <div class="field-label">
-            {#if field.name}
-              {field.name}
-            {:else}
-              Field {field.id}
-            {/if}
-          </div>
-        </DragTile>
-      {/each}
-    {/if}
-  </DragWindow>
-</main>
-
-<style>
-  main {
-    position: absolute;
-    inset: 0;
-    width: 100vw;
-    height: 100vh;
-  }
-
-  .void {
-    background: black;
-    --grid-lines-color: white;
-  }
-
-  .field-label {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    font-weight: 600;
-    border: 1px solid rgb(0 0 0 / 0.12);
-  }
-</style>
+{#if socket.account}
+  {#key socket.account.id}
+    <PlayPage />
+  {/key}
+{:else}
+  <div>Logging in</div>
+{/if}

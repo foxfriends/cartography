@@ -65,6 +65,7 @@ stop:
 
 [group: "release"]
 build:
+    cd server && gleam build
     npx svelte-kit sync
     npx vite build
 
