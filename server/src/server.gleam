@@ -21,7 +21,7 @@ pub fn main() -> Nil {
   let port =
     envoy.get("PORT")
     |> result.try(int.parse)
-    |> result.unwrap(8000)
+    |> result.unwrap(12000)
 
   let db_name = process.new_name("database")
   let assert Ok(database_url) = envoy.get("DATABASE_URL")
