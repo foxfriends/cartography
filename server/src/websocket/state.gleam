@@ -1,19 +1,24 @@
+import actor/game_state_watcher
 import bus
-import gleam/dict
-import gleam/option
+import cartography_api/game_state
+import gleam/dict.{type Dict}
+import gleam/option.{type Option}
+import gleam/otp/factory_supervisor
+import mist
 import pog
-import server/context
+import server/context.{type Context}
+import youid/uuid.{type Uuid}
 
 pub opaque type State {
   State(
-    context: context.Context,
-    account_id: option.Option(String),
-    listeners: dict.Dict(String, fn() -> Nil),
+    context: Context,
+    account_id: Option(String),
+    subscriptions: Dict(Uuid, fn() -> Nil),
   )
 }
 
 pub fn new(context: context.Context) -> State {
-  State(context:, account_id: option.None, listeners: dict.new())
+  State(context:, account_id: option.None, subscriptions: dict.new())
 }
 
 pub fn account_id(
@@ -38,18 +43,35 @@ pub fn bus(state: State) -> bus.Bus {
   state.context.bus
 }
 
-pub fn add_listener(
-  state: State,
-  channel: String,
-  unsubscribe: fn() -> Nil,
-) -> State {
-  State(..state, listeners: dict.insert(state.listeners, channel, unsubscribe))
+pub fn add_subscription(state: State, id: Uuid, subscription: fn() -> Nil) {
+  State(
+    ..state,
+    subscriptions: dict.insert(state.subscriptions, id, subscription),
+  )
 }
 
-pub fn remove_listener(state: State, channel: String) -> State {
-  case dict.get(state.listeners, channel) {
-    Ok(unsub) -> unsub()
-    Error(Nil) -> Nil
+pub fn unsubscribe(state: State, id: Uuid) {
+  case dict.get(state.subscriptions, id) {
+    Ok(sub) -> sub()
+    Error(_) -> Nil
   }
-  State(..state, listeners: dict.delete(state.listeners, channel))
+  State(..state, subscriptions: dict.delete(state.subscriptions, id))
+}
+
+pub fn start_game_state_watcher(
+  state: State,
+  conn: mist.WebsocketConnection,
+  message_id: Uuid,
+  account_id: String,
+  field_id: game_state.FieldId,
+) {
+  state.context.game_state_watchers
+  |> factory_supervisor.get_by_name()
+  |> factory_supervisor.start_child(game_state_watcher.Init(
+    bus: state.context.bus,
+    conn:,
+    message_id:,
+    account_id:,
+    field_id:,
+  ))
 }

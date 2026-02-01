@@ -41,7 +41,7 @@ pub type Card {
 }
 
 pub type Field {
-  Field(id: FieldId, tiles: List(FieldTile), citizens: List(FieldCitizen))
+  Field(tiles: List(FieldTile), citizens: List(FieldCitizen))
 }
 
 pub type FieldTile {
@@ -50,6 +50,10 @@ pub type FieldTile {
 
 pub type FieldCitizen {
   FieldCitizen(id: CardId, x: Int, y: Int)
+}
+
+pub fn new() {
+  GameState(deck: Deck(cards: []), field: Field(tiles: [], citizens: []))
 }
 
 pub fn to_json(game_state: GameState) -> Json {
@@ -95,7 +99,6 @@ pub fn to_json(game_state: GameState) -> Json {
     #(
       "field",
       json.object([
-        #("id", json.int(game_state.field.id.id)),
         #(
           "tiles",
           game_state.field.tiles
@@ -176,7 +179,6 @@ pub fn decoder() -> decode.Decoder(GameState) {
     decode.success(Deck(cards:))
   })
   use field <- decode.field("field", {
-    use id <- decode.field("id", decode.map(decode.int, FieldId))
     use tiles <- decode.field(
       "tiles",
       decode.list({
@@ -195,7 +197,7 @@ pub fn decoder() -> decode.Decoder(GameState) {
         decode.success(FieldCitizen(id:, x:, y:))
       }),
     )
-    decode.success(Field(id:, tiles:, citizens:))
+    decode.success(Field(tiles:, citizens:))
   })
   decode.success(GameState(deck:, field:))
 }

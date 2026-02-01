@@ -1,7 +1,9 @@
+import actor/game_state_watcher
 import bus
 import envoy
 import gleam/erlang/process
 import gleam/int
+import gleam/otp/factory_supervisor
 import gleam/otp/static_supervisor
 import gleam/result
 import mist
@@ -21,7 +23,7 @@ pub fn main() -> Nil {
   let port =
     envoy.get("PORT")
     |> result.try(int.parse)
-    |> result.unwrap(12000)
+    |> result.unwrap(12_000)
 
   let db_name = process.new_name("database")
   let assert Ok(database_url) = envoy.get("DATABASE_URL")
@@ -33,7 +35,19 @@ pub fn main() -> Nil {
 
   let #(bus_process, bus_handles) = bus.supervised()
 
-  let context = context.Context(db_name, bus_handles)
+  let game_state_watcher_supervisor_name =
+    process.new_name("game_state_watcher_supervisor")
+  let factory =
+    factory_supervisor.worker_child(game_state_watcher.start)
+    |> factory_supervisor.named(game_state_watcher_supervisor_name)
+    |> factory_supervisor.supervised()
+
+  let context =
+    context.Context(
+      db_name,
+      bus_handles,
+      game_state_watchers: game_state_watcher_supervisor_name,
+    )
   let server =
     mist.new(router.handler(_, context))
     |> mist.port(port)
@@ -43,6 +57,7 @@ pub fn main() -> Nil {
     static_supervisor.new(static_supervisor.OneForOne)
     |> static_supervisor.add(database)
     |> static_supervisor.add(bus_process)
+    |> static_supervisor.add(factory)
     |> static_supervisor.add(server)
     |> static_supervisor.start()
 

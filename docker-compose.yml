@@ -25,7 +25,7 @@ services:
     image: glitchtip/glitchtip
     container_name: glitchtip
     depends_on:
-    - postgres
+      - postgres
     ports:
       - "8000:8000"
     environment:

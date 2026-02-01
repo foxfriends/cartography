@@ -55,7 +55,7 @@ export class SocketV1 extends ReactiveEventTarget<SocketV1EventMap> {
       try {
         const message = Value.Decode(ResponseMessage, JSON.parse(data));
         this.dispatchEvent(new MessageEvent(message));
-      } catch (error) {
+      } catch {
         this.#socket.close(4000, "Invalid JSON received");
         this.dispatchEvent(new Event("error"));
       }

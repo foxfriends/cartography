@@ -8,6 +8,8 @@ import gleam/string
 import handlers/authenticate_handler
 import handlers/debug_add_card_handler
 import handlers/list_fields_handler
+import handlers/unsubscribe_handler
+import handlers/watch_field_handler
 import json_websocket
 import mist.{type WebsocketConnection}
 import palabres
@@ -24,14 +26,11 @@ fn handle_message(
       request.Authenticate(id) ->
         authenticate_handler.handle(state, conn, message.id, id)
       request.ListFields -> list_fields_handler.handle(state, conn, message.id)
-      request.WatchField(_) -> {
-        todo
-      }
+      request.WatchField(field_id) ->
+        watch_field_handler.handle(state, conn, message.id, field_id)
       request.DebugAddCard(card_id) ->
         debug_add_card_handler.handle(state, card_id)
-      request.Unsubscribe -> {
-        todo
-      }
+      request.Unsubscribe -> unsubscribe_handler.handle(state, message.id)
     }
   }
   case response {
