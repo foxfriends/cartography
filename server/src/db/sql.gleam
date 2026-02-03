@@ -5,6 +5,7 @@
 ////
 
 import gleam/dynamic/decode
+import gleam/option.{type Option}
 import pog
 
 /// A row you get from running the `create_account` query
@@ -329,6 +330,175 @@ WHERE
 "
   |> pog.query
   |> pog.parameter(pog.int(arg_1))
+  |> pog.returning(decoder)
+  |> pog.execute(db)
+}
+
+/// A row you get from running the `get_field_citizens` query
+/// defined in `./src/db/sql/get_field_citizens.sql`.
+///
+/// > 🐿️ This type definition was generated automatically using v4.6.0 of the
+/// > [squirrel package](https://github.com/giacomocavalieri/squirrel).
+///
+pub type GetFieldCitizensRow {
+  GetFieldCitizensRow(
+    citizen_id: Int,
+    account_id: String,
+    field_id: Int,
+    grid_x: Int,
+    grid_y: Int,
+  )
+}
+
+/// Runs the `get_field_citizens` query
+/// defined in `./src/db/sql/get_field_citizens.sql`.
+///
+/// > 🐿️ This function was generated automatically using v4.6.0 of
+/// > the [squirrel package](https://github.com/giacomocavalieri/squirrel).
+///
+pub fn get_field_citizens(
+  db: pog.Connection,
+  arg_1: Int,
+) -> Result(pog.Returned(GetFieldCitizensRow), pog.QueryError) {
+  let decoder = {
+    use citizen_id <- decode.field(0, decode.int)
+    use account_id <- decode.field(1, decode.string)
+    use field_id <- decode.field(2, decode.int)
+    use grid_x <- decode.field(3, decode.int)
+    use grid_y <- decode.field(4, decode.int)
+    decode.success(GetFieldCitizensRow(
+      citizen_id:,
+      account_id:,
+      field_id:,
+      grid_x:,
+      grid_y:,
+    ))
+  }
+
+  "SELECT
+ *
+FROM
+  field_citizens
+WHERE
+  field_citizens.field_id = $1;
+"
+  |> pog.query
+  |> pog.parameter(pog.int(arg_1))
+  |> pog.returning(decoder)
+  |> pog.execute(db)
+}
+
+/// A row you get from running the `get_field_tiles` query
+/// defined in `./src/db/sql/get_field_tiles.sql`.
+///
+/// > 🐿️ This type definition was generated automatically using v4.6.0 of the
+/// > [squirrel package](https://github.com/giacomocavalieri/squirrel).
+///
+pub type GetFieldTilesRow {
+  GetFieldTilesRow(
+    tile_id: Int,
+    account_id: String,
+    field_id: Int,
+    grid_x: Int,
+    grid_y: Int,
+  )
+}
+
+/// Runs the `get_field_tiles` query
+/// defined in `./src/db/sql/get_field_tiles.sql`.
+///
+/// > 🐿️ This function was generated automatically using v4.6.0 of
+/// > the [squirrel package](https://github.com/giacomocavalieri/squirrel).
+///
+pub fn get_field_tiles(
+  db: pog.Connection,
+  arg_1: Int,
+) -> Result(pog.Returned(GetFieldTilesRow), pog.QueryError) {
+  let decoder = {
+    use tile_id <- decode.field(0, decode.int)
+    use account_id <- decode.field(1, decode.string)
+    use field_id <- decode.field(2, decode.int)
+    use grid_x <- decode.field(3, decode.int)
+    use grid_y <- decode.field(4, decode.int)
+    decode.success(GetFieldTilesRow(
+      tile_id:,
+      account_id:,
+      field_id:,
+      grid_x:,
+      grid_y:,
+    ))
+  }
+
+  "SELECT
+ *
+FROM
+  field_tiles
+WHERE
+  field_tiles.field_id = $1;
+"
+  |> pog.query
+  |> pog.parameter(pog.int(arg_1))
+  |> pog.returning(decoder)
+  |> pog.execute(db)
+}
+
+/// A row you get from running the `get_player_deck` query
+/// defined in `./src/db/sql/get_player_deck.sql`.
+///
+/// > 🐿️ This type definition was generated automatically using v4.6.0 of the
+/// > [squirrel package](https://github.com/giacomocavalieri/squirrel).
+///
+pub type GetPlayerDeckRow {
+  GetPlayerDeckRow(
+    id: Int,
+    name: String,
+    tile_type_id: Option(String),
+    species_id: Option(String),
+    home_tile_id: Option(Int),
+  )
+}
+
+/// Runs the `get_player_deck` query
+/// defined in `./src/db/sql/get_player_deck.sql`.
+///
+/// > 🐿️ This function was generated automatically using v4.6.0 of
+/// > the [squirrel package](https://github.com/giacomocavalieri/squirrel).
+///
+pub fn get_player_deck(
+  db: pog.Connection,
+  arg_1: String,
+) -> Result(pog.Returned(GetPlayerDeckRow), pog.QueryError) {
+  let decoder = {
+    use id <- decode.field(0, decode.int)
+    use name <- decode.field(1, decode.string)
+    use tile_type_id <- decode.field(2, decode.optional(decode.string))
+    use species_id <- decode.field(3, decode.optional(decode.string))
+    use home_tile_id <- decode.field(4, decode.optional(decode.int))
+    decode.success(GetPlayerDeckRow(
+      id:,
+      name:,
+      tile_type_id:,
+      species_id:,
+      home_tile_id:,
+    ))
+  }
+
+  "SELECT
+  cards.id as id,
+  coalesce(tiles.name, citizens.name) as name,
+  tiles.tile_type_id,
+  citizens.species_id,
+  citizens.home_tile_id
+FROM
+  cards
+  INNER JOIN card_accounts ON card_accounts.card_id = cards.id
+  LEFT OUTER JOIN citizens ON cards.id = citizens.id
+  LEFT OUTER JOIN tiles ON cards.id = tiles.id
+WHERE
+  card_accounts.account_id = $1;
+"
+  |> pog.query
+  |> pog.parameter(pog.text(arg_1))
   |> pog.returning(decoder)
   |> pog.execute(db)
 }

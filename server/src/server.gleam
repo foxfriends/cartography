@@ -25,29 +25,23 @@ pub fn main() -> Nil {
     |> result.try(int.parse)
     |> result.unwrap(12_000)
 
-  let db_name = process.new_name("database")
   let assert Ok(database_url) = envoy.get("DATABASE_URL")
-  let assert Ok(db_config) = pog.url_config(db_name, database_url)
+  let db = process.new_name("database")
+  let assert Ok(db_config) = pog.url_config(db, database_url)
   let database =
     db_config
     |> pog.pool_size(10)
     |> pog.supervised()
 
-  let #(bus_process, bus_handles) = bus.supervised()
+  let #(bus_process, bus) = bus.supervised()
 
-  let game_state_watcher_supervisor_name =
-    process.new_name("game_state_watcher_supervisor")
+  let game_state_watchers = process.new_name("game_state_watchers")
   let factory =
-    factory_supervisor.worker_child(game_state_watcher.start)
-    |> factory_supervisor.named(game_state_watcher_supervisor_name)
+    factory_supervisor.worker_child(game_state_watcher.start(db, bus, _))
+    |> factory_supervisor.named(game_state_watchers)
     |> factory_supervisor.supervised()
 
-  let context =
-    context.Context(
-      db_name,
-      bus_handles,
-      game_state_watchers: game_state_watcher_supervisor_name,
-    )
+  let context = context.Context(db:, bus:, game_state_watchers:)
   let server =
     mist.new(router.handler(_, context))
     |> mist.port(port)

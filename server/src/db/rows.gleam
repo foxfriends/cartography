@@ -33,6 +33,18 @@ pub fn one(
   }
 }
 
+pub fn one_or(
+  result: pog.Returned(t),
+  error: e,
+  with_row: fn(t) -> Result(u, e),
+) -> Result(u, e) {
+  case result.rows {
+    [] -> Error(error)
+    [row] -> with_row(row)
+    _ -> Error(error)
+  }
+}
+
 pub fn execute(
   query: pog.Query(t),
   database: pog.Connection,

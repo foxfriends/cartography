@@ -16,3 +16,13 @@ pub type Context {
     ),
   )
 }
+
+pub fn db(ctx: Context) -> pog.Connection {
+  pog.named_connection(ctx.db)
+}
+
+pub fn start_game_state_watcher(ctx: Context, init: game_state_watcher.Init) {
+  ctx.game_state_watchers
+  |> factory_supervisor.get_by_name()
+  |> factory_supervisor.start_child(init)
+}

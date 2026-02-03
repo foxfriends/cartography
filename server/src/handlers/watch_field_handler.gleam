@@ -17,10 +17,7 @@ pub fn handle(
   {
     use field_watcher <- result.try(state.start_game_state_watcher(
       st,
-      conn,
-      message_id,
-      account_id,
-      field_id,
+      game_state_watcher.Init(conn:, message_id:, account_id:, field_id:),
     ))
 
     st

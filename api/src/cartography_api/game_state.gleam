@@ -1,4 +1,3 @@
-import cartography_api/internal/repr
 import gleam/dynamic/decode
 import gleam/json.{type Json}
 import gleam/list
@@ -27,11 +26,14 @@ pub type FieldId {
 }
 
 pub type Deck {
-  Deck(cards: List(Card))
+  Deck(tiles: List(Tile), citizens: List(Citizen))
 }
 
-pub type Card {
+pub type Tile {
   Tile(id: CardId, tile_type_id: CardTypeId, name: String)
+}
+
+pub type Citizen {
   Citizen(
     id: CardId,
     species_id: CardTypeId,
@@ -41,7 +43,7 @@ pub type Card {
 }
 
 pub type Field {
-  Field(tiles: List(FieldTile), citizens: List(FieldCitizen))
+  Field(name: String, tiles: List(FieldTile), citizens: List(FieldCitizen))
 }
 
 pub type FieldTile {
@@ -52,18 +54,14 @@ pub type FieldCitizen {
   FieldCitizen(id: CardId, x: Int, y: Int)
 }
 
-pub fn new() {
-  GameState(deck: Deck(cards: []), field: Field(tiles: [], citizens: []))
-}
-
 pub fn to_json(game_state: GameState) -> Json {
   json.object([
     #(
       "deck",
       json.object([
         #(
-          "cards",
-          game_state.deck.cards
+          "tiles",
+          game_state.deck.tiles
             |> list.map(fn(card) {
               case card {
                 Tile(TileId(id), TileTypeId(tile_type_id), name) ->
@@ -72,7 +70,16 @@ pub fn to_json(game_state: GameState) -> Json {
                     #("tile_type_id", json.string(tile_type_id)),
                     #("name", json.string(name)),
                   ])
-                  |> repr.struct("Tile")
+                _ -> panic as "unreachable"
+              }
+            })
+            |> json.preprocessed_array(),
+        ),
+        #(
+          "citizens",
+          game_state.deck.citizens
+            |> list.map(fn(card) {
+              case card {
                 Citizen(
                   CitizenId(id),
                   SpeciesId(species_id),
@@ -88,7 +95,6 @@ pub fn to_json(game_state: GameState) -> Json {
                       json.nullable(home_tile_id, fn(id) { json.int(id.id) }),
                     ),
                   ])
-                  |> repr.struct("Citizen")
                 _ -> panic as "unreachable"
               }
             })
@@ -99,6 +105,7 @@ pub fn to_json(game_state: GameState) -> Json {
     #(
       "field",
       json.object([
+        #("name", json.string(game_state.field.name)),
         #(
           "tiles",
           game_state.field.tiles
@@ -136,49 +143,38 @@ pub fn to_string(game_state: GameState) -> String {
 
 pub fn decoder() -> decode.Decoder(GameState) {
   use deck <- decode.field("deck", {
-    use cards <- decode.field(
-      "cards",
+    use tiles <- decode.field(
+      "tiles",
       decode.list({
-        use tag <- repr.struct_tag(Tile(
-          id: TileId(0),
-          tile_type_id: TileTypeId(""),
-          name: "",
-        ))
-        case tag {
-          "Tile" -> {
-            use id <- decode.field("id", decode.map(decode.int, TileId))
-            use tile_type_id <- decode.field(
-              "tile_type_id",
-              decode.map(decode.string, TileTypeId),
-            )
-            use name <- decode.field("name", decode.string)
-            decode.success(Tile(id:, tile_type_id:, name:))
-          }
-          "Citizen" -> {
-            use id <- decode.field("id", decode.map(decode.int, CitizenId))
-            use species_id <- decode.field(
-              "species_id",
-              decode.map(decode.string, SpeciesId),
-            )
-            use name <- decode.field("name", decode.string)
-            use home_tile_id <- decode.field(
-              "home_tile_id",
-              decode.optional(decode.map(decode.int, TileId)),
-            )
-            decode.success(Citizen(id:, species_id:, name:, home_tile_id:))
-          }
-          _ -> {
-            decode.failure(
-              Tile(id: TileId(0), tile_type_id: TileTypeId(""), name: ""),
-              "card",
-            )
-          }
-        }
+        use id <- decode.field("id", decode.map(decode.int, TileId))
+        use tile_type_id <- decode.field(
+          "tile_type_id",
+          decode.map(decode.string, TileTypeId),
+        )
+        use name <- decode.field("name", decode.string)
+        decode.success(Tile(id:, tile_type_id:, name:))
       }),
     )
-    decode.success(Deck(cards:))
+    use citizens <- decode.field(
+      "citizens",
+      decode.list({
+        use id <- decode.field("id", decode.map(decode.int, CitizenId))
+        use species_id <- decode.field(
+          "species_id",
+          decode.map(decode.string, SpeciesId),
+        )
+        use name <- decode.field("name", decode.string)
+        use home_tile_id <- decode.field(
+          "home_tile_id",
+          decode.optional(decode.map(decode.int, TileId)),
+        )
+        decode.success(Citizen(id:, species_id:, name:, home_tile_id:))
+      }),
+    )
+    decode.success(Deck(tiles:, citizens:))
   })
   use field <- decode.field("field", {
+    use name <- decode.field("name", decode.string)
     use tiles <- decode.field(
       "tiles",
       decode.list({
@@ -197,7 +193,7 @@ pub fn decoder() -> decode.Decoder(GameState) {
         decode.success(FieldCitizen(id:, x:, y:))
       }),
     )
-    decode.success(Field(tiles:, citizens:))
+    decode.success(Field(name:, tiles:, citizens:))
   })
   decode.success(GameState(deck:, field:))
 }

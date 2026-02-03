@@ -17,7 +17,7 @@ pub fn handle(
   use account_id <- state.account_id(st)
   {
     let assert Ok(result) =
-      sql.list_fields_for_account(state.db_connection(st), account_id)
+      sql.list_fields_for_account(state.db(st), account_id)
     let message =
       result.rows
       |> list.map(fn(row) {

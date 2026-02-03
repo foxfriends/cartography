@@ -16,13 +16,12 @@ pub fn handle(
   account_id: String,
 ) -> Result(mist.Next(state.State, _msg), String) {
   {
-    let assert Ok(acc) = sql.create_account(state.db_connection(st), account_id)
+    let assert Ok(acc) = sql.create_account(state.db(st), account_id)
     use acc <- rows.one_or_none(acc)
     let assert Ok(account_id) = case acc {
       option.Some(acc) -> Ok(acc.id)
       option.None -> {
-        let assert Ok(acc) =
-          sql.get_account(state.db_connection(st), account_id)
+        let assert Ok(acc) = sql.get_account(state.db(st), account_id)
         use acc <- rows.one(acc)
         Ok(acc.id)
       }

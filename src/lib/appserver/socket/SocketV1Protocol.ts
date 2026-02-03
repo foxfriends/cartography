@@ -115,9 +115,6 @@ export const Citizen = Type.Object({
 });
 export type Citizen = StaticDecode<typeof Citizen>;
 
-export const Card = Type.Union([Struct("Tile", Tile), Struct("Citizen", Citizen)]);
-export type Card = StaticDecode<typeof Card>;
-
 export const FieldTile = Type.Object({ id: TileId, x: Type.Integer(), y: Type.Integer() });
 export type FieldTile = StaticDecode<typeof FieldTile>;
 
@@ -137,7 +134,10 @@ export const GameStateField = Type.Object({
 export type GameStateField = StaticDecode<typeof GameStateField>;
 
 export const GameState = Type.Object({
-  deck: Type.Array(Card),
+  deck: Type.Object({
+    tiles: Type.Array(Tile),
+    citizens: Type.Array(Citizen),
+  }),
   field: GameStateField,
 });
 export type GameState = StaticDecode<typeof GameState>;

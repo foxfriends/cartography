@@ -184,6 +184,26 @@ COMMENT ON TABLE public.citizens IS 'Citizens that are loyal to a player. Citize
 
 
 --
+-- Name: field_citizens; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.field_citizens (
+    citizen_id bigint NOT NULL,
+    account_id public.citext NOT NULL,
+    field_id bigint NOT NULL,
+    grid_x integer NOT NULL,
+    grid_y integer NOT NULL
+);
+
+
+--
+-- Name: TABLE field_citizens; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.field_citizens IS 'Tracks the state of citizens currently deployed on the field.';
+
+
+--
 -- Name: field_tiles; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -529,6 +549,14 @@ ALTER TABLE ONLY public.citizens
 
 
 --
+-- Name: field_citizens field_citizens_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.field_citizens
+    ADD CONSTRAINT field_citizens_pkey PRIMARY KEY (citizen_id);
+
+
+--
 -- Name: field_tiles field_tiles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -701,6 +729,46 @@ ALTER TABLE ONLY public.citizens
 
 ALTER TABLE ONLY public.citizens
     ADD CONSTRAINT citizens_species_id_fkey FOREIGN KEY (species_id) REFERENCES public.species(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: field_citizens field_citizens_account_id_citizen_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.field_citizens
+    ADD CONSTRAINT field_citizens_account_id_citizen_id_fkey FOREIGN KEY (account_id, citizen_id) REFERENCES public.card_accounts(account_id, card_id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: field_citizens field_citizens_account_id_field_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.field_citizens
+    ADD CONSTRAINT field_citizens_account_id_field_id_fkey FOREIGN KEY (account_id, field_id) REFERENCES public.fields(account_id, id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: field_citizens field_citizens_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.field_citizens
+    ADD CONSTRAINT field_citizens_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.accounts(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: field_citizens field_citizens_citizen_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.field_citizens
+    ADD CONSTRAINT field_citizens_citizen_id_fkey FOREIGN KEY (citizen_id) REFERENCES public.citizens(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: field_citizens field_citizens_field_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.field_citizens
+    ADD CONSTRAINT field_citizens_field_id_fkey FOREIGN KEY (field_id) REFERENCES public.fields(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
