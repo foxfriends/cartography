@@ -1,9 +1,13 @@
 import bus
 import cartography_api/game_state
 import db/game_state as db_game_state
+import db/rows
+import db/sql
 import gleam/erlang/process
+import gleam/option
 import gleam/otp/actor
 import gleam/result
+import gleam/string
 import mist
 import pog
 import youid/uuid
@@ -66,11 +70,66 @@ pub fn start(db: process.Name(pog.Message), bus: bus.Bus, init: Init) {
 }
 
 fn handle_message(state: State, message: Message) -> actor.Next(State, Message) {
-  case message {
-    CardCreated(_card_id) -> {
-      // TODO: include the card in the deck?
-      actor.continue(state)
+  let result = case message {
+    CardCreated(game_state.TileId(tile_id)) -> {
+      use tile <- result.try(
+        state.db
+        |> pog.named_connection()
+        |> sql.get_tile(tile_id)
+        |> result.map_error(string.inspect),
+      )
+      use tile <- rows.one_or(tile, "created card (tile) not found")
+      state.game_state
+      |> add_tile_to_deck(game_state.Tile(
+        id: game_state.TileId(tile.id),
+        name: tile.name,
+        tile_type_id: game_state.TileTypeId(tile.tile_type_id),
+      ))
+      |> fn(gs) { State(..state, game_state: gs) }
+      |> actor.continue()
+      |> Ok()
     }
-    Stop -> actor.stop()
+    CardCreated(game_state.CitizenId(citizen_id)) -> {
+      use citizen <- result.try(
+        state.db
+        |> pog.named_connection()
+        |> sql.get_citizen(citizen_id)
+        |> result.map_error(string.inspect),
+      )
+      use citizen <- rows.one_or(citizen, "created card (citizen) not found")
+      state.game_state
+      |> add_citizen_to_deck(game_state.Citizen(
+        id: game_state.CitizenId(citizen.id),
+        name: citizen.name,
+        species_id: game_state.SpeciesId(citizen.species_id),
+        home_tile_id: option.map(citizen.home_tile_id, game_state.TileId),
+      ))
+      |> fn(gs) { State(..state, game_state: gs) }
+      |> actor.continue()
+      |> Ok()
+    }
+    Stop -> Ok(actor.stop())
   }
+
+  case result {
+    Ok(next) -> next
+    Error(error) -> actor.stop_abnormal(error)
+  }
+}
+
+fn add_tile_to_deck(state: game_state.GameState, tile: game_state.Tile) {
+  game_state.GameState(
+    ..state,
+    deck: game_state.Deck(..state.deck, tiles: [tile, ..state.deck.tiles]),
+  )
+}
+
+fn add_citizen_to_deck(state: game_state.GameState, citizen: game_state.Citizen) {
+  game_state.GameState(
+    ..state,
+    deck: game_state.Deck(..state.deck, citizens: [
+      citizen,
+      ..state.deck.citizens
+    ]),
+  )
 }

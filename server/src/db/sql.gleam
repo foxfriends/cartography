@@ -251,6 +251,47 @@ WHERE
   |> pog.execute(db)
 }
 
+/// A row you get from running the `get_citizen` query
+/// defined in `./src/db/sql/get_citizen.sql`.
+///
+/// > 🐿️ This type definition was generated automatically using v4.6.0 of the
+/// > [squirrel package](https://github.com/giacomocavalieri/squirrel).
+///
+pub type GetCitizenRow {
+  GetCitizenRow(
+    species_id: String,
+    name: String,
+    home_tile_id: Option(Int),
+    id: Int,
+  )
+}
+
+/// Runs the `get_citizen` query
+/// defined in `./src/db/sql/get_citizen.sql`.
+///
+/// > 🐿️ This function was generated automatically using v4.6.0 of
+/// > the [squirrel package](https://github.com/giacomocavalieri/squirrel).
+///
+pub fn get_citizen(
+  db: pog.Connection,
+  arg_1: Int,
+) -> Result(pog.Returned(GetCitizenRow), pog.QueryError) {
+  let decoder = {
+    use species_id <- decode.field(0, decode.string)
+    use name <- decode.field(1, decode.string)
+    use home_tile_id <- decode.field(2, decode.optional(decode.int))
+    use id <- decode.field(3, decode.int)
+    decode.success(GetCitizenRow(species_id:, name:, home_tile_id:, id:))
+  }
+
+  "SELECT * FROM citizens WHERE id = $1;
+"
+  |> pog.query
+  |> pog.parameter(pog.int(arg_1))
+  |> pog.returning(decoder)
+  |> pog.execute(db)
+}
+
 /// A row you get from running the `get_field_and_tiles_by_id` query
 /// defined in `./src/db/sql/get_field_and_tiles_by_id.sql`.
 ///
@@ -499,6 +540,41 @@ WHERE
 "
   |> pog.query
   |> pog.parameter(pog.text(arg_1))
+  |> pog.returning(decoder)
+  |> pog.execute(db)
+}
+
+/// A row you get from running the `get_tile` query
+/// defined in `./src/db/sql/get_tile.sql`.
+///
+/// > 🐿️ This type definition was generated automatically using v4.6.0 of the
+/// > [squirrel package](https://github.com/giacomocavalieri/squirrel).
+///
+pub type GetTileRow {
+  GetTileRow(id: Int, tile_type_id: String, name: String)
+}
+
+/// Runs the `get_tile` query
+/// defined in `./src/db/sql/get_tile.sql`.
+///
+/// > 🐿️ This function was generated automatically using v4.6.0 of
+/// > the [squirrel package](https://github.com/giacomocavalieri/squirrel).
+///
+pub fn get_tile(
+  db: pog.Connection,
+  arg_1: Int,
+) -> Result(pog.Returned(GetTileRow), pog.QueryError) {
+  let decoder = {
+    use id <- decode.field(0, decode.int)
+    use tile_type_id <- decode.field(1, decode.string)
+    use name <- decode.field(2, decode.string)
+    decode.success(GetTileRow(id:, tile_type_id:, name:))
+  }
+
+  "SELECT * FROM tiles WHERE id = $1;
+"
+  |> pog.query
+  |> pog.parameter(pog.int(arg_1))
   |> pog.returning(decoder)
   |> pog.execute(db)
 }

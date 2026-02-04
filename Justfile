@@ -119,7 +119,7 @@ migrate:
 
 [group: "database"]
 [working-directory: "server"]
-squirrel: up migrate
+squirrel: up
     gleam run -m squirrel
 
 [group: "database"]
