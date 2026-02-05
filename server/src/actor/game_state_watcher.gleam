@@ -10,6 +10,7 @@ import gleam/result
 import gleam/string
 import mist
 import pog
+import squirtle
 import youid/uuid
 
 pub type Init {
@@ -69,8 +70,17 @@ pub fn start(db: process.Name(pog.Message), bus: bus.Bus, init: Init) {
   |> actor.start()
 }
 
+fn handle_stop(message, cb: fn() -> actor.Next(s, m)) {
+  case message {
+    Stop -> actor.stop()
+    _ -> cb()
+  }
+}
+
 fn handle_message(state: State, message: Message) -> actor.Next(State, Message) {
-  let result = case message {
+  use <- handle_stop(message)
+  let new_state = case message {
+    Stop -> panic as "unreachable"
     CardCreated(game_state.TileId(tile_id)) -> {
       use tile <- result.try(
         state.db
@@ -86,7 +96,6 @@ fn handle_message(state: State, message: Message) -> actor.Next(State, Message) 
         tile_type_id: game_state.TileTypeId(tile.tile_type_id),
       ))
       |> fn(gs) { State(..state, game_state: gs) }
-      |> actor.continue()
       |> Ok()
     }
     CardCreated(game_state.CitizenId(citizen_id)) -> {
@@ -105,14 +114,21 @@ fn handle_message(state: State, message: Message) -> actor.Next(State, Message) 
         home_tile_id: option.map(citizen.home_tile_id, game_state.TileId),
       ))
       |> fn(gs) { State(..state, game_state: gs) }
-      |> actor.continue()
       |> Ok()
     }
-    Stop -> Ok(actor.stop())
   }
-
+  let result = {
+    use new_state <- result.try(new_state)
+    use Nil <- result.try(
+      game_state.diff(state.game_state, new_state.game_state)
+      |> squirtle.patches_to_string()
+      |> mist.send_text_frame(state.conn, _)
+      |> result.map_error(string.inspect),
+    )
+    Ok(state)
+  }
   case result {
-    Ok(next) -> next
+    Ok(state) -> actor.continue(state)
     Error(error) -> actor.stop_abnormal(error)
   }
 }

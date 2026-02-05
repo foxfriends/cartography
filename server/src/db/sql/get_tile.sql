@@ -1,1 +1,6 @@
-SELECT * FROM tiles WHERE id = $1;
+SELECT
+  *
+FROM
+  tiles
+WHERE
+  id = $1;

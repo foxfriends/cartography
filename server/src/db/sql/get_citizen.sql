@@ -1,1 +1,6 @@
-SELECT * FROM citizens WHERE id = $1;
+SELECT
+  *
+FROM
+  citizens
+WHERE
+  id = $1;
