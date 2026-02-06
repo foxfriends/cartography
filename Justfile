@@ -5,7 +5,7 @@ set dotenv-load
 default: dev
 
 [group: "dev"]
-fix: fmt (lint "fix")
+fix: fmt
 
 export CONCURRENTLY_KILL_OTHERS := "true"
 export CONCURRENTLY_PAD_PREFIX := "true"
@@ -19,15 +19,10 @@ database_name := if DATABASE_URL != "" { file_stem(DATABASE_URL) } else { "" }
 shadow_database_name := if SHADOW_DATABASE_URL != "" { file_stem(SHADOW_DATABASE_URL) } else { "" }
 
 [group: "run"]
-dev: up squirrel
-    npx concurrently --names "sveltekit,migrate,server" \
-        "cd app && npx vite dev --host" \
-        "npx graphile-migrate watch" \
-        "cd server && gleam run"
-
-[working-directory: "server"]
-server: up squirrel
-    gleam run
+dev: up
+    npx concurrently --names "app,migrate" \
+        "dx run" \
+        "npx graphile-migrate watch"
 
 [group: "dev"]
 init:
@@ -36,14 +31,7 @@ init:
     cp -n .env.example .env.local
     cd .git/hooks && ln -sf ../../.hooks/* .
     if [ ! -f .env ]; then ln -s .env.local .env; fi
-    just get
     just up
-
-[group: "dev"]
-get:
-    cd app && npm install
-    cd server && gleam deps download
-    cd api && gleam deps download
 
 [group: "docker"]
 up: && migrate
@@ -59,52 +47,26 @@ down:
 stop:
     docker compose stop
 
-[group: "release"]
-build:
-    cd server && gleam build
-    cd app && npx svelte-kit sync
-    cd app && npx vite build
-
 [group: "dev"]
 clean:
-    rm -rf app/.svelte-kit app/build app/.eslintcache
+    cargo clean
 
 [group: "dev"]
 check:
-    cd api && gleam check
-    cd server && gleam check
-    cd app && npx svelte-kit sync
-    cd app && npx svelte-check --tsconfig ./tsconfig.json
-
-[group: "dev"]
-watch:
-    cd app && npx svelte-kit sync
-    cd app && npx svelte-check --tsconfig ./tsconfig.json --watch
-
-[group: "dev"]
-lint mode="check":
-    cd app && npx eslint . {{ if mode == "fix" { "--fix" } else { "--cache" } }}
+    dx check
 
 [group: "dev"]
 fmt:
-    cd api && gleam format
-    cd server && gleam format
-    cd app && npx prettier --write . --cache
+    dx fmt
+    cargo fmt
 
 [group: "dev"]
 test:
-    cd api && gleam test
-    cd server && gleam test
-    cd app && npm test
+    cargo test
 
 [group: "database"]
 migrate:
     npx graphile-migrate migrate --forceActions
-
-[group: "database"]
-[working-directory: "server"]
-squirrel: up
-    gleam run -m squirrel
 
 [group: "database"]
 migration-dev:
