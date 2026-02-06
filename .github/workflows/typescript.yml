@@ -85,9 +85,9 @@ jobs:
         with:
           cache: npm
           node-version-file: .node-version
-        working-directory: ./app
       - name: Install node_modules
         run: npm ci
+        working-directory: ./app
       - name: Run test
         run: npm test
         working-directory: ./app
