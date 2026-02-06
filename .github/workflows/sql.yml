@@ -36,8 +36,6 @@ jobs:
           gleam-version: "1.14.0"
           otp-version: "27"
           rebar3-version: "3.25.1"
-      - name: Install node_modules
-        run: npm ci
       - name: Check status
         run: npx graphile-migrate status --skipDatabase
       - name: Run migrate
