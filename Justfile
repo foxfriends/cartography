@@ -20,9 +20,7 @@ shadow_database_name := if SHADOW_DATABASE_URL != "" { file_stem(SHADOW_DATABASE
 
 [group: "run"]
 dev: up
-    npx concurrently --names "app,migrate" \
-        "dx run" \
-        "npx graphile-migrate watch"
+    dx serve --hot-patch
 
 [group: "dev"]
 init:
