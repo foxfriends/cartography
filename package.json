@@ -10,7 +10,6 @@
     "@sveltejs/adapter-static": "^3.0.10",
     "@sveltejs/kit": "^2.49.5",
     "@sveltejs/vite-plugin-svelte": "^6.2.1",
-    "@tauri-apps/cli": "^2.0.0-rc.18",
     "@types/json-patch": "^0.0.33",
     "@types/node": "^22.9.1",
     "@types/seedrandom": "^3.0.8",

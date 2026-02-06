@@ -29,14 +29,6 @@ dev: up squirrel
 server: up squirrel
     gleam run
 
-[group: "run"]
-app: up
-    npx concurrently --names "sveltekit,migrate,server,tauri" \
-        "npx vite dev --host" \
-        "npx graphile-migrate watch" \
-        "cd server && gleam run" \
-        "npx tauri dev"
-
 [group: "dev"]
 init:
     mise install
@@ -73,10 +65,6 @@ build:
     npx svelte-kit sync
     npx vite build
 
-[group: "release"]
-build-app:
-    npx tauri build
-
 [group: "dev"]
 clean:
     rm -rf .svelte-kit build .eslintcache
@@ -87,7 +75,6 @@ check:
     cd server && gleam check
     npx svelte-kit sync
     npx svelte-check --tsconfig ./tsconfig.json
-    cd src-tauri && cargo check
 
 [group: "dev"]
 watch:
@@ -97,21 +84,18 @@ watch:
 [group: "dev"]
 lint mode="check":
     npx eslint . {{ if mode == "fix" { "--fix" } else { "--cache" } }}
-    cd src-tauri && cargo clippy
 
 [group: "dev"]
 fmt:
     cd api && gleam format
     cd server && gleam format
     npx prettier --write . --cache
-    cd src-tauri && cargo fmt
 
 [group: "dev"]
 test:
     cd api && gleam test
     cd server && gleam test
     npm test
-    cd src-tauri && cargo test
 
 [group: "database"]
 migrate:
