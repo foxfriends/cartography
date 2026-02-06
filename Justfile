@@ -48,8 +48,8 @@ get:
 [group: "docker"]
 up: && migrate
     docker compose up -d --wait
-    docker compose exec postgres psql {{DATABASE_URL}} -c "" || docker compose exec postgres psql {{ROOT_DATABASE_URL}} -c 'CREATE DATABASE {{database_name}}'
-    docker compose exec postgres psql {{SHADOW_DATABASE_URL}} -c "" || docker compose exec postgres psql {{ROOT_DATABASE_URL}} -c 'CREATE DATABASE {{shadow_database_name}}'
+    docker compose exec postgres psql -U postgres -d "{{database_name}}" -c "" || docker compose exec postgres psql -U postgres -c 'CREATE DATABASE {{database_name}}'
+    docker compose exec postgres psql -U postgres -d "{{shadow_database_name}}" -c "" || docker compose exec postgres psql -U postgres -c 'CREATE DATABASE {{shadow_database_name}}'
 
 [group: "docker"]
 down:

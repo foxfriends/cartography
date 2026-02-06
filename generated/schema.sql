@@ -170,8 +170,8 @@ ALTER TABLE public.cards ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 CREATE TABLE public.citizens (
     species_id text NOT NULL,
     name text NOT NULL,
-    home_tile_id bigint,
     id bigint NOT NULL,
+    home_tile_id bigint,
     CONSTRAINT citizens_name_check CHECK (((0 < length(name)) AND (length(name) < 64)))
 );
 
@@ -705,6 +705,14 @@ ALTER TABLE ONLY public.card_types
 
 ALTER TABLE ONLY public.cards
     ADD CONSTRAINT cards_card_type_id_fkey FOREIGN KEY (card_type_id) REFERENCES public.card_types(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: citizens citizens_home_tile_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.citizens
+    ADD CONSTRAINT citizens_home_tile_id_fkey FOREIGN KEY (home_tile_id) REFERENCES public.tiles(id) ON UPDATE CASCADE ON DELETE SET NULL;
 
 
 --
