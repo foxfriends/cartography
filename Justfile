@@ -21,7 +21,7 @@ shadow_database_name := if SHADOW_DATABASE_URL != "" { file_stem(SHADOW_DATABASE
 [group: "run"]
 dev: up squirrel
     npx concurrently --names "sveltekit,migrate,server" \
-        "npx vite dev --host" \
+        "cd app && npx vite dev --host" \
         "npx graphile-migrate watch" \
         "cd server && gleam run"
 
@@ -41,7 +41,7 @@ init:
 
 [group: "dev"]
 get:
-    npm install
+    cd app && npm install
     cd server && gleam deps download
     cd api && gleam deps download
 
@@ -62,40 +62,40 @@ stop:
 [group: "release"]
 build:
     cd server && gleam build
-    npx svelte-kit sync
-    npx vite build
+    cd app && npx svelte-kit sync
+    cd app && npx vite build
 
 [group: "dev"]
 clean:
-    rm -rf .svelte-kit build .eslintcache
+    rm -rf app/.svelte-kit app/build app/.eslintcache
 
 [group: "dev"]
 check:
     cd api && gleam check
     cd server && gleam check
-    npx svelte-kit sync
-    npx svelte-check --tsconfig ./tsconfig.json
+    cd app && npx svelte-kit sync
+    cd app && npx svelte-check --tsconfig ./tsconfig.json
 
 [group: "dev"]
 watch:
-    npx svelte-kit sync
-    npx svelte-check --tsconfig ./tsconfig.json --watch
+    cd app && npx svelte-kit sync
+    cd app && npx svelte-check --tsconfig ./tsconfig.json --watch
 
 [group: "dev"]
 lint mode="check":
-    npx eslint . {{ if mode == "fix" { "--fix" } else { "--cache" } }}
+    cd app && npx eslint . {{ if mode == "fix" { "--fix" } else { "--cache" } }}
 
 [group: "dev"]
 fmt:
     cd api && gleam format
     cd server && gleam format
-    npx prettier --write . --cache
+    cd app && npx prettier --write . --cache
 
 [group: "dev"]
 test:
     cd api && gleam test
     cd server && gleam test
-    npm test
+    cd app && npm test
 
 [group: "database"]
 migrate:

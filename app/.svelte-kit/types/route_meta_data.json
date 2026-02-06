@@ -1,0 +1,21 @@
+{
+	"/(socket)": [
+		"src/routes/+layout.ts"
+	],
+	"/": [
+		"src/routes/+layout.ts",
+		"src/routes/+layout.ts"
+	],
+	"/cards": [
+		"src/routes/+layout.ts"
+	],
+	"/(socket)/field/[fieldId=FieldId]": [
+		"src/routes/+layout.ts"
+	],
+	"/(socket)/overworld": [
+		"src/routes/+layout.ts"
+	],
+	"/play": [
+		"src/routes/+layout.ts"
+	]
+}

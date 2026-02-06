@@ -26,36 +26,23 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Set up Gleam
-        uses: erlef/setup-beam@v1
-        with:
-          gleam-version: "1.14.0"
-          otp-version: "27"
-          rebar3-version: "3.25.1"
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
           cache: npm
           node-version-file: .node-version
-      - name: Build API
-        run: gleam build --target javascript
-        working-directory: ./api
       - name: Install node_modules
         run: npm ci
+        working-directory: ./app
       - name: Run lint
         run: npx eslint . --max-warnings 0
+        working-directory: ./app
 
   check:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Set up Gleam
-        uses: erlef/setup-beam@v1
-        with:
-          gleam-version: "1.14.0"
-          otp-version: "27"
-          rebar3-version: "3.25.1"
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
@@ -63,26 +50,19 @@ jobs:
           node-version-file: .node-version
       - name: Install node_modules
         run: npm ci
-      - name: Build API
-        run: gleam build --target javascript
-        working-directory: ./api
+        working-directory: ./app
       - name: Run check
         run: |
           set -e
           npx svelte-kit sync
           npx svelte-check --tsconfig ./tsconfig.json
+        working-directory: ./app
 
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Set up Gleam
-        uses: erlef/setup-beam@v1
-        with:
-          gleam-version: "1.14.0"
-          otp-version: "27"
-          rebar3-version: "3.25.1"
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
@@ -90,32 +70,24 @@ jobs:
           node-version-file: .node-version
       - name: Install node_modules
         run: npm ci
-      - name: Build API
-        run: gleam build --target javascript
-        working-directory: ./api
+        working-directory: ./app
       - name: Run build
         run: npx vite build
+        working-directory: ./app
 
   test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Set up Gleam
-        uses: erlef/setup-beam@v1
-        with:
-          gleam-version: "1.14.0"
-          otp-version: "27"
-          rebar3-version: "3.25.1"
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
           cache: npm
           node-version-file: .node-version
+        working-directory: ./app
       - name: Install node_modules
         run: npm ci
-      - name: Build API
-        run: gleam build --target javascript
-        working-directory: ./api
       - name: Run test
         run: npm test
+        working-directory: ./app
