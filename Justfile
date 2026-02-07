@@ -20,7 +20,7 @@ shadow_database_name := if SHADOW_DATABASE_URL != "" { file_stem(SHADOW_DATABASE
 
 [group: "run"]
 dev: up
-    dx serve --hot-patch
+    dx serve
 
 [group: "dev"]
 init:

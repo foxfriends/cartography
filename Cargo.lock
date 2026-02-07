@@ -336,7 +336,12 @@ name = "cartography"
 version = "0.1.0"
 dependencies = [
  "dioxus",
+ "futures",
+ "serde",
  "sqlx",
+ "tokio",
+ "tokio-stream",
+ "tracing",
 ]
 
 [[package]]
