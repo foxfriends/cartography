@@ -1,20 +1,17 @@
 use axum::extract::ws::{CloseFrame, Message, WebSocket, WebSocketUpgrade};
 use futures::StreamExt;
+use kameo::prelude::*;
 use serde::{Deserialize, Serialize};
-use tokio::sync::mpsc::{unbounded_channel, UnboundedSender};
-use tokio_stream::wrappers::UnboundedReceiverStream;
 use tracing::Instrument;
+use uuid::Uuid;
+
+use crate::actor::player_socket::{PlayerSocket, Request, Response};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(tag = "#type", content = "#payload")]
-pub enum Request {
-    Authenticate(String),
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(tag = "#type", content = "#payload")]
-pub enum Response {
-    Authenticated(String),
+pub struct ProtocolV1Message<T> {
+    id: Uuid,
+    #[serde(flatten)]
+    data: T,
 }
 
 const JSON_PROTOCOL: &str = "v1-json.cartography.app";
@@ -44,8 +41,6 @@ enum ProtocolV1Error {
     Closed(CloseFrame),
 }
 
-async fn on_message(tx: UnboundedSender<Response>, message: Request) {}
-
 pub async fn v1(ws: WebSocketUpgrade) -> axum::response::Response {
     let ws = ws.protocols([JSON_PROTOCOL, MESSAGEPACK_PROTOCOL]);
     let protocol = ws
@@ -58,11 +53,14 @@ pub async fn v1(ws: WebSocketUpgrade) -> axum::response::Response {
         tracing::debug!("websocket connected");
         let (ws_sender, ws_receiver) = socket.split();
         futures::pin_mut!(ws_sender);
+
+        let actor = PlayerSocket::spawn_default();
         let result = ws_receiver
             .filter_map(|msg| async move { msg.ok() })
             .map(|msg| match msg {
                 Message::Text(text) if protocol == JSON_PROTOCOL => Some(
-                    serde_json::from_str::<Request>(&text).map_err(ProtocolV1Error::InvalidJson),
+                    serde_json::from_str::<ProtocolV1Message<Request>>(&text)
+                        .map_err(ProtocolV1Error::InvalidJson),
                 )
                 .transpose(),
                 Message::Binary(binary) if protocol == MESSAGEPACK_PROTOCOL => {
@@ -87,25 +85,41 @@ pub async fn v1(ws: WebSocketUpgrade) -> axum::response::Response {
                     }
                 }
             })
-            .flat_map_unordered(None, |msg| {
-                let (tx, rx) = unbounded_channel::<Response>();
-                tokio::spawn(on_message(tx, msg));
-                UnboundedReceiverStream::new(rx)
+            .filter_map({
+                let actor = actor.clone();
+                move |ProtocolV1Message { id, data }| {
+                    let actor = actor.clone();
+                    async move {
+                        Some(
+                            PlayerSocket::push(actor, data)
+                                .await
+                                .ok()?
+                                .map(move |data| ProtocolV1Message { id, data }),
+                        )
+                    }
+                }
             })
-            .map(|response| match protocol.as_str() {
-                MESSAGEPACK_PROTOCOL => rmp_serde::to_vec(&response)
-                    .map(Message::from)
-                    .map_err(axum::Error::new),
-                _ => serde_json::to_string(&response)
-                    .map(Message::from)
-                    .map_err(axum::Error::new),
-            })
+            .flatten_unordered(None)
+            .map(
+                |response: ProtocolV1Message<Response>| match protocol.as_str() {
+                    MESSAGEPACK_PROTOCOL => rmp_serde::to_vec(&response)
+                        .map(Message::from)
+                        .map_err(axum::Error::new),
+                    _ => serde_json::to_string(&response)
+                        .map(Message::from)
+                        .map_err(axum::Error::new),
+                },
+            )
             .forward(ws_sender)
             .in_current_span()
             .await;
         if let Err(error) = result {
             tracing::error!("websocket ended in error: {}", error);
         }
+        if let Err(error) = actor.stop_gracefully().await {
+            tracing::error!("failed to signal player socket to stop: {}", error);
+        }
+        actor.wait_for_shutdown().await;
         tracing::debug!("websocket disconnected");
     })
 }
