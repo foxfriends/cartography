@@ -20,7 +20,9 @@ fn main() {
             .connect(&db_url)
             .await?;
 
-        let router = dioxus::server::router(App).layer(Extension(pool));
+        let router = dioxus::server::router(App)
+            .route("/api/ws", axum::routing::any(api::ws::v1))
+            .layer(Extension(pool));
         Ok(router)
     });
 }

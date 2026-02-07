@@ -1,5 +1,6 @@
 use dioxus::prelude::*;
 
+#[cfg(feature = "server")]
 pub mod ws;
 
 /// Echo the user input on the server.
