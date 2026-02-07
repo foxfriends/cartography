@@ -16,6 +16,7 @@ jobs:
         with:
           cache: npm
           node-version-file: app/.node-version
+          cache-dependency-path: app/package-lock.json
       - name: Install node_modules
         run: npm ci
       - name: Run fmt
@@ -31,6 +32,8 @@ jobs:
         with:
           cache: npm
           node-version-file: app/.node-version
+          cache-dependency-path: app/package-lock.json
+          cache-dependency-path: app/package-lock.json
       - name: Install node_modules
         run: npm ci
         working-directory: ./app
@@ -48,6 +51,7 @@ jobs:
         with:
           cache: npm
           node-version-file: app/.node-version
+          cache-dependency-path: app/package-lock.json
       - name: Install node_modules
         run: npm ci
         working-directory: ./app
@@ -68,6 +72,7 @@ jobs:
         with:
           cache: npm
           node-version-file: app/.node-version
+          cache-dependency-path: app/package-lock.json
       - name: Install node_modules
         run: npm ci
         working-directory: ./app
@@ -85,6 +90,7 @@ jobs:
         with:
           cache: npm
           node-version-file: app/.node-version
+          cache-dependency-path: app/package-lock.json
       - name: Install node_modules
         run: npm ci
         working-directory: ./app
