@@ -6,7 +6,7 @@ use crate::app::App;
 
 fn main() {
     #[cfg(not(feature = "server"))]
-    dioxus::fullstack::set_server_url("http://localhost:8080");
+    dioxus::fullstack::set_server_url(env!("SERVER_URL"));
 
     #[cfg(not(feature = "server"))]
     dioxus::launch(App);
@@ -22,7 +22,7 @@ fn main() {
             .await?;
 
         let router = dioxus::server::router(App)
-            .route("/api/ws", axum::routing::any(api::ws::v1))
+            .route("/play/ws", axum::routing::any(api::ws::v1))
             .layer(Extension(pool));
         Ok(router)
     });

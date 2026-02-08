@@ -3,7 +3,7 @@ use dioxus::prelude::*;
 
 #[component]
 pub fn Play() -> Element {
-    let socket = use_custom_websocket("api/ws");
+    let socket = use_custom_websocket("play/ws");
 
     use_future(move || async move {
         while let Ok(msg) = socket.recv().await {
