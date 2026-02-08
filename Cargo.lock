@@ -352,6 +352,7 @@ dependencies = [
  "futures-rx",
  "gloo",
  "kameo",
+ "manganis",
  "rmp-serde",
  "serde",
  "serde_json",

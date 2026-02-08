@@ -1,6 +1,7 @@
 mod actor;
 mod api;
 mod app;
+mod db;
 
 use crate::app::App;
 

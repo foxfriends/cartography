@@ -23,9 +23,7 @@ dev +args="--web": up
     dx serve {{args}}
 
 [group: "dev"]
-init:
-    mise install
-    cargo install watchexec-cli --locked
+init: get
     cp -n .env.example .env.local
     cd .git/hooks && ln -sf ../../.hooks/* .
     if [ ! -f .env ]; then ln -s .env.local .env; fi
@@ -36,6 +34,12 @@ up: && migrate
     docker compose up -d --wait
     docker compose exec postgres psql -U postgres -d "{{database_name}}" -c "" || docker compose exec postgres psql -U postgres -c 'CREATE DATABASE {{database_name}}'
     docker compose exec postgres psql -U postgres -d "{{shadow_database_name}}" -c "" || docker compose exec postgres psql -U postgres -c 'CREATE DATABASE {{shadow_database_name}}'
+
+[group: "dev"]
+get:
+    mise install
+    cargo install sqruff --locked
+    cargo install --git https://github.com/jflessau/sqlx-fmt --locked
 
 [group: "docker"]
 down:
@@ -56,6 +60,7 @@ check:
 [group: "dev"]
 fmt:
     dx fmt
+    sqlx-fmt format
     cargo fmt
 
 [group: "dev"]

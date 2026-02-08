@@ -14,7 +14,7 @@ pub fn Menu() -> Element {
             gap: "1rem",
 
             h1 { font_size: "2rem", "This game?" }
-            Link { to: Route::Menu {}, "See the cards" }
+            Link { to: Route::Cards {}, "See the cards" }
             Link { to: Route::Play {}, "Just Play" }
             Link { to: Route::Menu {}, "Try Demo" }
         }

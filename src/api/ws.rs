@@ -2,6 +2,8 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[cfg(feature = "server")]
+use crate::actor::player_socket::{PlayerSocket, Request, Response};
+#[cfg(feature = "server")]
 use axum::extract::ws::{CloseFrame, Message, WebSocket, WebSocketUpgrade};
 #[cfg(feature = "server")]
 use axum::Extension;
@@ -13,8 +15,6 @@ use kameo::prelude::*;
 use sqlx::PgPool;
 #[cfg(feature = "server")]
 use tracing::Instrument;
-#[cfg(feature = "server")]
-use crate::actor::player_socket::{PlayerSocket, Request, Response};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ProtocolV1Message<T> {

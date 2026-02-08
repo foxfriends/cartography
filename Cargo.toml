@@ -15,6 +15,7 @@ futures = "0.3.31"
 futures-rx = "0.2.1"
 gloo = { version = "0.11.0", optional = true }
 kameo = "0.19.2"
+manganis = { version = "0.7.3", features = ["dioxus"] }
 rmp-serde = "1.3.1"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.149"
