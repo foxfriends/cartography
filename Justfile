@@ -19,8 +19,8 @@ database_name := if DATABASE_URL != "" { file_stem(DATABASE_URL) } else { "" }
 shadow_database_name := if SHADOW_DATABASE_URL != "" { file_stem(SHADOW_DATABASE_URL) } else { "" }
 
 [group: "run"]
-dev: up
-    dx serve
+dev +args="--web": up
+    dx serve {{args}}
 
 [group: "dev"]
 init:

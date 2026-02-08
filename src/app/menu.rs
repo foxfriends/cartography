@@ -1,3 +1,4 @@
+use crate::app::Route;
 use dioxus::prelude::*;
 
 #[component]
@@ -13,9 +14,9 @@ pub fn Menu() -> Element {
             gap: "1rem",
 
             h1 { font_size: "2rem", "This game?" }
-            a { href: "/cards", "See the cards" }
-            a { href: "/play", "Just Play" }
-            a { href: "/demo", "Try Demo" }
+            Link { to: Route::Menu {}, "See the cards" }
+            Link { to: Route::Play {}, "Just Play" }
+            Link { to: Route::Menu {}, "Try Demo" }
         }
     }
 }

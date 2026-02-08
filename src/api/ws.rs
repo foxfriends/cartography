@@ -1,10 +1,19 @@
-use axum::extract::ws::{CloseFrame, Message, WebSocket, WebSocketUpgrade};
-use futures::StreamExt;
-use kameo::prelude::*;
 use serde::{Deserialize, Serialize};
-use tracing::Instrument;
 use uuid::Uuid;
 
+#[cfg(feature = "server")]
+use axum::extract::ws::{CloseFrame, Message, WebSocket, WebSocketUpgrade};
+#[cfg(feature = "server")]
+use axum::Extension;
+#[cfg(feature = "server")]
+use futures::StreamExt;
+#[cfg(feature = "server")]
+use kameo::prelude::*;
+#[cfg(feature = "server")]
+use sqlx::PgPool;
+#[cfg(feature = "server")]
+use tracing::Instrument;
+#[cfg(feature = "server")]
 use crate::actor::player_socket::{PlayerSocket, Request, Response};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -14,20 +23,11 @@ pub struct ProtocolV1Message<T> {
     data: T,
 }
 
-const JSON_PROTOCOL: &str = "v1-json.cartography.app";
-const MESSAGEPACK_PROTOCOL: &str = "v1-messagepack.cartography.app";
+pub const JSON_PROTOCOL: &str = "v1-json.cartography.app";
+pub const MESSAGEPACK_PROTOCOL: &str = "v1-messagepack.cartography.app";
 
-impl std::error::Error for ProtocolV1Error {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        match self {
-            Self::InvalidJson(error) => Some(error),
-            Self::InvalidMessagepack(error) => Some(error),
-            _ => None,
-        }
-    }
-}
-
-#[derive(Debug, derive_more::Display)]
+#[cfg(feature = "server")]
+#[derive(Debug, derive_more::Error, derive_more::Display)]
 enum ProtocolV1Error {
     #[display("invalid JSON payload: {_0}")]
     InvalidJson(serde_json::Error),
@@ -38,10 +38,11 @@ enum ProtocolV1Error {
     #[display("client disconnected")]
     Disconnected,
     #[display("client closed connection: {_0:?}")]
-    Closed(CloseFrame),
+    Closed(#[error(not(source))] CloseFrame),
 }
 
-pub async fn v1(ws: WebSocketUpgrade) -> axum::response::Response {
+#[cfg(feature = "server")]
+pub async fn v1(ws: WebSocketUpgrade, db: Extension<PgPool>) -> axum::response::Response {
     let ws = ws.protocols([JSON_PROTOCOL, MESSAGEPACK_PROTOCOL]);
     let protocol = ws
         .selected_protocol()
@@ -54,7 +55,7 @@ pub async fn v1(ws: WebSocketUpgrade) -> axum::response::Response {
         let (ws_sender, ws_receiver) = socket.split();
         futures::pin_mut!(ws_sender);
 
-        let actor = PlayerSocket::spawn_default();
+        let actor = PlayerSocket::spawn(PlayerSocket::build((*db).clone()));
         let result = ws_receiver
             .filter_map(|msg| async move { msg.ok() })
             .map(|msg| match msg {

@@ -6,7 +6,7 @@ use crate::app::App;
 
 fn main() {
     #[cfg(not(feature = "server"))]
-    dioxus::fullstack::set_server_url("");
+    dioxus::fullstack::set_server_url("http://localhost:8080");
 
     #[cfg(not(feature = "server"))]
     dioxus::launch(App);

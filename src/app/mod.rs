@@ -1,5 +1,6 @@
 use dioxus::prelude::*;
 
+mod hooks;
 mod menu;
 mod play;
 
