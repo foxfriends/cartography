@@ -284,7 +284,12 @@ pub fn get_citizen(
     decode.success(GetCitizenRow(species_id:, name:, home_tile_id:, id:))
   }
 
-  "SELECT * FROM citizens WHERE id = $1;
+  "SELECT
+  *
+FROM
+  citizens
+WHERE
+  id = $1;
 "
   |> pog.query
   |> pog.parameter(pog.int(arg_1))
@@ -417,7 +422,7 @@ pub fn get_field_citizens(
   }
 
   "SELECT
- *
+  *
 FROM
   field_citizens
 WHERE
@@ -471,7 +476,7 @@ pub fn get_field_tiles(
   }
 
   "SELECT
- *
+  *
 FROM
   field_tiles
 WHERE
@@ -571,7 +576,12 @@ pub fn get_tile(
     decode.success(GetTileRow(id:, tile_type_id:, name:))
   }
 
-  "SELECT * FROM tiles WHERE id = $1;
+  "SELECT
+  *
+FROM
+  tiles
+WHERE
+  id = $1;
 "
   |> pog.query
   |> pog.parameter(pog.int(arg_1))
