@@ -6,7 +6,7 @@ mod hooks;
 mod menu;
 mod play;
 
-use cards::{Cards, CardsLayout};
+use cards::Cards;
 use menu::Menu;
 use play::Play;
 
@@ -16,7 +16,6 @@ const MAIN_CSS: Asset = asset!("/assets/main.css");
 enum Route {
     #[route("/")]
     Menu {},
-    #[layout(CardsLayout)]
     #[route("/cards")]
     Cards {},
     #[route("/play")]

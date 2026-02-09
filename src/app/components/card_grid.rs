@@ -1,4 +1,5 @@
-use crate::{api::CardType, db::TileCategory};
+use crate::db::TileCategory;
+use crate::dto::CardType;
 use dioxus::prelude::*;
 
 #[manganis::css_module("src/app/components/card_grid.css")]

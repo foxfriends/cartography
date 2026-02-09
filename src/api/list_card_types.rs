@@ -1,30 +1,5 @@
-use crate::db::TileCategory;
 use dioxus::prelude::*;
-use serde::{Deserialize, Serialize};
-
-pub mod ws;
-
-#[derive(Serialize, Deserialize, PartialEq, Clone)]
-#[serde(tag = "class")]
-pub enum CardType {
-    Tile(TileType),
-    Citizen(Species),
-}
-
-#[derive(Serialize, Deserialize, PartialEq, Clone)]
-pub struct TileType {
-    pub id: String,
-    pub card_set_id: String,
-    pub category: TileCategory,
-    pub houses: i32,
-    pub employs: i32,
-}
-
-#[derive(Serialize, Deserialize, PartialEq, Clone)]
-pub struct Species {
-    pub id: String,
-    pub card_set_id: String,
-}
+use crate::dto::*;
 
 #[post("/api/cardtypes", db: axum::Extension<sqlx::PgPool>)]
 pub async fn list_card_types() -> dioxus::Result<Vec<CardType>> {

@@ -2,6 +2,7 @@ mod actor;
 mod api;
 mod app;
 mod db;
+mod dto;
 
 use crate::app::App;
 
