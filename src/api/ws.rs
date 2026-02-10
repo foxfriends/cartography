@@ -18,9 +18,24 @@ use tracing::Instrument;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ProtocolV1Message<T> {
-    id: Uuid,
+    pub id: Uuid,
     #[serde(flatten)]
-    data: T,
+    pub data: T,
+}
+
+impl<T> ProtocolV1Message<T> {
+    pub fn new(data: T) -> Self {
+        Self {
+            id: Uuid::now_v7(),
+            data,
+        }
+    }
+}
+
+impl<T> From<T> for ProtocolV1Message<T> {
+    fn from(value: T) -> Self {
+        Self::new(value)
+    }
 }
 
 pub const JSON_PROTOCOL: &str = "v1-json.cartography.app";
