@@ -1,31 +1,47 @@
 mod actor;
 mod api;
-mod app;
 mod db;
 mod dto;
 
-use crate::app::App;
+use std::net::IpAddr;
 
-fn main() {
-    #[cfg(not(feature = "server"))]
-    dioxus::fullstack::set_server_url(env!("SERVER_URL"));
+use axum::{Extension, Json};
+use utoipa::OpenApi;
 
-    #[cfg(not(feature = "server"))]
-    dioxus::launch(App);
+/// Cartography API
+#[derive(OpenApi)]
+#[openapi(paths(api::list_card_types::list_card_types))]
+struct ApiDoc;
 
-    #[cfg(feature = "server")]
-    dioxus::serve(|| async move {
-        use dioxus::server::axum::Extension;
-
-        let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL is required");
-        let pool = sqlx::postgres::PgPoolOptions::new()
-            .max_connections(10)
-            .connect(&db_url)
-            .await?;
-
-        let router = dioxus::server::router(App)
-            .route("/play/ws", axum::routing::any(api::ws::v1))
-            .layer(Extension(pool));
-        Ok(router)
-    });
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
+    let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL is required");
+    let host: IpAddr = std::env::var("HOST")
+        .as_deref()
+        .unwrap_or("0.0.0.0")
+        .parse()
+        .expect("HOST must be a valid IP address");
+    let port = std::env::var("PORT")
+        .as_deref()
+        .unwrap_or("12000")
+        .parse()
+        .expect("PORT must be a valid u16");
+    let pool = sqlx::postgres::PgPoolOptions::new()
+        .max_connections(10)
+        .connect(&db_url)
+        .await?;
+    let app = axum::Router::new()
+        .route(
+            "/api/v1/cardtypes",
+            axum::routing::get(api::list_card_types::list_card_types),
+        )
+        .route("/play/ws", axum::routing::any(api::ws::v1))
+        .route(
+            "/api/openapi.json",
+            axum::routing::get(|| async move { Json(ApiDoc::openapi()) }),
+        )
+        .layer(Extension(pool));
+    let listener = tokio::net::TcpListener::bind((host, port)).await?;
+    axum::serve(listener, app).await?;
+    Ok(())
 }

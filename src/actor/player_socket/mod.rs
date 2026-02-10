@@ -12,10 +12,8 @@ pub enum Response {
     Authenticated(String),
 }
 
-#[cfg(feature = "server")]
 pub use server::PlayerSocket;
 
-#[cfg(feature = "server")]
 mod server {
     mod authenticate;
 

@@ -1,22 +1,17 @@
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
-#[cfg_attr(
-    feature = "server",
-    derive(sqlx::Type),
-    sqlx(type_name = "card_class", rename_all = "lowercase")
-)]
-#[derive(Serialize, Deserialize, PartialEq, Eq, Hash, Clone, Copy, Debug)]
+#[derive(sqlx::Type)]
+#[sqlx(type_name = "card_class", rename_all = "lowercase")]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Hash, Clone, Copy, Debug, ToSchema)]
 pub enum CardClass {
     Tile,
     Citizen,
 }
 
-#[cfg_attr(
-    feature = "server",
-    derive(sqlx::Type),
-    sqlx(type_name = "tile_category", rename_all = "lowercase")
-)]
-#[derive(Serialize, Deserialize, PartialEq, Eq, Hash, Clone, Copy, Debug)]
+#[derive(sqlx::Type)]
+#[sqlx(type_name = "tile_category", rename_all = "lowercase")]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Hash, Clone, Copy, Debug, ToSchema)]
 pub enum TileCategory {
     Residential,
     Production,

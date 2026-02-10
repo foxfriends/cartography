@@ -19,8 +19,10 @@ database_name := if DATABASE_URL != "" { file_stem(DATABASE_URL) } else { "" }
 shadow_database_name := if SHADOW_DATABASE_URL != "" { file_stem(SHADOW_DATABASE_URL) } else { "" }
 
 [group: "run"]
-dev +args="--web": up
-    dx serve {{args}}
+dev: up
+    npx concurrently -n "server,client" \
+        "cargo run" \
+        "cd app && npx vite dev"
 
 [group: "dev"]
 init: get
@@ -40,6 +42,7 @@ get:
     mise install
     cargo install sqruff --locked
     cargo install --git https://github.com/jflessau/sqlx-fmt --locked
+    cd app && npm ci
 
 [group: "docker"]
 down:
@@ -55,13 +58,15 @@ clean:
 
 [group: "dev"]
 check:
-    dx check
+    cargo check
+    cd app && npx svelte-kit sync
+    cd app && npx svelte-check
 
 [group: "dev"]
 fmt:
-    dx fmt
     sqlx-fmt format
     cargo fmt
+    cd app && npx prettier --write .
 
 [group: "dev"]
 test:

@@ -8,28 +8,17 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.101"
-axum = { version = "0.8.8", features = ["ws"], optional = true }
-derive_more = { version = "2.1.1", features = ["error"] }
-dioxus = { version = "0.7.1", features = ["router", "fullstack"] }
+axum = { version = "0.8.8", features = ["ws"] }
+derive_more = { version = "2.1.1", features = ["error", "display"] }
 futures = "0.3.31"
 futures-rx = "0.2.1"
-gloo = { version = "0.11.0", optional = true }
 kameo = "0.19.2"
-manganis = { version = "0.7.3", features = ["dioxus"] }
 rmp-serde = "1.3.1"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.149"
-sqlx = { version = "0.8.6", features = ["runtime-tokio", "postgres"], optional = true }
-tokio = { version = "1.49.0", features = ["macros"] }
+sqlx = { version = "0.8.6", features = ["runtime-tokio", "postgres"] }
+tokio = { version = "1.49.0", features = ["macros", "rt-multi-thread"] }
 tokio-stream = { version = "0.1.18", features = ["sync"] }
 tracing = "0.1.44"
+utoipa = "5.4.0"
 uuid = { version = "1.20.0", features = ["serde", "v7"] }
-
-[features]
-default = ["web", "server"]
-web = ["dioxus/web", "tokio/rt", "uuid/js", "dep:gloo"]
-desktop = ["dioxus/desktop", "tokio/rt", "uuid/js"]
-mobile = ["dioxus/mobile", "tokio/rt", "uuid/js"]
-server = ["dioxus/server", "tokio/rt-multi-thread", "dep:sqlx", "dep:axum"]
-
-messagepack = []

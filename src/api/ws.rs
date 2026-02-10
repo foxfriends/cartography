@@ -1,20 +1,12 @@
-use serde::{Deserialize, Serialize};
-use uuid::Uuid;
-
-#[cfg(feature = "server")]
 use crate::actor::player_socket::{PlayerSocket, Request, Response};
-#[cfg(feature = "server")]
 use axum::extract::ws::{CloseFrame, Message, WebSocket, WebSocketUpgrade};
-#[cfg(feature = "server")]
 use axum::Extension;
-#[cfg(feature = "server")]
 use futures::StreamExt;
-#[cfg(feature = "server")]
 use kameo::prelude::*;
-#[cfg(feature = "server")]
+use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
-#[cfg(feature = "server")]
 use tracing::Instrument;
+use uuid::Uuid;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ProtocolV1Message<T> {
@@ -41,7 +33,6 @@ impl<T> From<T> for ProtocolV1Message<T> {
 pub const JSON_PROTOCOL: &str = "v1-json.cartography.app";
 pub const MESSAGEPACK_PROTOCOL: &str = "v1-messagepack.cartography.app";
 
-#[cfg(feature = "server")]
 #[derive(Debug, derive_more::Error, derive_more::Display)]
 enum ProtocolV1Error {
     #[display("invalid JSON payload: {_0}")]
@@ -56,7 +47,6 @@ enum ProtocolV1Error {
     Closed(#[error(not(source))] CloseFrame),
 }
 
-#[cfg(feature = "server")]
 pub async fn v1(ws: WebSocketUpgrade, db: Extension<PgPool>) -> axum::response::Response {
     let ws = ws.protocols([JSON_PROTOCOL, MESSAGEPACK_PROTOCOL]);
     let protocol = ws

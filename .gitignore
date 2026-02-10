@@ -10,3 +10,4 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .eslintcache
 /target
+/app/.svelte-kit

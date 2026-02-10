@@ -1,1 +1,0 @@
-import{f as s,a as r}from"../chunks/DTjTDYf3.js";import"../chunks/Dwwks_Q7.js";var t=s('<main class="svelte-1uha8ag"><h1 class="svelte-1uha8ag">This game?</h1> <a href="/cards">See the cards</a> <a href="/play">Just play</a></main>');function h(a){var e=t();r(a,e)}export{h as component};

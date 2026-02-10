@@ -14,7 +14,7 @@ export function provideSocket() {
   const context = $state<{ socket: SocketV1 }>({ socket: undefined! });
 
   $effect.pre(() => {
-    const socket = (context.socket = new SocketV1(`${PUBLIC_SERVER_WS_URL}/websocket`));
+    const socket = (context.socket = new SocketV1(`${PUBLIC_SERVER_WS_URL}/play/ws`));
 
     socket.addEventListener("open", () => {
       socket.auth({ id: "foxfriends" });
