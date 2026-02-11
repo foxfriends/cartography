@@ -7,8 +7,6 @@ default: dev
 [group: "dev"]
 fix: fmt
 
-export TS_RS_EXPORT_DIR := "app/src/lib/appserver/types"
-
 export CONCURRENTLY_KILL_OTHERS := "true"
 export CONCURRENTLY_PAD_PREFIX := "true"
 export CONCURRENTLY_PREFIX_COLORS := "auto"
@@ -66,12 +64,11 @@ check:
 
 [group: "dev"]
 generate:
-    cargo test export_bindings
+    cargo sqlx prepare
     cd app && npx svelte-kit sync
-    cd app && npx prettier --write ../{{TS_RS_EXPORT_DIR}}
 
 [group: "dev"]
-fmt:
+fmt: && generate
     sqlx-fmt format
     cargo fmt
     cd app && npx prettier --write .
@@ -79,6 +76,7 @@ fmt:
 [group: "dev"]
 test:
     cargo test
+    cd app && npm test
 
 [group: "database"]
 migrate:

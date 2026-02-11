@@ -1,17 +1,14 @@
 use crate::dto::{Account, Field};
 use serde::{Deserialize, Serialize};
-use ts_rs::TS;
 
-#[derive(Serialize, Deserialize, Clone, Debug, TS)]
-#[ts(export)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(tag = "type", content = "data")]
 pub enum Request {
     Authenticate(String),
     ListFields,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, TS)]
-#[ts(export)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(tag = "type", content = "data")]
 pub enum Response {
     Authenticated(Account),

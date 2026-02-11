@@ -1,7 +1,0 @@
-INSERT INTO
-  accounts (id)
-VALUES
-  ($1)
-ON CONFLICT DO NOTHING
-RETURNING
-  *

@@ -1,0 +1,58 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT\n                card_types.id,\n                card_types.card_set_id,\n                tile_types.category AS \"category: _\",\n                tile_types.houses,\n                tile_types.employs\n            FROM card_types\n            INNER JOIN tile_types ON tile_types.id = card_types.id\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "card_set_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "category: _",
+        "type_info": {
+          "Custom": {
+            "name": "tile_category",
+            "kind": {
+              "Enum": [
+                "residential",
+                "production",
+                "amenity",
+                "source",
+                "trade",
+                "transportation"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "houses",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "employs",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "30cd5f21a915094c10d64a49666a4da02a6639d9647116b529ed8acc1991c29e"
+}
