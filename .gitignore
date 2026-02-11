@@ -11,3 +11,4 @@ vite.config.ts.timestamp-*
 .eslintcache
 /target
 /app/.svelte-kit
+/app/src/lib/appserver/types

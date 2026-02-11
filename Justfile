@@ -7,6 +7,8 @@ default: dev
 [group: "dev"]
 fix: fmt
 
+export TS_RS_EXPORT_DIR := "app/src/lib/appserver/types"
+
 export CONCURRENTLY_KILL_OTHERS := "true"
 export CONCURRENTLY_PAD_PREFIX := "true"
 export CONCURRENTLY_PREFIX_COLORS := "auto"
@@ -19,7 +21,7 @@ database_name := if DATABASE_URL != "" { file_stem(DATABASE_URL) } else { "" }
 shadow_database_name := if SHADOW_DATABASE_URL != "" { file_stem(SHADOW_DATABASE_URL) } else { "" }
 
 [group: "run"]
-dev: up
+dev: up generate
     npx concurrently -n "server,client" \
         "cargo run" \
         "cd app && npx vite dev"
@@ -61,6 +63,12 @@ check:
     cargo check
     cd app && npx svelte-kit sync
     cd app && npx svelte-check
+
+[group: "dev"]
+generate:
+    cargo test export_bindings
+    cd app && npx svelte-kit sync
+    cd app && npx prettier --write ../{{TS_RS_EXPORT_DIR}}
 
 [group: "dev"]
 fmt:

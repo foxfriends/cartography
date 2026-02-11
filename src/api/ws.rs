@@ -6,9 +6,11 @@ use kameo::prelude::*;
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use tracing::Instrument;
+use ts_rs::TS;
 use uuid::Uuid;
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, TS)]
+#[ts(export)]
 pub struct ProtocolV1Message<T> {
     pub id: Uuid,
     #[serde(flatten)]

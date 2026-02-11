@@ -17,22 +17,6 @@ function Branded<Brand extends string, T extends TSchema>(brand: Brand, value: T
     .Encode((val) => val as StaticDecode<T>);
 }
 
-function Struct<Tag extends string, Payload extends TSchema>(name: Tag, payload: Payload) {
-  return Type.Object({
-    "#type": Type.Literal("struct"),
-    "#tag": Type.Literal(name),
-    "#payload": payload,
-  });
-}
-
-export function construct<Tag extends string, Payload>(tag: Tag, payload: Payload) {
-  return { "#type": "struct", "#tag": tag, "#payload": payload } as const;
-}
-
-export type Struct<Tag extends string, Payload extends TSchema> = StaticDecode<
-  typeof Struct<Tag, Payload>
->;
-
 const JsonPointer = Type.String({
   pattern: "^(/[^/~]*(~[01][^/~]*)*)*$",
 });
@@ -142,19 +126,19 @@ export const GameState = Type.Object({
 });
 export type GameState = StaticDecode<typeof GameState>;
 
-export const Authenticate = Struct("Authenticate", Type.String());
+export const Authenticate = Type.Object({ type: Type.Literal("Authenticate"), data: Type.String() });
 export type Authenticate = StaticDecode<typeof Authenticate>;
 
-export const ListFields = Struct("ListFields", Type.Null());
+export const ListFields = Type.Object({ type: Type.Literal("ListFields") });
 export type ListFields = StaticDecode<typeof ListFields>;
 
-export const WatchField = Struct("WatchField", FieldId);
+export const WatchField = Type.Object({ type: Type.Literal("WatchField"), data: FieldId });
 export type WatchField = StaticDecode<typeof WatchField>;
 
-export const Unsubscribe = Struct("Unsubscribe", Type.Null());
+export const Unsubscribe = Type.Object({ type: Type.Literal("Unsubscribe") });
 export type Unsubscribe = StaticDecode<typeof Unsubscribe>;
 
-export const DebugAddCard = Struct("DebugAddCard", Type.String());
+export const DebugAddCard = Type.Object({ type: Type.Literal("DebugAddCard"), data: Type.String() });
 export type DebugAddCard = StaticDecode<typeof DebugAddCard>;
 
 export const Request = Type.Union([
@@ -166,19 +150,19 @@ export const Request = Type.Union([
 ]);
 export type Request = StaticDecode<typeof Request>;
 
-export const Authenticated = Struct("Authenticated", Account);
+export const Authenticated = Type.Object({ type: Type.Literal("Authenticated"), data: Account });
 export type Authenticated = StaticDecode<typeof Authenticated>;
 
-export const Fields = Struct("Fields", Type.Array(Field));
-export type Fields = StaticDecode<typeof Fields>;
+export const FieldList = Type.Object({ type: Type.Literal("FieldList"), data: Type.Array(Field) });
+export type FieldList = StaticDecode<typeof FieldList>;
 
-export const PutState = Struct("PutState", GameState);
+export const PutState = Type.Object({ type: Type.Literal("PutState"), data: GameState });
 export type PutState = StaticDecode<typeof PutState>;
 
-export const PatchState = Struct("PatchState", Type.Array(JsonPatch));
+export const PatchState = Type.Object({ type: Type.Literal("PatchState"), data: Type.Array(JsonPatch) });
 export type PatchState = StaticDecode<typeof PatchState>;
 
-export const Response = Type.Union([Authenticated, Fields, PutState, PatchState]);
+export const Response = Type.Union([Authenticated, FieldList, PutState, PatchState]);
 export type Response = StaticDecode<typeof Response>;
 
 export type Once<T> = Branded<"Once", T>;
@@ -189,19 +173,16 @@ export type StreamType<T> = T extends Stream<infer R> ? R : never;
 
 export interface SocketV1Protocol {
   Authenticate: Once<Authenticated>;
-  ListFields: Once<Fields>;
+  ListFields: Once<FieldList>;
   WatchField: Stream<PutState | PatchState>;
 }
 
-export const RequestMessage = Type.Object({
-  id: Type.String({ format: "uuid" }),
-  request: Request,
-});
+function ProtocolV1Message<T extends TSchema>(data: T) {
+  return Type.Intersect([Type.Object({ id: Type.String({ format: "uuid" }) }), data]);
+}
+
+export const RequestMessage = ProtocolV1Message(Request);
 export type RequestMessage = StaticDecode<typeof RequestMessage>;
 
-export const ResponseMessage = Type.Object({
-  id: Type.String({ format: "uuid" }),
-  nonce: Type.Integer(),
-  response: Response,
-});
+export const ResponseMessage = ProtocolV1Message(Response);
 export type ResponseMessage = StaticDecode<typeof ResponseMessage>;

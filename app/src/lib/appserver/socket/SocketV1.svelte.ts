@@ -5,7 +5,6 @@ import { ReactiveEventTarget } from "$lib/ReactiveEventTarget.svelte";
 import Value from "typebox/value";
 import {
   Account,
-  construct,
   Field,
   FieldId,
   GameState,
@@ -87,34 +86,34 @@ export class SocketV1 extends ReactiveEventTarget<SocketV1EventMap> {
   }
 
   #sendMessage<T extends Request>(request: T, id: string = window.crypto.randomUUID()) {
-    const encoded = Value.Encode(RequestMessage, { id, request });
+    const encoded = Value.Encode(RequestMessage, { id, ...request });
     this.#socket.send(JSON.stringify(encoded));
     return new MessageStream<
-      T["#tag"] extends keyof SocketV1Protocol ? SocketV1Protocol[T["#tag"]] : never
+      T["type"] extends keyof SocketV1Protocol ? SocketV1Protocol[T["type"]] : never
     >(this, id);
   }
 
   auth(data: { id: string }) {
-    this.#sendMessage(construct("Authenticate", data.id))
+    this.#sendMessage({ type: "Authenticate", data: data.id })
       .reply()
       .then((event) => {
-        this.account = event["#payload"];
-        this.dispatchEvent(new AuthEvent(event["#payload"]));
+        this.account = event.data;
+        this.dispatchEvent(new AuthEvent(event.data));
       });
   }
 
   async listFields(): Promise<Field[]> {
-    const event = await this.#sendMessage(construct("ListFields", null)).reply();
-    return event["#payload"];
+    const event = await this.#sendMessage({ type: "ListFields" }).reply();
+    return event.data;
   }
 
   $watchField(data: { id: FieldId }, subscriber: (gameState: GameState | undefined) => void) {
     let gameState: GameState | undefined = undefined;
-    this.#sendMessage(construct("WatchField", data.id)).$subscribe((response) => {
-      if (response["#tag"] === "PutState") {
-        gameState = response["#payload"];
-      } else if (response["#tag"] === "PatchState") {
-        const patches = response["#payload"];
+    this.#sendMessage({ type: "WatchField", data: data.id }).$subscribe((response) => {
+      if (response.type === "PutState") {
+        gameState = response.data;
+      } else if (response.type === "PatchState") {
+        const patches = response.data;
         gameState = jsonpatch.apply(gameState, patches);
       }
       subscriber(gameState);
@@ -122,7 +121,7 @@ export class SocketV1 extends ReactiveEventTarget<SocketV1EventMap> {
   }
 
   unsubscribe(id: string) {
-    this.#sendMessage(construct("Unsubscribe", null), id);
+    this.#sendMessage({ type: "Unsubscribe" }, id);
   }
 
   close(code?: number, reason?: string) {

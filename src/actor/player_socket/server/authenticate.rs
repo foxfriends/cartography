@@ -1,4 +1,5 @@
 use super::{PlayerSocket, Response};
+use crate::dto::Account;
 use tokio::sync::mpsc::UnboundedSender;
 
 impl PlayerSocket {
@@ -7,9 +8,6 @@ impl PlayerSocket {
         tx: UnboundedSender<Response>,
         account_id: String,
     ) -> anyhow::Result<()> {
-        struct Account {
-            id: String,
-        }
         let mut conn = self.db.begin().await?;
         let account = sqlx::query_as!(Account, "SELECT id FROM accounts WHERE id = $1", account_id)
             .fetch_optional(&mut *conn)
@@ -28,7 +26,7 @@ impl PlayerSocket {
         };
         conn.commit().await?;
         self.account_id = Some(account.id.clone());
-        tx.send(Response::Authenticated(account.id))?;
+        tx.send(Response::Authenticated(account))?;
         Ok(())
     }
 }

@@ -1,28 +1,35 @@
+use crate::dto::{Account, Field};
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, TS)]
+#[ts(export)]
 #[serde(tag = "type", content = "data")]
 pub enum Request {
     Authenticate(String),
+    ListFields,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, TS)]
+#[ts(export)]
 #[serde(tag = "type", content = "data")]
 pub enum Response {
-    Authenticated(String),
+    Authenticated(Account),
+    FieldList(Vec<Field>),
 }
 
 pub use server::PlayerSocket;
 
 mod server {
-    mod authenticate;
-
     use super::{Request, Response};
     use futures::Stream;
     use kameo::prelude::*;
     use sqlx::PgPool;
     use tokio::sync::mpsc::{unbounded_channel, UnboundedSender};
     use tokio_stream::wrappers::UnboundedReceiverStream;
+
+    mod authenticate;
+    mod list_fields;
 
     #[derive(Actor)]
     pub struct PlayerSocket {
@@ -63,6 +70,10 @@ mod server {
         ) -> Self::Reply {
             let result = match request {
                 Request::Authenticate(account_id) => self.authenticate(tx, account_id).await,
+                Request::ListFields if self.account_id.is_some() => {
+                    self.list_fields(tx).await
+                }
+                _ => Err(anyhow::anyhow!("authentication required"))
             };
             if let Err(error) = result {
                 tracing::error!("error handling player socket message: {}", error);

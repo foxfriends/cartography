@@ -20,7 +20,7 @@ export class MessageStream<T> extends EventTarget {
         if (event.message.id === this.id) {
           // NOTE: would be nice to do a runtime assertion here, but the mapping is currently
           // only defined as a type. Not hard to shift to a value, just lazy.
-          resolve(event.message.response as OnceType<T>);
+          resolve(event.message as OnceType<T>);
           this.#socket.removeEventListener("message", handler);
           abort?.removeEventListener("abort", onabort);
         }
@@ -41,7 +41,7 @@ export class MessageStream<T> extends EventTarget {
       if (event.message.id === this.id) {
         // NOTE: would be nice to do a runtime assertion here, but the mapping is currently
         // only defined as a type. Not hard to shift to a value, just lazy.
-        callback(event.message.response as StreamType<T>);
+        callback(event.message as StreamType<T>);
       }
     };
 
