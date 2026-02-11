@@ -5,12 +5,15 @@ mod dto;
 
 use std::net::IpAddr;
 
-use axum::{Extension, Json};
+use axum::{Extension, Json, response::Html};
 use utoipa::OpenApi;
+use utoipa_scalar::Scalar;
 
-/// Cartography API
 #[derive(OpenApi)]
-#[openapi(paths(api::list_card_types::list_card_types))]
+#[openapi(
+    paths(api::list_card_types::list_card_types),
+    tags((name = "Global", description = "Publicly available global data about the Cartography game.")),
+)]
 struct ApiDoc;
 
 #[tokio::main]
@@ -38,7 +41,11 @@ async fn main() -> anyhow::Result<()> {
         .route("/play/ws", axum::routing::any(api::ws::v1))
         .route(
             "/api/openapi.json",
-            axum::routing::get(|| async move { Json(ApiDoc::openapi()) }),
+            axum::routing::get(Json(ApiDoc::openapi())),
+        )
+        .route(
+            "/api",
+            axum::routing::get(Html(Scalar::new(ApiDoc::openapi()).to_html())),
         )
         .layer(Extension(pool));
     let listener = tokio::net::TcpListener::bind((host, port)).await?;

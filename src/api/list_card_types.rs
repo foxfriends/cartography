@@ -15,6 +15,7 @@ pub struct ListCardTypesResponse {
     get,
     path = "/api/v1/cardtypes",
     description = "List all available card types.",
+    tag = "Global",
     responses(
         (status = OK, description = "Successfully listed all card types.", body = ListCardTypesResponse),
     ),

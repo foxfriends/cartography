@@ -3,6 +3,10 @@ name = "cartography"
 version = "0.1.0"
 authors = ["Cameron Eldridge <cameldridge@gmail.com>"]
 edition = "2021"
+description = """
+Cartography game server.
+"""
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -21,4 +25,5 @@ tokio = { version = "1.49.0", features = ["macros", "rt-multi-thread"] }
 tokio-stream = { version = "0.1.18", features = ["sync"] }
 tracing = "0.1.44"
 utoipa = "5.4.0"
+utoipa-scalar = { version = "0.3.0", features = ["axum"] }
 uuid = { version = "1.20.0", features = ["serde", "v7"] }
