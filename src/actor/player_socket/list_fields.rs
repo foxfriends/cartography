@@ -11,7 +11,7 @@ impl PlayerSocket {
         let field_list = sqlx::query_as!(
             Field,
             "SELECT id, name FROM fields WHERE account_id = $1",
-            self.account_id.as_ref().unwrap()
+            self.require_authentication()?,
         )
         .fetch_all(&mut *conn)
         .await?;

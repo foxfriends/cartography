@@ -93,11 +93,12 @@ pub async fn v1(ws: WebSocketUpgrade, db: Extension<PgPool>) -> axum::response::
             })
             .filter_map({
                 let actor = actor.clone();
-                move |ProtocolV1Message { id, data }| {
+                move |message| {
                     let actor = actor.clone();
+                    let id = message.id;
                     async move {
                         Some(
-                            PlayerSocket::push(actor, data)
+                            PlayerSocket::push(actor, message)
                                 .await
                                 .ok()?
                                 .map(move |data| ProtocolV1Message { id, data }),

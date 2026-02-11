@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT tile_id AS \"id\", grid_x AS \"x\", grid_y AS \"y\"\n                FROM field_tiles\n                WHERE field_id = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "x",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 2,
+        "name": "y",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "4c464e0454d614dba55463a0332d09c67b56585eea7018d885a7bdc7a62400e5"
+}

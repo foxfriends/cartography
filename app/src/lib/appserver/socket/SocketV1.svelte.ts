@@ -110,9 +110,9 @@ export class SocketV1 extends ReactiveEventTarget<SocketV1EventMap> {
   $watchField(data: { id: FieldId }, subscriber: (gameState: GameState | undefined) => void) {
     let gameState: GameState | undefined = undefined;
     this.#sendMessage({ type: "WatchField", data: data.id }).$subscribe((response) => {
-      if (response.type === "PutState") {
+      if (response.type === "PutFieldState") {
         gameState = response.data;
-      } else if (response.type === "PatchState") {
+      } else if (response.type === "PatchFieldState") {
         const patches = response.data;
         gameState = jsonpatch.apply(gameState, patches);
       }

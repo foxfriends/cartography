@@ -162,16 +162,16 @@ export type Authenticated = StaticDecode<typeof Authenticated>;
 export const FieldList = Type.Object({ type: Type.Literal("FieldList"), data: Type.Array(Field) });
 export type FieldList = StaticDecode<typeof FieldList>;
 
-export const PutState = Type.Object({ type: Type.Literal("PutState"), data: GameState });
-export type PutState = StaticDecode<typeof PutState>;
+export const PutFieldState = Type.Object({ type: Type.Literal("PutFieldState"), data: GameState });
+export type PutFieldState = StaticDecode<typeof PutFieldState>;
 
-export const PatchState = Type.Object({
-  type: Type.Literal("PatchState"),
+export const PatchFieldState = Type.Object({
+  type: Type.Literal("PatchFieldState"),
   data: Type.Array(JsonPatch),
 });
-export type PatchState = StaticDecode<typeof PatchState>;
+export type PatchFieldState = StaticDecode<typeof PatchFieldState>;
 
-export const Response = Type.Union([Authenticated, FieldList, PutState, PatchState]);
+export const Response = Type.Union([Authenticated, FieldList, PutFieldState, PatchFieldState]);
 export type Response = StaticDecode<typeof Response>;
 
 export type Once<T> = Branded<"Once", T>;
@@ -183,7 +183,8 @@ export type StreamType<T> = T extends Stream<infer R> ? R : never;
 export interface SocketV1Protocol {
   Authenticate: Once<Authenticated>;
   ListFields: Once<FieldList>;
-  WatchField: Stream<PutState | PatchState>;
+  WatchField: Stream<PutFieldState | PatchFieldState>;
+  Unsubscribe: never;
 }
 
 function ProtocolV1Message<T extends TSchema>(data: T) {

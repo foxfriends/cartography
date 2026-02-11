@@ -5,7 +5,7 @@ mod dto;
 
 use std::net::IpAddr;
 
-use axum::{Extension, Json, response::Html};
+use axum::{response::Html, Extension, Json};
 use utoipa::OpenApi;
 use utoipa_scalar::Scalar;
 
