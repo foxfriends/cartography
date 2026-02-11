@@ -33,6 +33,7 @@
   "type": "module",
   "dependencies": {
     "@sentry/browser": "^10.38.0",
+    "@sveltestack/svelte-query": "^1.6.0",
     "cartography-api": "file:./api",
     "core-js": "^3.38.1",
     "json-patch": "^0.7.0",

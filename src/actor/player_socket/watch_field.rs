@@ -12,6 +12,7 @@ impl PlayerSocket {
         message_id: Uuid,
         field_id: i64,
     ) -> anyhow::Result<()> {
+        let _account_id = self.require_authentication()?; // TODO: only allow watching your own fields
         let actor = FieldWatcher::spawn(FieldWatcher::build(self.db.clone(), tx, field_id).await?);
         let unsubscriber = actor.recipient::<Unsubscribe>();
         self.subscriptions.insert(message_id, unsubscriber);

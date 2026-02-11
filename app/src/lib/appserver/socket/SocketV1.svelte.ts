@@ -5,8 +5,6 @@ import { ReactiveEventTarget } from "$lib/ReactiveEventTarget.svelte";
 import Value from "typebox/value";
 import {
   Account,
-  Field,
-  FieldId,
   GameState,
   Request,
   RequestMessage,
@@ -14,6 +12,7 @@ import {
   type SocketV1Protocol,
 } from "./SocketV1Protocol";
 import jsonpatch from "json-patch";
+import type { FieldId } from "../dto/Field";
 
 interface SocketV1EventMap {
   message: MessageEvent;
@@ -100,11 +99,6 @@ export class SocketV1 extends ReactiveEventTarget<SocketV1EventMap> {
         this.account = event.data;
         this.dispatchEvent(new AuthEvent(event.data));
       });
-  }
-
-  async listFields(): Promise<Field[]> {
-    const event = await this.#sendMessage({ type: "ListFields" }).reply();
-    return event.data;
   }
 
   $watchField(data: { id: FieldId }, subscriber: (gameState: GameState | undefined) => void) {

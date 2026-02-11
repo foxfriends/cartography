@@ -38,6 +38,10 @@ async fn main() -> anyhow::Result<()> {
             "/api/v1/cardtypes",
             axum::routing::get(api::list_card_types::list_card_types),
         )
+        .route(
+            "/api/v1/players/{player_id}/fields",
+            axum::routing::get(api::list_fields::list_fields),
+        )
         .route("/play/ws", axum::routing::any(api::ws::v1))
         .route(
             "/api/openapi.json",

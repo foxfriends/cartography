@@ -61,6 +61,7 @@ check:
     cargo check
     cd app && npx svelte-kit sync
     cd app && npx svelte-check
+    cd app && npx eslint .
 
 [group: "dev"]
 generate:

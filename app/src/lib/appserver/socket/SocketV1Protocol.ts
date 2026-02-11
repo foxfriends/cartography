@@ -5,17 +5,10 @@
  * When in doubt the Gleam code is authoritative and this end should be updated.
  */
 
+import { Branded } from "$lib/types";
 import type { OpPatch } from "json-patch";
 import Type, { type StaticDecode, type TSchema } from "typebox";
-
-declare const __BRAND: unique symbol;
-type Branded<Brand, T> = T & { [__BRAND]: Brand };
-
-function Branded<Brand extends string, T extends TSchema>(brand: Brand, value: T) {
-  return Type.Codec(value)
-    .Decode((val) => val as Branded<Brand, StaticDecode<T>>)
-    .Encode((val) => val as StaticDecode<T>);
-}
+import { FieldId } from "../dto/Field";
 
 const JsonPointer = Type.String({
   pattern: "^(/[^/~]*(~[01][^/~]*)*)*$",
@@ -79,9 +72,6 @@ export type TileTypeId = StaticDecode<typeof TileTypeId>;
 export const SpeciesId = Branded("SpeciesId", Type.String());
 export type SpeciesId = StaticDecode<typeof SpeciesId>;
 
-export const FieldId = Branded("FieldId", Type.Integer());
-export type FieldId = StaticDecode<typeof FieldId>;
-
 export const CardTypeId = Type.Union([TileTypeId, SpeciesId]);
 export type CardTypeId = StaticDecode<typeof CardTypeId>;
 
@@ -105,12 +95,6 @@ export type FieldTile = StaticDecode<typeof FieldTile>;
 export const FieldCitizen = Type.Object({ id: CitizenId, x: Type.Integer(), y: Type.Integer() });
 export type FieldCitizen = StaticDecode<typeof FieldCitizen>;
 
-export const Field = Type.Object({
-  id: FieldId,
-  name: Type.String(),
-});
-export type Field = StaticDecode<typeof Field>;
-
 export const GameStateField = Type.Object({
   tiles: Type.Array(FieldTile),
   citizens: Type.Array(FieldCitizen),
@@ -132,9 +116,6 @@ export const Authenticate = Type.Object({
 });
 export type Authenticate = StaticDecode<typeof Authenticate>;
 
-export const ListFields = Type.Object({ type: Type.Literal("ListFields") });
-export type ListFields = StaticDecode<typeof ListFields>;
-
 export const WatchField = Type.Object({ type: Type.Literal("WatchField"), data: FieldId });
 export type WatchField = StaticDecode<typeof WatchField>;
 
@@ -147,20 +128,11 @@ export const DebugAddCard = Type.Object({
 });
 export type DebugAddCard = StaticDecode<typeof DebugAddCard>;
 
-export const Request = Type.Union([
-  Authenticate,
-  ListFields,
-  WatchField,
-  Unsubscribe,
-  DebugAddCard,
-]);
+export const Request = Type.Union([Authenticate, WatchField, Unsubscribe, DebugAddCard]);
 export type Request = StaticDecode<typeof Request>;
 
 export const Authenticated = Type.Object({ type: Type.Literal("Authenticated"), data: Account });
 export type Authenticated = StaticDecode<typeof Authenticated>;
-
-export const FieldList = Type.Object({ type: Type.Literal("FieldList"), data: Type.Array(Field) });
-export type FieldList = StaticDecode<typeof FieldList>;
 
 export const PutFieldState = Type.Object({ type: Type.Literal("PutFieldState"), data: GameState });
 export type PutFieldState = StaticDecode<typeof PutFieldState>;
@@ -171,7 +143,7 @@ export const PatchFieldState = Type.Object({
 });
 export type PatchFieldState = StaticDecode<typeof PatchFieldState>;
 
-export const Response = Type.Union([Authenticated, FieldList, PutFieldState, PatchFieldState]);
+export const Response = Type.Union([Authenticated, PutFieldState, PatchFieldState]);
 export type Response = StaticDecode<typeof Response>;
 
 export type Once<T> = Branded<"Once", T>;
@@ -182,7 +154,6 @@ export type StreamType<T> = T extends Stream<infer R> ? R : never;
 
 export interface SocketV1Protocol {
   Authenticate: Once<Authenticated>;
-  ListFields: Once<FieldList>;
   WatchField: Stream<PutFieldState | PatchFieldState>;
   Unsubscribe: never;
 }

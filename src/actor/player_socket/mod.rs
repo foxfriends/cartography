@@ -1,7 +1,7 @@
 use super::field_state::FieldState;
 use crate::actor::Unsubscribe;
 use crate::api::ws::ProtocolV1Message;
-use crate::dto::{Account, Field};
+use crate::dto::Account;
 use futures::Stream;
 use json_patch::Patch;
 use kameo::prelude::*;
@@ -13,7 +13,6 @@ use tokio_stream::wrappers::UnboundedReceiverStream;
 use uuid::Uuid;
 
 mod authenticate;
-mod list_fields;
 mod unsubscribe;
 mod watch_field;
 
@@ -21,7 +20,6 @@ mod watch_field;
 #[serde(tag = "type", content = "data")]
 pub enum Request {
     Authenticate(String),
-    ListFields,
     WatchField(i64),
     Unsubscribe,
 }
@@ -30,7 +28,6 @@ pub enum Request {
 #[serde(tag = "type", content = "data")]
 pub enum Response {
     Authenticated(Account),
-    FieldList(Vec<Field>),
     PutFieldState(FieldState),
     PatchFieldState(Vec<Patch>),
 }
@@ -82,7 +79,6 @@ impl Message<PlayerSocketMessage> for PlayerSocket {
     ) -> Self::Reply {
         let result = match request.data {
             Request::Authenticate(account_id) => self.authenticate(tx, account_id).await,
-            Request::ListFields => self.list_fields(tx).await,
             Request::WatchField(field_id) => self.watch_field(tx, request.id, field_id).await,
             Request::Unsubscribe => self.unsubscribe(request.id).await,
         };
