@@ -126,7 +126,10 @@ export const GameState = Type.Object({
 });
 export type GameState = StaticDecode<typeof GameState>;
 
-export const Authenticate = Type.Object({ type: Type.Literal("Authenticate"), data: Type.String() });
+export const Authenticate = Type.Object({
+  type: Type.Literal("Authenticate"),
+  data: Type.String(),
+});
 export type Authenticate = StaticDecode<typeof Authenticate>;
 
 export const ListFields = Type.Object({ type: Type.Literal("ListFields") });
@@ -138,7 +141,10 @@ export type WatchField = StaticDecode<typeof WatchField>;
 export const Unsubscribe = Type.Object({ type: Type.Literal("Unsubscribe") });
 export type Unsubscribe = StaticDecode<typeof Unsubscribe>;
 
-export const DebugAddCard = Type.Object({ type: Type.Literal("DebugAddCard"), data: Type.String() });
+export const DebugAddCard = Type.Object({
+  type: Type.Literal("DebugAddCard"),
+  data: Type.String(),
+});
 export type DebugAddCard = StaticDecode<typeof DebugAddCard>;
 
 export const Request = Type.Union([
@@ -159,7 +165,10 @@ export type FieldList = StaticDecode<typeof FieldList>;
 export const PutState = Type.Object({ type: Type.Literal("PutState"), data: GameState });
 export type PutState = StaticDecode<typeof PutState>;
 
-export const PatchState = Type.Object({ type: Type.Literal("PatchState"), data: Type.Array(JsonPatch) });
+export const PatchState = Type.Object({
+  type: Type.Literal("PatchState"),
+  data: Type.Array(JsonPatch),
+});
 export type PatchState = StaticDecode<typeof PatchState>;
 
 export const Response = Type.Union([Authenticated, FieldList, PutState, PatchState]);

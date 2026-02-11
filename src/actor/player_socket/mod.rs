@@ -67,10 +67,8 @@ mod server {
         ) -> Self::Reply {
             let result = match request {
                 Request::Authenticate(account_id) => self.authenticate(tx, account_id).await,
-                Request::ListFields if self.account_id.is_some() => {
-                    self.list_fields(tx).await
-                }
-                _ => Err(anyhow::anyhow!("authentication required"))
+                Request::ListFields if self.account_id.is_some() => self.list_fields(tx).await,
+                _ => Err(anyhow::anyhow!("authentication required")),
             };
             if let Err(error) = result {
                 tracing::error!("error handling player socket message: {}", error);
