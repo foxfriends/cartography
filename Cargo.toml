@@ -26,5 +26,5 @@ tokio = { version = "1.49.0", features = ["macros", "rt-multi-thread"] }
 tokio-stream = { version = "0.1.18", features = ["sync"] }
 tracing = "0.1.44"
 utoipa = "5.4.0"
-utoipa-scalar = { version = "0.3.0", features = ["axum"] }
+utoipa-scalar = { version = "0.3.0" }
 uuid = { version = "1.20.0", features = ["serde", "v7"] }

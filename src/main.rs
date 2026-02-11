@@ -1,15 +1,13 @@
 mod actor;
 mod api;
+mod bus;
 mod db;
 mod dto;
 
-use std::net::IpAddr;
+use kameo::actor::Spawn as _;
+use utoipa::OpenApi as _;
 
-use axum::{response::Html, Extension, Json};
-use utoipa::OpenApi;
-use utoipa_scalar::Scalar;
-
-#[derive(OpenApi)]
+#[derive(utoipa::OpenApi)]
 #[openapi(
     paths(api::list_card_types::list_card_types),
     tags((name = "Global", description = "Publicly available global data about the Cartography game.")),
@@ -19,7 +17,7 @@ struct ApiDoc;
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL is required");
-    let host: IpAddr = std::env::var("HOST")
+    let host: std::net::IpAddr = std::env::var("HOST")
         .as_deref()
         .unwrap_or("0.0.0.0")
         .parse()
@@ -33,6 +31,8 @@ async fn main() -> anyhow::Result<()> {
         .max_connections(10)
         .connect(&db_url)
         .await?;
+
+    let bus = bus::Bus::spawn(());
     let app = axum::Router::new()
         .route(
             "/api/v1/cardtypes",
@@ -41,13 +41,16 @@ async fn main() -> anyhow::Result<()> {
         .route("/play/ws", axum::routing::any(api::ws::v1))
         .route(
             "/api/openapi.json",
-            axum::routing::get(Json(ApiDoc::openapi())),
+            axum::routing::get(axum::response::Json(ApiDoc::openapi())),
         )
         .route(
             "/api",
-            axum::routing::get(Html(Scalar::new(ApiDoc::openapi()).to_html())),
+            axum::routing::get(axum::response::Html(
+                utoipa_scalar::Scalar::new(ApiDoc::openapi()).to_html(),
+            )),
         )
-        .layer(Extension(pool));
+        .layer(axum::Extension(bus))
+        .layer(axum::Extension(pool));
     let listener = tokio::net::TcpListener::bind((host, port)).await?;
     axum::serve(listener, app).await?;
     Ok(())

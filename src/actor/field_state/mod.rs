@@ -1,6 +1,6 @@
 use super::player_socket::Response;
 use super::Unsubscribe;
-use kameo::{prelude::Message, Actor};
+use kameo::prelude::*;
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use tokio::sync::mpsc::UnboundedSender;
