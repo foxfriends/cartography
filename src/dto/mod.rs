@@ -1,6 +1,15 @@
 use crate::db::TileCategory;
 use serde::{Deserialize, Serialize};
+use time::OffsetDateTime;
 use utoipa::ToSchema;
+
+#[derive(Serialize, Deserialize, ToSchema)]
+#[serde(untagged)]
+pub enum AccountIdOrMe {
+    #[serde(rename = "@me")]
+    Me,
+    AccountId(String),
+}
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
 pub struct Account {
@@ -33,4 +42,18 @@ pub struct TileType {
 pub struct Species {
     pub id: String,
     pub card_set_id: String,
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
+pub struct PackBanner {
+    pub id: String,
+    pub start_date: OffsetDateTime,
+    pub end_date: Option<OffsetDateTime>,
+    pub distribution: Vec<PackBannerCard>,
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
+pub struct PackBannerCard {
+    pub card_type_id: String,
+    pub frequency: u32,
 }

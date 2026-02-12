@@ -9,7 +9,11 @@ use utoipa::OpenApi as _;
 
 #[derive(utoipa::OpenApi)]
 #[openapi(
-    paths(api::list_card_types::list_card_types),
+    paths(
+        api::list_card_types::list_card_types,
+        api::list_banners::list_banners,
+        api::list_fields::list_fields,
+    ),
     tags((name = "Global", description = "Publicly available global data about the Cartography game.")),
 )]
 struct ApiDoc;
@@ -37,6 +41,10 @@ async fn main() -> anyhow::Result<()> {
         .route(
             "/api/v1/cardtypes",
             axum::routing::get(api::list_card_types::list_card_types),
+        )
+        .route(
+            "/api/v1/banners",
+            axum::routing::post(api::list_banners::list_banners),
         )
         .route(
             "/api/v1/players/{player_id}/fields",

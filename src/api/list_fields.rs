@@ -12,14 +12,6 @@ pub struct ListFieldsResponse {
     fields: Vec<Field>,
 }
 
-#[derive(Serialize, Deserialize, ToSchema)]
-#[serde(untagged)]
-pub enum AccountIdOrMe {
-    #[serde(rename = "@me")]
-    Me,
-    AccountId(String),
-}
-
 #[utoipa::path(
     get,
     path = "/api/v1/players/{player_id}/fields",

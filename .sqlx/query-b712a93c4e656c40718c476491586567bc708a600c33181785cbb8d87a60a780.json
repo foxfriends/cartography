@@ -1,0 +1,42 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT\n                pack_banners.id,\n                start_date,\n                end_date,\n                COALESCE(\n                    JSONB_AGG(\n                        JSONB_BUILD_OBJECT(\n                            'card_type_id',\n                            card_type_id,\n                            'frequency',\n                            frequency\n                        )\n                    )\n                    FILTER\n                    (WHERE pack_banner_cards IS NOT NULL),\n                    '[]'::jsonb\n                ) AS \"distribution: sqlx::types::Json<Vec<PackBannerCard>>\"\n            FROM pack_banners\n            LEFT JOIN\n                pack_banner_cards\n                ON pack_banner_cards.pack_banner_id = pack_banners.id\n            WHERE\n                ($1 AND end_date <= NOW())\n                OR ($2 AND start_date <= NOW() AND (end_date IS NULL OR end_date > NOW()))\n                OR ($3 AND start_date > NOW())\n            GROUP BY pack_banners.id, start_date, end_date\n            ORDER BY start_date ASC\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "start_date",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 2,
+        "name": "end_date",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 3,
+        "name": "distribution: sqlx::types::Json<Vec<PackBannerCard>>",
+        "type_info": "Jsonb"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Bool",
+        "Bool",
+        "Bool"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      null
+    ]
+  },
+  "hash": "b712a93c4e656c40718c476491586567bc708a600c33181785cbb8d87a60a780"
+}
