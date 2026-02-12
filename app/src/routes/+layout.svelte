@@ -4,7 +4,7 @@
   import type { Snippet } from "svelte";
   import Package from "../../package.json";
   import { PUBLIC_SENTRY_DSN, PUBLIC_ENV } from "$env/static/public";
-  import { QueryClient, QueryClientProvider } from "@sveltestack/svelte-query";
+  import { QueryClient, QueryClientProvider } from "@tanstack/svelte-query";
 
   if (PUBLIC_SENTRY_DSN) {
     Sentry.init({

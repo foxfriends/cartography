@@ -20,6 +20,7 @@
     "globals": "^16.5.0",
     "globstar": "^1.0.0",
     "graphile-migrate": "^2.0.0-rc.2",
+    "orval": "^8.3.0",
     "prettier": "^3.7.4",
     "prettier-plugin-sql": "^0.19.2",
     "prettier-plugin-svelte": "^3.4.1",
@@ -33,7 +34,7 @@
   "type": "module",
   "dependencies": {
     "@sentry/browser": "^10.38.0",
-    "@sveltestack/svelte-query": "^1.6.0",
+    "@tanstack/svelte-query": "^6.0.18",
     "cartography-api": "file:./api",
     "core-js": "^3.38.1",
     "json-patch": "^0.7.0",

@@ -4,6 +4,7 @@ mod bus;
 mod db;
 mod dto;
 
+use clap::Parser as _;
 use kameo::actor::Spawn as _;
 use tracing_subscriber::prelude::*;
 use utoipa::OpenApi as _;
@@ -15,12 +16,28 @@ use utoipa::OpenApi as _;
         api::list_banners::list_banners,
         api::list_fields::list_fields,
     ),
-    tags((name = "Global", description = "Publicly available global data about the Cartography game.")),
+    tags(
+        (name = "Global", description = "Publicly available global data about the Cartography game."),
+        (name = "Player", description = "Player specific data; typically requires authorization.")
+    ),
 )]
 struct ApiDoc;
 
+#[derive(clap::Parser)]
+struct Args {
+    #[clap(long)]
+    openapi: bool,
+}
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    let args = Args::parse();
+
+    if args.openapi {
+        println!("{}", ApiDoc::openapi().to_pretty_json().unwrap());
+        std::process::exit(0);
+    }
+
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::from_default_env())
         .with(tracing_subscriber::fmt::layer().pretty())

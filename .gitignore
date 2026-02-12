@@ -6,5 +6,8 @@ node_modules
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .eslintcache
+/openapi.json
 /target
 /app/.svelte-kit
+/app/src/lib/appserver/dto/
+/app/src/lib/appserver/api.ts

@@ -40,6 +40,23 @@ jobs:
       - name: Install node_modules
         run: npm ci
         working-directory: ./app
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Install Rust
+        run: |
+          rustup install stable
+          rustup default stable
+      - name: Generate OpenAPI
+        run: |
+          cargo run -- --openapi > openapi.json
+          cd server && npx orval
       - name: Run lint
         run: npx eslint . --max-warnings 0
         working-directory: ./app
@@ -58,10 +75,27 @@ jobs:
       - name: Install node_modules
         run: npm ci
         working-directory: ./app
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Install Rust
+        run: |
+          rustup install stable
+          rustup default stable
+      - name: Generate OpenAPI
+        run: |
+          cargo run -- --openapi > openapi.json
+          cd server && npx orval
       - name: Run check
         run: |
           set -e
-          npx svelte-kit sync
+          cd server && npx svelte-kit sync
           npx svelte-check --tsconfig ./tsconfig.json
         working-directory: ./app
 
@@ -79,6 +113,23 @@ jobs:
       - name: Install node_modules
         run: npm ci
         working-directory: ./app
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Install Rust
+        run: |
+          rustup install stable
+          rustup default stable
+      - name: Generate OpenAPI
+        run: |
+          cargo run -- --openapi > openapi.json
+          cd server && npx orval
       - name: Run build
         run: npx vite build
         working-directory: ./app
@@ -97,6 +148,23 @@ jobs:
       - name: Install node_modules
         run: npm ci
         working-directory: ./app
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Install Rust
+        run: |
+          rustup install stable
+          rustup default stable
+      - name: Generate OpenAPI
+        run: |
+          cargo run -- --openapi > openapi.json
+          cd server && npx orval
       - name: Run test
         run: npm test
         working-directory: ./app

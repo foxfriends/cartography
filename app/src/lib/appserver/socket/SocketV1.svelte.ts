@@ -12,7 +12,6 @@ import {
   type SocketV1Protocol,
 } from "./SocketV1Protocol";
 import jsonpatch from "json-patch";
-import type { FieldId } from "../dto/Field";
 
 interface SocketV1EventMap {
   message: MessageEvent;
@@ -101,7 +100,7 @@ export class SocketV1 extends ReactiveEventTarget<SocketV1EventMap> {
       });
   }
 
-  $watchField(data: { id: FieldId }, subscriber: (gameState: GameState | undefined) => void) {
+  $watchField(data: { id: number }, subscriber: (gameState: GameState | undefined) => void) {
     let gameState: GameState | undefined = undefined;
     this.#sendMessage({ type: "WatchField", data: data.id }).$subscribe((response) => {
       if (response.type === "PutFieldState") {

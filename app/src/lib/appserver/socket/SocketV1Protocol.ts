@@ -8,7 +8,6 @@
 import { Branded } from "$lib/types";
 import type { OpPatch } from "json-patch";
 import Type, { type StaticDecode, type TSchema } from "typebox";
-import { FieldId } from "../dto/Field";
 
 const JsonPointer = Type.String({
   pattern: "^(/[^/~]*(~[01][^/~]*)*)*$",
@@ -116,7 +115,7 @@ export const Authenticate = Type.Object({
 });
 export type Authenticate = StaticDecode<typeof Authenticate>;
 
-export const WatchField = Type.Object({ type: Type.Literal("WatchField"), data: FieldId });
+export const WatchField = Type.Object({ type: Type.Literal("WatchField"), data: Type.Integer() });
 export type WatchField = StaticDecode<typeof WatchField>;
 
 export const Unsubscribe = Type.Object({ type: Type.Literal("Unsubscribe") });

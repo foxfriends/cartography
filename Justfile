@@ -66,6 +66,8 @@ check:
 [group: "dev"]
 generate:
     cargo sqlx prepare
+    cargo run -- --openapi > openapi.json
+    cd app && npx orval
     cd app && npx svelte-kit sync
 
 [group: "dev"]

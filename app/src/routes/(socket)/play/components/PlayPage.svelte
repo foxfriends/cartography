@@ -1,23 +1,18 @@
 <script lang="ts">
-  import { PUBLIC_SERVER_URL } from "$env/static/public";
-  import type { Field, FieldId } from "$lib/appserver/dto/Field";
+  import type { Field } from "$lib/appserver/model/Field";
   import type { GameState } from "$lib/appserver/socket/SocketV1Protocol";
   import { getSocket } from "$lib/appserver/provideSocket.svelte";
   import DragTile from "$lib/components/DragTile.svelte";
   import DragWindow from "$lib/components/DragWindow.svelte";
   import GridLines from "$lib/components/GridLines.svelte";
   import FieldView from "./FieldView.svelte";
-  import { useQuery } from "@sveltestack/svelte-query";
+  import { createListFields } from "$lib/appserver/api";
 
   const { socket } = $derived.by(getSocket);
 
-  const fields = useQuery(["fields"], async () => {
-    const response = await fetch(`${PUBLIC_SERVER_URL}/api/v1/players/foxfriends/fields`);
-    // TODO: type-safe API client
-    return response.json() as Promise<{ fields: Field[] }>;
-  });
+  const fields = createListFields(() => "foxfriends");
 
-  let fieldId: FieldId | undefined = $state();
+  let fieldId: number | undefined = $state();
   let gameState: GameState | undefined = $state();
 
   $effect(() => {
@@ -32,10 +27,10 @@
     <GridLines />
 
     {#if fieldId === undefined}
-      {#if $fields.status === "error"}
-        <div>{$fields.error}</div>
-      {:else if $fields.status === "success"}
-        {#each $fields.data.fields as field, i (field.id)}
+      {#if fields.status === "error"}
+        <div>{fields.error}</div>
+      {:else if fields.status === "success"}
+        {#each fields.data.data.fields as field, i (field.id)}
           <DragTile x={i} y={0} onClick={() => (fieldId = field.id)}>
             <div class="field-label">
               {#if field.name}
