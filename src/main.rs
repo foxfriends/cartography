@@ -5,6 +5,7 @@ mod db;
 mod dto;
 
 use kameo::actor::Spawn as _;
+use tracing_subscriber::prelude::*;
 use utoipa::OpenApi as _;
 
 #[derive(utoipa::OpenApi)]
@@ -20,6 +21,11 @@ struct ApiDoc;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    tracing_subscriber::registry()
+        .with(tracing_subscriber::EnvFilter::from_default_env())
+        .with(tracing_subscriber::fmt::layer().pretty())
+        .init();
+
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL is required");
     let host: std::net::IpAddr = std::env::var("HOST")
         .as_deref()
@@ -62,7 +68,8 @@ async fn main() -> anyhow::Result<()> {
             )),
         )
         .layer(axum::Extension(bus))
-        .layer(axum::Extension(pool));
+        .layer(axum::Extension(pool))
+        .layer(tower_http::trace::TraceLayer::new_for_http());
     let listener = tokio::net::TcpListener::bind((host, port)).await?;
     axum::serve(listener, app).await?;
     Ok(())
