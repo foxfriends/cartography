@@ -23,6 +23,7 @@ jobs:
           rustup install stable
           rustup component add clippy
           rustup default stable
+          cargo install sqlx-cli
       - name: Run cargo clippy
         run: |
           cargo clippy -- -D warnings
