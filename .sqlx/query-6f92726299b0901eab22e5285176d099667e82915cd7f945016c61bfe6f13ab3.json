@@ -1,0 +1,36 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT\n                pack_banners.id,\n                start_date,\n                end_date\n            FROM pack_banners\n            WHERE\n                ($1 AND end_date <= NOW())\n                OR ($2 AND start_date <= NOW() AND (end_date IS NULL OR end_date > NOW()))\n                OR ($3 AND start_date > NOW())\n            ORDER BY start_date ASC\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "start_date",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 2,
+        "name": "end_date",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Bool",
+        "Bool",
+        "Bool"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "6f92726299b0901eab22e5285176d099667e82915cd7f945016c61bfe6f13ab3"
+}

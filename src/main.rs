@@ -12,9 +12,12 @@ use utoipa::OpenApi as _;
 #[derive(utoipa::OpenApi)]
 #[openapi(
     paths(
-        api::list_card_types::list_card_types,
-        api::list_banners::list_banners,
-        api::list_fields::list_fields,
+        api::operations::get_banner,
+        api::operations::list_banners,
+
+        api::operations::list_card_types,
+
+        api::operations::list_fields,
     ),
     tags(
         (name = "Global", description = "Publicly available global data about the Cartography game."),
@@ -59,31 +62,35 @@ async fn main() -> anyhow::Result<()> {
         .connect(&db_url)
         .await?;
 
+    // let scalar_config = serde_json::json!({
+    //     "url": "/api/openapi.json",
+    //     "agent": scalar_api_reference::config::AgentOptions::disabled()
+    // });
+
     let bus = bus::Bus::spawn(());
     let app = axum::Router::new()
         .route(
             "/api/v1/cardtypes",
-            axum::routing::get(api::list_card_types::list_card_types),
+            axum::routing::get(api::operations::list_card_types),
         )
         .route(
             "/api/v1/banners",
-            axum::routing::post(api::list_banners::list_banners),
+            axum::routing::post(api::operations::list_banners),
+        )
+        .route(
+            "/api/v1/banners/{banner_id}",
+            axum::routing::get(api::operations::get_banner),
         )
         .route(
             "/api/v1/players/{player_id}/fields",
-            axum::routing::get(api::list_fields::list_fields),
+            axum::routing::get(api::operations::list_fields),
         )
         .route("/play/ws", axum::routing::any(api::ws::v1))
         .route(
             "/api/openapi.json",
             axum::routing::get(axum::response::Json(ApiDoc::openapi())),
         )
-        .route(
-            "/api",
-            axum::routing::get(axum::response::Html(
-                utoipa_scalar::Scalar::new(ApiDoc::openapi()).to_html(),
-            )),
-        )
+        // .merge(scalar_api_reference::axum::router("/docs", &scalar_config)) // TODO: waiting on scalar_api_reference to re-publish
         .layer(axum::Extension(bus))
         .layer(axum::Extension(pool))
         .layer(tower_http::trace::TraceLayer::new_for_http());

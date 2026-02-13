@@ -1,12 +1,8 @@
-use axum::http::StatusCode;
-use axum::response::{IntoResponse, Response};
-use axum::Json;
-use serde::{Deserialize, Serialize};
-use utoipa::ToSchema;
-
+use crate::api::error::internal_server_error;
 use crate::dto::*;
+use axum::Json;
 
-#[derive(Serialize, Deserialize, ToSchema)]
+#[derive(serde::Serialize, utoipa::ToSchema)]
 pub struct ListBannersResponse {
     banners: Vec<PackBanner>,
 }
@@ -15,7 +11,7 @@ fn default_active() -> Vec<Status> {
     vec![Status::Active]
 }
 
-#[derive(Serialize, Deserialize, ToSchema)]
+#[derive(serde::Deserialize, utoipa::ToSchema)]
 #[schema(default)]
 pub struct ListBannersRequest {
     #[serde(default = "default_active")]
@@ -30,7 +26,9 @@ impl Default for ListBannersRequest {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Eq, Copy, Clone, Debug, ToSchema)]
+#[derive(
+    PartialEq, Eq, Copy, Clone, Debug, serde::Serialize, serde::Deserialize, utoipa::ToSchema,
+)]
 pub enum Status {
     Done,
     Active,
@@ -50,41 +48,21 @@ pub enum Status {
 pub async fn list_banners(
     db: axum::Extension<sqlx::PgPool>,
     request: Option<Json<ListBannersRequest>>,
-) -> Result<Json<ListBannersResponse>, Response> {
+) -> axum::response::Result<Json<ListBannersResponse>> {
     let request = request.map(|json| json.0).unwrap_or_default();
-    let mut conn = db
-        .acquire()
-        .await
-        .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()).into_response())?;
+    let mut conn = db.acquire().await.map_err(internal_server_error)?;
 
     let banners = sqlx::query!(
         r#"
             SELECT
                 pack_banners.id,
                 start_date,
-                end_date,
-                COALESCE(
-                    JSONB_AGG(
-                        JSONB_BUILD_OBJECT(
-                            'card_type_id',
-                            card_type_id,
-                            'frequency',
-                            frequency
-                        )
-                    )
-                    FILTER
-                    (WHERE pack_banner_cards IS NOT NULL),
-                    '[]'::jsonb
-                ) AS "distribution: sqlx::types::Json<Vec<PackBannerCard>>"
+                end_date
             FROM pack_banners
-            LEFT JOIN
-                pack_banner_cards
-                ON pack_banner_cards.pack_banner_id = pack_banners.id
             WHERE
                 ($1 AND end_date <= NOW())
                 OR ($2 AND start_date <= NOW() AND (end_date IS NULL OR end_date > NOW()))
                 OR ($3 AND start_date > NOW())
-            GROUP BY pack_banners.id, start_date, end_date
             ORDER BY start_date ASC
         "#,
         request.status.contains(&Status::Done),
@@ -93,13 +71,12 @@ pub async fn list_banners(
     )
     .fetch_all(&mut *conn)
     .await
-    .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()).into_response())?
+    .map_err(internal_server_error)?
     .into_iter()
     .map(|record| PackBanner {
         id: record.id,
         start_date: record.start_date,
         end_date: record.end_date,
-        distribution: record.distribution.unwrap().0,
     })
     .collect();
 

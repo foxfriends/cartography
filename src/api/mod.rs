@@ -1,4 +1,4 @@
-pub mod list_banners;
-pub mod list_card_types;
-pub mod list_fields;
+mod error;
+
+pub mod operations;
 pub mod ws;

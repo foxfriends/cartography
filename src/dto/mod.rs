@@ -11,25 +11,25 @@ pub enum AccountIdOrMe {
     AccountId(String),
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
+#[derive(PartialEq, Clone, Debug, Serialize, Deserialize, ToSchema)]
 pub struct Account {
     pub id: String,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
+#[derive(PartialEq, Clone, Debug, Serialize, Deserialize, ToSchema)]
 pub struct Field {
     pub id: i64,
     pub name: String,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
+#[derive(PartialEq, Clone, Debug, Serialize, Deserialize, ToSchema)]
 #[serde(tag = "class")]
 pub enum CardType {
     Tile(TileType),
     Citizen(Species),
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
+#[derive(PartialEq, Clone, Debug, Serialize, Deserialize, ToSchema)]
 pub struct TileType {
     pub id: String,
     pub card_set_id: String,
@@ -38,21 +38,20 @@ pub struct TileType {
     pub employs: i32,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
+#[derive(PartialEq, Clone, Debug, Serialize, Deserialize, ToSchema)]
 pub struct Species {
     pub id: String,
     pub card_set_id: String,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
+#[derive(PartialEq, Clone, Debug, Serialize, Deserialize, ToSchema)]
 pub struct PackBanner {
     pub id: String,
     pub start_date: OffsetDateTime,
     pub end_date: Option<OffsetDateTime>,
-    pub distribution: Vec<PackBannerCard>,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
+#[derive(PartialEq, Clone, Debug, Serialize, Deserialize, ToSchema)]
 pub struct PackBannerCard {
     pub card_type_id: String,
     pub frequency: u32,

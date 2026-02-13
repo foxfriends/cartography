@@ -1,12 +1,8 @@
-use axum::http::StatusCode;
-use axum::response::{IntoResponse, Response};
-use axum::Json;
-use serde::{Deserialize, Serialize};
-use utoipa::ToSchema;
-
+use crate::api::error::internal_server_error;
 use crate::dto::*;
+use axum::Json;
 
-#[derive(Serialize, Deserialize, ToSchema)]
+#[derive(serde::Serialize, utoipa::ToSchema)]
 pub struct ListCardTypesResponse {
     card_types: Vec<CardType>,
 }
@@ -22,11 +18,8 @@ pub struct ListCardTypesResponse {
 )]
 pub async fn list_card_types(
     db: axum::Extension<sqlx::PgPool>,
-) -> Result<Json<ListCardTypesResponse>, Response> {
-    let mut conn = db
-        .acquire()
-        .await
-        .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()).into_response())?;
+) -> axum::response::Result<Json<ListCardTypesResponse>> {
+    let mut conn = db.acquire().await.map_err(internal_server_error)?;
 
     let tile_types = sqlx::query_as!(
         TileType,
@@ -43,7 +36,7 @@ pub async fn list_card_types(
     )
     .fetch_all(&mut *conn)
     .await
-    .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()).into_response())?;
+    .map_err(internal_server_error)?;
 
     let species_types = sqlx::query_as!(
         Species,
@@ -55,7 +48,7 @@ pub async fn list_card_types(
     )
     .fetch_all(&mut *conn)
     .await
-    .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()).into_response())?;
+    .map_err(internal_server_error)?;
 
     let card_types = tile_types
         .into_iter()

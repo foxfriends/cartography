@@ -1,13 +1,10 @@
 use axum::extract::Path;
-use axum::http::StatusCode;
-use axum::response::{IntoResponse, Response};
 use axum::Json;
-use serde::{Deserialize, Serialize};
-use utoipa::ToSchema;
 
+use crate::api::error::{internal_server_error, respond_internal_server_error};
 use crate::dto::*;
 
-#[derive(Serialize, Deserialize, ToSchema)]
+#[derive(serde::Serialize, utoipa::ToSchema)]
 pub struct ListFieldsResponse {
     fields: Vec<Field>,
 }
@@ -27,18 +24,11 @@ pub struct ListFieldsResponse {
 pub async fn list_fields(
     db: axum::Extension<sqlx::PgPool>,
     Path(player_id): Path<AccountIdOrMe>,
-) -> Result<Json<ListFieldsResponse>, Response> {
+) -> axum::response::Result<Json<ListFieldsResponse>> {
     let AccountIdOrMe::AccountId(account_id) = player_id else {
-        return Err((
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "unimplemented".to_owned(),
-        )
-            .into_response());
+        respond_internal_server_error!("unimplemented");
     };
-    let mut conn = db
-        .acquire()
-        .await
-        .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()).into_response())?;
+    let mut conn = db.acquire().await.map_err(internal_server_error)?;
     let fields = sqlx::query_as!(
         Field,
         "SELECT id, name FROM fields WHERE account_id = $1",
@@ -46,6 +36,6 @@ pub async fn list_fields(
     )
     .fetch_all(&mut *conn)
     .await
-    .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()).into_response())?;
+    .map_err(internal_server_error)?;
     Ok(Json(ListFieldsResponse { fields }))
 }
