@@ -56,3 +56,39 @@ pub struct PackBannerCard {
     pub card_type_id: String,
     pub frequency: u32,
 }
+
+#[derive(PartialEq, Clone, Debug, Serialize, Deserialize, ToSchema)]
+pub struct Pack {
+    pub id: i64,
+    pub account_id: String,
+    pub pack_banner_id: String,
+    pub opened_at: Option<OffsetDateTime>,
+}
+
+#[derive(PartialEq, Clone, Debug, Serialize, Deserialize, ToSchema)]
+pub struct Card {
+    pub id: i64,
+    pub card_type_id: String,
+}
+
+#[derive(PartialEq, Clone, Debug, Serialize, Deserialize, ToSchema)]
+#[serde(tag = "class")]
+#[expect(dead_code)]
+pub enum CardData {
+    #[serde(rename = "Tile")]
+    Tile(Tile),
+    #[serde(rename = "Citizen")]
+    Citizen(Citizen),
+}
+
+#[derive(PartialEq, Clone, Debug, Serialize, Deserialize, ToSchema)]
+pub struct Tile {
+    pub tile_type_id: String,
+    pub name: String,
+}
+
+#[derive(PartialEq, Clone, Debug, Serialize, Deserialize, ToSchema)]
+pub struct Citizen {
+    pub species_id: String,
+    pub name: String,
+}

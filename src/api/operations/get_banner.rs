@@ -1,27 +1,14 @@
-use crate::api::error::{internal_server_error, ApiError, ErrorDetailResponse, JsonError};
+use crate::api::errors::{
+    internal_server_error, BannerNotFoundError, ErrorDetailResponse, JsonError,
+};
 use crate::dto::*;
 use axum::extract::Path;
-use axum::http::StatusCode;
 use axum::Json;
 
 #[derive(serde::Serialize, utoipa::ToSchema)]
 pub struct GetBannerResponse {
     banner: PackBanner,
     banner_cards: Vec<PackBannerCard>,
-}
-
-#[derive(Debug, derive_more::Display, derive_more::Error)]
-#[display("a banner with id {banner_id} was not found")]
-pub struct BannerNotFoundError {
-    banner_id: String,
-}
-
-impl ApiError for BannerNotFoundError {
-    const STATUS: StatusCode = StatusCode::NOT_FOUND;
-    const CODE: &str = "BannerNotFound";
-    type Detail = ();
-
-    fn detail(&self) -> Self::Detail {}
 }
 
 #[utoipa::path(

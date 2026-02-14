@@ -1,0 +1,44 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT card_type_id, frequency, class AS \"class: CardClass\"\n            FROM pack_banner_cards\n            INNER JOIN card_types ON card_types.id = pack_banner_cards.card_type_id\n            WHERE pack_banner_cards.pack_banner_id = $1\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "card_type_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "frequency",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 2,
+        "name": "class: CardClass",
+        "type_info": {
+          "Custom": {
+            "name": "card_class",
+            "kind": {
+              "Enum": [
+                "tile",
+                "citizen"
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "c03325e5cf8c7bfe229570820de993fbe696cafe6cc06db0657769698b6d848b"
+}

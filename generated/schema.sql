@@ -283,6 +283,7 @@ CREATE TABLE public.pack_banners (
     id text NOT NULL,
     start_date timestamp with time zone NOT NULL,
     end_date timestamp with time zone,
+    pack_size integer DEFAULT 5 NOT NULL,
     CONSTRAINT pack_banners_id_check CHECK (((0 < length(id)) AND (length(id) <= 64)))
 );
 
@@ -320,7 +321,9 @@ CREATE TABLE public.packs (
     id bigint NOT NULL,
     account_id public.citext NOT NULL,
     pack_banner_id text NOT NULL,
-    opened_at timestamp with time zone
+    opened_at timestamp with time zone,
+    seed bigint NOT NULL,
+    algorithm text NOT NULL
 );
 
 
@@ -329,6 +332,20 @@ CREATE TABLE public.packs (
 --
 
 COMMENT ON TABLE public.packs IS 'A historical record of all packs opened by an account.';
+
+
+--
+-- Name: COLUMN packs.seed; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.packs.seed IS 'The u64 seed used to generate this pack. It is cast to i64 and stored here; interpret as raw bytes not meaningful number.';
+
+
+--
+-- Name: COLUMN packs.algorithm; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.packs.algorithm IS 'The seedable random number generation algorithm used to generate this pack.';
 
 
 --

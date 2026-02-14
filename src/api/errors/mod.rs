@@ -4,6 +4,10 @@ use axum::response::{IntoResponse, Json};
 use serde_json::Value;
 use std::error::Error;
 
+mod banner_not_found;
+
+pub use banner_not_found::BannerNotFoundError;
+
 pub trait ApiError: Error {
     const STATUS: StatusCode;
     const CODE: &str;

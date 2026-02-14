@@ -1,4 +1,4 @@
-use crate::api::error::internal_server_error;
+use crate::api::errors::internal_server_error;
 use crate::dto::*;
 use axum::Json;
 

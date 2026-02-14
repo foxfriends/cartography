@@ -4,7 +4,6 @@ use utoipa::ToSchema;
 #[derive(sqlx::Type)]
 #[sqlx(type_name = "card_class", rename_all = "lowercase")]
 #[derive(Serialize, Deserialize, PartialEq, Eq, Hash, Clone, Copy, Debug, ToSchema)]
-#[expect(dead_code)]
 pub enum CardClass {
     Tile,
     Citizen,

@@ -1,7 +1,7 @@
 use axum::extract::Path;
 use axum::Json;
 
-use crate::api::error::{internal_server_error, respond_internal_server_error};
+use crate::api::errors::{internal_server_error, respond_internal_server_error};
 use crate::dto::*;
 
 #[derive(serde::Serialize, utoipa::ToSchema)]

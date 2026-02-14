@@ -14,6 +14,7 @@ use utoipa::OpenApi as _;
     paths(
         api::operations::get_banner,
         api::operations::list_banners,
+        api::operations::pull_banner,
 
         api::operations::list_card_types,
 
@@ -21,7 +22,8 @@ use utoipa::OpenApi as _;
     ),
     tags(
         (name = "Global", description = "Publicly available global data about the Cartography game."),
-        (name = "Player", description = "Player specific data; typically requires authorization.")
+        (name = "Player", description = "Player specific data; typically requires authorization."),
+        (name = "Game", description = "Actions with effects on gameplay."),
     ),
 )]
 struct ApiDoc;
@@ -80,6 +82,10 @@ async fn main() -> anyhow::Result<()> {
         .route(
             "/api/v1/banners/{banner_id}",
             axum::routing::get(api::operations::get_banner),
+        )
+        .route(
+            "/api/v1/banners/{banner_id}/pull",
+            axum::routing::post(api::operations::pull_banner),
         )
         .route(
             "/api/v1/players/{player_id}/fields",
