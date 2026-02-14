@@ -3,11 +3,11 @@ use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 use utoipa::ToSchema;
 
-#[derive(Serialize, Deserialize, ToSchema)]
-#[serde(untagged)]
+#[derive(PartialEq, Eq, Clone, Debug, Serialize, Deserialize, ToSchema)]
 pub enum AccountIdOrMe {
     #[serde(rename = "@me")]
     Me,
+    #[serde(untagged)]
     AccountId(String),
 }
 

@@ -25,6 +25,7 @@ pub async fn list_fields(
     db: axum::Extension<sqlx::PgPool>,
     Path(player_id): Path<AccountIdOrMe>,
 ) -> axum::response::Result<Json<ListFieldsResponse>> {
+    dbg!(&player_id);
     let AccountIdOrMe::AccountId(account_id) = player_id else {
         respond_internal_server_error!("unimplemented");
     };

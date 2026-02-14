@@ -20,6 +20,11 @@ use utoipa::OpenApi as _;
 
         api::operations::list_fields,
     ),
+    components(
+        schemas(
+            crate::dto::AccountIdOrMe
+        )
+    ),
     tags(
         (name = "Global", description = "Publicly available global data about the Cartography game."),
         (name = "Player", description = "Player specific data; typically requires authorization."),
