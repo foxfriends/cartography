@@ -310,7 +310,7 @@ dependencies = [
  "tower-http",
  "tracing",
  "tracing-subscriber",
- "utoipa",
+ "utoipa 5.4.0 (git+https://github.com/foxfriends/utoipa)",
  "uuid",
 ]
 
@@ -1094,7 +1094,7 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 1.0.69",
- "utoipa",
+ "utoipa 5.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -2534,7 +2534,18 @@ dependencies = [
  "indexmap",
  "serde",
  "serde_json",
- "utoipa-gen",
+ "utoipa-gen 5.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "utoipa"
+version = "5.4.0"
+source = "git+https://github.com/foxfriends/utoipa#2aad62c0117ca0df66393eb620205b935f67b672"
+dependencies = [
+ "indexmap",
+ "serde",
+ "serde_json",
+ "utoipa-gen 5.4.0 (git+https://github.com/foxfriends/utoipa)",
 ]
 
 [[package]]
@@ -2542,6 +2553,16 @@ name = "utoipa-gen"
 version = "5.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6d79d08d92ab8af4c5e8a6da20c47ae3f61a0f1dabc1997cdf2d082b757ca08b"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "utoipa-gen"
+version = "5.4.0"
+source = "git+https://github.com/foxfriends/utoipa#2aad62c0117ca0df66393eb620205b935f67b672"
 dependencies = [
  "proc-macro2",
  "quote",

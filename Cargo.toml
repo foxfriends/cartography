@@ -31,5 +31,5 @@ tokio-stream = { version = "0.1.18", features = ["sync"] }
 tower-http = { version = "0.6.8", features = ["trace"] }
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.22", features = ["env-filter", "json"] }
-utoipa = { version = "5.4.0", features = ["time"] }
+utoipa = { git = "https://github.com/foxfriends/utoipa", features = ["time"] } # { version = "5.4.0", features = ["time"] }
 uuid = { version = "1.20.0", features = ["serde", "v7"] }
