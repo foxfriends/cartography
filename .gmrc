@@ -5,7 +5,7 @@
   "afterAllMigrations": [
     {
       "_": "command",
-      "command": "if [ -z $CI ]; then docker compose exec postgres pg_dump --no-sync --restrict-key='aa4b4bc410c5cacbd97fc326d0f62806' --schema-only --no-owner --exclude-schema=graphile_migrate --file /generated/schema.sql -U \"$GM_DBUSER\" \"$GM_DBNAME\"; fi"
+      "command": "if [ -z $CI ]; then docker compose exec postgres pg_dump --no-sync --restrict-key='aa4b4bc410c5cacbd97fc326d0f62806' --schema-only --no-owner --exclude-schema=graphile_migrate --exclude-schema=_sqlx_test --file /generated/schema.sql -U \"$GM_DBUSER\" \"$GM_DBNAME\"; fi"
     }
   ],
   "afterCurrent": [],
