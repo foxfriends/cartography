@@ -2,12 +2,6 @@ name: Rust CI
 
 on: push
 
-env:
-  DATABASE_URL: "postgresql://postgres:postgres@localhost/cartography"
-  SHADOW_DATABASE_URL: "postgresql://postgres:postgres@localhost/shadow"
-  ROOT_DATABASE_URL: "postgresql://postgres:postgres@localhost/postgres"
-  SQLX_OFFLINE: "true"
-
 jobs:
   clippy:
     name: clippy
@@ -85,6 +79,11 @@ jobs:
   test:
     name: test
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: "postgresql://postgres:postgres@localhost/cartography"
+      SHADOW_DATABASE_URL: "postgresql://postgres:postgres@localhost/shadow"
+      ROOT_DATABASE_URL: "postgresql://postgres:postgres@localhost/postgres"
+      SQLX_OFFLINE: "true"
     services:
       postgres:
         image: postgres:17
