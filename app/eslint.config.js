@@ -100,17 +100,11 @@ export default tsEslint.config(
   },
   {
     ignores: [
-      "**/.DS_Store",
-      "**/node_modules",
-      "**/build",
+      "node_modules",
+      "build",
       ".svelte-kit",
-      "package",
-      "server",
-      "**/.env",
-      "**/.env.*",
-      "!**/.env.example",
-      "**/package-lock.json",
-      "vite.config.ts.timestamp-*",
+      "src/lib/appserver/dto",
+      "src/lib/appserver/api.ts",
     ],
   },
 );

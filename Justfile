@@ -72,7 +72,7 @@ generate:
 
 [group: "dev"]
 fmt: && generate
-    sqlx-fmt format
+    RUST_LOG=off sqlx-fmt format
     cargo fmt
     cd app && npx prettier --write .
 

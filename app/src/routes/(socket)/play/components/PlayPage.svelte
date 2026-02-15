@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { Field } from "$lib/appserver/model/Field";
   import type { GameState } from "$lib/appserver/socket/SocketV1Protocol";
   import { getSocket } from "$lib/appserver/provideSocket.svelte";
   import DragTile from "$lib/components/DragTile.svelte";

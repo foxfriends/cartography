@@ -196,7 +196,11 @@ mod tests {
             .unwrap();
 
         let Ok(response) = app.oneshot(request).await;
-        assert!(response.status().is_success(), "{}", response.json::<serde_json::Value>().await.unwrap());
+        assert!(
+            response.status().is_success(),
+            "{}",
+            response.json::<serde_json::Value>().await.unwrap()
+        );
         let response: PullBannerResponse = response.json().await.unwrap();
         assert_eq!(response.pack.pack_banner_id, "base-standard");
         assert_eq!(response.pack.account_id, "foxfriends");
