@@ -2,6 +2,12 @@ name: Rust CI
 
 on: push
 
+env:
+  DATABASE_URL: "postgresql://postgres:postgres@localhost/cartography"
+  SHADOW_DATABASE_URL: "postgresql://postgres:postgres@localhost/shadow"
+  ROOT_DATABASE_URL: "postgresql://postgres:postgres@localhost/postgres"
+  SQLX_OFFLINE: "true"
+
 jobs:
   clippy:
     name: clippy
@@ -79,9 +85,28 @@ jobs:
   test:
     name: test
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: cartography
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout the source code
         uses: actions/checkout@v4
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          cache: npm
+          node-version-file: app/.node-version
+          cache-dependency-path: app/package-lock.json
       - uses: actions/cache@v4
         with:
           path: |
@@ -95,5 +120,7 @@ jobs:
         run: |
           rustup install stable
           rustup default stable
+      - name: Run migrate
+        run: npx graphile-migrate migrate
       - name: Run cargo test
         run: cargo test

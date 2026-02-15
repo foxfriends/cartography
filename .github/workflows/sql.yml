@@ -2,9 +2,9 @@ name: SQL CI
 on: push
 
 env:
-  DATABASE_URL: postgresql://postgres:postgres@localhost/cartography
-  SHADOW_DATABASE_URL: postgresql://postgres:postgres@localhost/shadow
-  ROOT_DATABASE_URL: postgresql://postgres:postgres@localhost/postgres
+  DATABASE_URL: "postgresql://postgres:postgres@localhost/cartography"
+  SHADOW_DATABASE_URL: "postgresql://postgres:postgres@localhost/shadow"
+  ROOT_DATABASE_URL: "postgresql://postgres:postgres@localhost/postgres"
 
 jobs:
   migrate:
