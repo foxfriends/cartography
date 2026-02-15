@@ -1,10 +1,11 @@
 use crate::api::errors::{
     BannerNotFoundError, ErrorDetailResponse, JsonError, internal_server_error,
 };
+use crate::api::middleware::authorization::Authorization;
 use crate::db::CardClass;
 use crate::dto::*;
-use axum::Json;
 use axum::extract::Path;
+use axum::{Extension, Json};
 use rand::distr::weighted::WeightedIndex;
 use rand::rngs::Xoshiro256PlusPlus;
 use rand::{Rng, RngExt, SeedableRng, rng};
@@ -32,7 +33,10 @@ pub struct PullBannerResponse {
 pub async fn pull_banner(
     db: axum::Extension<sqlx::PgPool>,
     Path(banner_id): Path<String>,
+    Extension(authorization): Extension<Authorization>,
 ) -> axum::response::Result<Json<PullBannerResponse>> {
+    let account_id = authorization.authorized_account_id()?;
+
     let mut conn = db.begin().await.map_err(internal_server_error)?;
 
     let banner = sqlx::query!(
@@ -149,7 +153,7 @@ pub async fn pull_banner(
                 inserted_pack.pack_banner_id,
                 inserted_pack.opened_at
         "#,
-        "foxfriends",
+        account_id,
         banner_id,
         seed as i64,
         &tile_type_ids,
@@ -179,7 +183,7 @@ pub async fn pull_banner(
 mod tests {
     use crate::test::prelude::*;
     use axum::body::Body;
-    use axum::http::Request;
+    use axum::http::{Request, StatusCode};
     use sqlx::PgPool;
 
     use super::PullBannerResponse;
@@ -188,7 +192,29 @@ mod tests {
         migrator = "MIGRATOR",
         fixtures(path = "../../../fixtures", scripts("seed", "account"))
     )]
-    async fn pull_banner_standard(pool: PgPool) {
+    async fn pull_banner_ok(pool: PgPool) {
+        let app = crate::app::Config::test(pool).into_router();
+
+        let request = Request::post("/api/v1/banners/base-standard/pull")
+            .header("Authorization", "Trust foxfriends")
+            .body(Body::empty())
+            .unwrap();
+
+        let Ok(response) = app.oneshot(request).await;
+        assert_success!(response);
+
+        let response: PullBannerResponse = response.json().await.unwrap();
+        assert_eq!(response.pack.pack_banner_id, "base-standard");
+        assert_eq!(response.pack.account_id, "foxfriends");
+        assert_eq!(response.pack.opened_at, None);
+        assert_eq!(response.pack_cards.len(), 5);
+    }
+
+    #[sqlx::test(
+        migrator = "MIGRATOR",
+        fixtures(path = "../../../fixtures", scripts("seed", "account"))
+    )]
+    async fn pull_banner_requires_authorization(pool: PgPool) {
         let app = crate::app::Config::test(pool).into_router();
 
         let request = Request::post("/api/v1/banners/base-standard/pull")
@@ -196,15 +222,6 @@ mod tests {
             .unwrap();
 
         let Ok(response) = app.oneshot(request).await;
-        assert!(
-            response.status().is_success(),
-            "{}",
-            response.json::<serde_json::Value>().await.unwrap()
-        );
-        let response: PullBannerResponse = response.json().await.unwrap();
-        assert_eq!(response.pack.pack_banner_id, "base-standard");
-        assert_eq!(response.pack.account_id, "foxfriends");
-        assert_eq!(response.pack.opened_at, None);
-        assert_eq!(response.pack_cards.len(), 5);
+        assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
     }
 }

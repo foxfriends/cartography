@@ -1,49 +1,30 @@
 use axum::body::Body;
 use axum::http::{Response, StatusCode};
-use axum::response::{IntoResponse, Json};
+use axum::response::{AppendHeaders, IntoResponse, Json};
 use serde_json::Value;
 use std::error::Error;
 
-mod banner_not_found;
+mod banner_not_found_error;
+mod forbidden_error;
+mod internal_server_error;
+mod unauthorized_error;
 
-pub use banner_not_found::BannerNotFoundError;
+pub use banner_not_found_error::BannerNotFoundError;
+pub use forbidden_error::ForbiddenError;
+#[allow(unused_imports)]
+pub(crate) use internal_server_error::{internal_server_error, respond_internal_server_error};
+pub use unauthorized_error::UnauthorizedError;
 
 pub trait ApiError: Error {
     const STATUS: StatusCode;
     const CODE: &str;
     type Detail: serde::Serialize;
 
+    fn headers(&self) -> AppendHeaders<Vec<(String, String)>> {
+        AppendHeaders(vec![])
+    }
+
     fn detail(&self) -> Self::Detail;
-}
-
-#[derive(Debug, derive_more::Display, derive_more::Error)]
-#[display("{_0}")]
-pub struct InternalServerError(anyhow::Error);
-
-macro_rules! respond_internal_server_error {
-    ($($fmt:tt)+) => {
-        return Err(internal_server_error(anyhow::anyhow!($($fmt)+)).into())
-    };
-    () => {
-        return Err(internal_server_error(anyhow::anyhow!("Unexpected server error")).into())
-    };
-}
-
-pub(crate) use respond_internal_server_error;
-
-pub fn internal_server_error<T>(error: T) -> JsonError<InternalServerError>
-where
-    anyhow::Error: From<T>,
-{
-    JsonError(InternalServerError(error.into()))
-}
-
-impl ApiError for InternalServerError {
-    const STATUS: StatusCode = StatusCode::INTERNAL_SERVER_ERROR;
-    const CODE: &str = "Internal server error";
-    type Detail = ();
-
-    fn detail(&self) -> Self::Detail {}
 }
 
 pub struct JsonError<T>(pub T);
@@ -76,6 +57,7 @@ impl<T: ApiError> IntoResponse for JsonError<T> {
 
         (
             T::STATUS,
+            self.0.headers(),
             Json(ErrorData::<T> {
                 code: T::CODE,
                 message: self.0.to_string(),

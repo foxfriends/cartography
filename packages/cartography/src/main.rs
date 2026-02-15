@@ -1,11 +1,12 @@
+#[cfg(test)]
+mod test;
+
 mod actor;
 mod api;
 mod app;
 mod bus;
 mod db;
 mod dto;
-#[cfg(test)]
-mod test;
 
 use clap::Parser as _;
 use tracing_subscriber::prelude::*;

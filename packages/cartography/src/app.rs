@@ -1,4 +1,4 @@
-use crate::api::{operations, ws};
+use crate::api::{middleware, operations, ws};
 use crate::bus::Bus;
 use axum::Router;
 use kameo::actor::Spawn as _;
@@ -84,6 +84,7 @@ impl Config {
                 axum::routing::get(axum::response::Json(ApiDoc::openapi())),
             )
             // .merge(scalar_api_reference::axum::router("/docs", &scalar_config)) // TODO: waiting on scalar_api_reference to re-publish
+            .layer(axum::middleware::from_fn(middleware::authorization::trust))
             .layer(axum::Extension(bus))
             .layer(axum::Extension(self.pool))
     }

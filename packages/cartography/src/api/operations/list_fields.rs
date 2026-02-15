@@ -1,8 +1,8 @@
-use axum::Json;
-use axum::extract::Path;
-
-use crate::api::errors::{internal_server_error, respond_internal_server_error};
+use crate::api::errors::internal_server_error;
+use crate::api::middleware::authorization::Authorization;
 use crate::dto::*;
+use axum::extract::Path;
+use axum::{Extension, Json};
 
 #[derive(serde::Serialize, utoipa::ToSchema)]
 pub struct ListFieldsResponse {
@@ -23,12 +23,12 @@ pub struct ListFieldsResponse {
 )]
 pub async fn list_fields(
     db: axum::Extension<sqlx::PgPool>,
-    Path(player_id): Path<AccountIdOrMe>,
+    Extension(authorization): Extension<Authorization>,
+    Path(account_id): Path<AccountIdOrMe>,
 ) -> axum::response::Result<Json<ListFieldsResponse>> {
-    dbg!(&player_id);
-    let AccountIdOrMe::AccountId(account_id) = player_id else {
-        respond_internal_server_error!("unimplemented");
-    };
+    let account_id = authorization.resolve_account_id(&account_id)?;
+    authorization.require_authorization(account_id)?;
+
     let mut conn = db.acquire().await.map_err(internal_server_error)?;
     let fields = sqlx::query_as!(
         Field,
