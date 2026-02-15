@@ -43,8 +43,18 @@ async fn main() -> anyhow::Result<()> {
         .parse()
         .expect("PORT must be a valid u16");
 
+    // let scalar_config = serde_json::json!({
+    //     "url": "/api/openapi.json",
+    //     "agent": scalar_api_reference::config::AgentOptions::disabled()
+    // });
+
     let app = app::new()
         .await?
+        // .merge(scalar_api_reference::axum::router("/docs", &scalar_config)) // TODO: waiting on scalar_api_reference to re-publish
+        .route(
+            "/api/openapi.json",
+            axum::routing::get(axum::response::Json(app::ApiDoc::openapi())),
+        )
         .layer(tower_http::trace::TraceLayer::new_for_http());
 
     let listener = tokio::net::TcpListener::bind((host, port)).await?;
