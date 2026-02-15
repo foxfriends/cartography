@@ -60,7 +60,6 @@ pub struct PackBannerCard {
 #[derive(PartialEq, Clone, Debug, Serialize, Deserialize, ToSchema)]
 pub struct Pack {
     pub id: i64,
-    pub account_id: String,
     pub pack_banner_id: String,
     pub opened_at: Option<OffsetDateTime>,
 }

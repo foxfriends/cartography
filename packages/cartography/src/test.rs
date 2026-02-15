@@ -41,7 +41,8 @@ macro_rules! assert_success {
     ($response:expr) => {
         assert!(
             $response.status().is_success(),
-            "{}",
+            "{}: {}",
+            $response.status(),
             $response
                 .text()
                 .await

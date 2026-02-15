@@ -2,6 +2,8 @@ use crate::api::{middleware, operations, ws};
 use crate::bus::Bus;
 use axum::Router;
 use kameo::actor::Spawn as _;
+use utoipa::Modify;
+use utoipa::openapi::security::{ApiKey, ApiKeyValue, SecurityScheme};
 
 #[derive(utoipa::OpenApi)]
 #[openapi(
@@ -13,6 +15,8 @@ use kameo::actor::Spawn as _;
         operations::list_card_types,
 
         operations::list_fields,
+
+        operations::list_packs,
     ),
     components(
         schemas(
@@ -24,8 +28,21 @@ use kameo::actor::Spawn as _;
         (name = "Player", description = "Player specific data; typically requires authorization."),
         (name = "Game", description = "Actions with effects on gameplay."),
     ),
+    modifiers(&SecurityAddon)
 )]
 pub struct ApiDoc;
+
+struct SecurityAddon;
+
+impl Modify for SecurityAddon {
+    fn modify(&self, openapi: &mut utoipa::openapi::OpenApi) {
+        openapi.components.as_mut().unwrap()
+                .add_security_scheme(
+                    "trust",
+                    SecurityScheme::ApiKey(ApiKey::Header(ApiKeyValue::with_description("Authorization", r#"DEVELOPMENT ONLY custom "auth" scheme where a header of the format `Trust {account_id}` is accepted as authorization for the identified account."#))),
+                );
+    }
+}
 
 pub struct Config {
     pool: sqlx::PgPool,
@@ -71,6 +88,10 @@ impl Config {
             .route(
                 "/api/v1/players/{player_id}/fields",
                 axum::routing::get(operations::list_fields),
+            )
+            .route(
+                "/api/v1/players/{player_id}/packs",
+                axum::routing::post(operations::list_packs),
             )
             .route("/play/ws", axum::routing::any(ws::v1))
             .layer(axum::middleware::from_fn(middleware::authorization::trust))

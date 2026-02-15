@@ -62,7 +62,6 @@ pub async fn list_card_types(
 #[cfg(test)]
 mod tests {
     use crate::test::prelude::*;
-    use axum::body::Body;
     use axum::http::Request;
     use sqlx::PgPool;
 
@@ -75,9 +74,7 @@ mod tests {
     async fn get_banner_ok(pool: PgPool) {
         let app = crate::app::Config::test(pool).into_router();
 
-        let request = Request::get("/api/v1/cardtypes")
-            .body(Body::empty())
-            .unwrap();
+        let request = Request::get("/api/v1/cardtypes").empty().unwrap();
 
         let Ok(response) = app.oneshot(request).await;
         assert_success!(response);

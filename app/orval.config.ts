@@ -1,7 +1,7 @@
 import { defineConfig } from "orval";
 
 export default defineConfig({
-  petstore: {
+  cartography: {
     output: {
       mode: "single",
       target: "src/lib/appserver/api.ts",

@@ -81,7 +81,7 @@ mod tests {
     use crate::api::errors::{ApiError, BannerNotFoundError, ErrorDetailResponse};
     use crate::test::prelude::*;
     use axum::http::Request;
-    use axum::{body::Body, http::StatusCode};
+    use axum::http::StatusCode;
     use sqlx::PgPool;
     use time::{Date, Month, OffsetDateTime, Time};
 
@@ -95,7 +95,7 @@ mod tests {
         let app = crate::app::Config::test(pool).into_router();
 
         let request = Request::get("/api/v1/banners/base-standard")
-            .body(Body::empty())
+            .empty()
             .unwrap();
 
         let Ok(response) = app.oneshot(request).await;

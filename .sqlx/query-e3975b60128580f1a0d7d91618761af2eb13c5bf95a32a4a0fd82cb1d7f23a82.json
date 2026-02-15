@@ -1,0 +1,41 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT packs.id, packs.pack_banner_id, packs.opened_at\n            FROM packs\n            WHERE\n                account_id = $1\n                AND (($2 AND opened_at IS NULL) OR ($3 AND opened_at IS NOT NULL))\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "pack_banner_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "opened_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        {
+          "Custom": {
+            "name": "citext",
+            "kind": "Simple"
+          }
+        },
+        "Bool",
+        "Bool"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "e3975b60128580f1a0d7d91618761af2eb13c5bf95a32a4a0fd82cb1d7f23a82"
+}

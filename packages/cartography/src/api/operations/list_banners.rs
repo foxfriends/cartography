@@ -8,8 +8,8 @@ pub struct ListBannersResponse {
     banners: Vec<PackBanner>,
 }
 
-fn default_active() -> Vec<Status> {
-    vec![Status::Active]
+fn default_active() -> Vec<BannerStatus> {
+    vec![BannerStatus::Active]
 }
 
 #[derive(serde::Deserialize, utoipa::ToSchema)]
@@ -17,13 +17,13 @@ fn default_active() -> Vec<Status> {
 #[schema(default)]
 pub struct ListBannersRequest {
     #[serde(default = "default_active")]
-    status: Vec<Status>,
+    status: Vec<BannerStatus>,
 }
 
 impl Default for ListBannersRequest {
     fn default() -> Self {
         Self {
-            status: vec![Status::Active],
+            status: vec![BannerStatus::Active],
         }
     }
 }
@@ -31,7 +31,7 @@ impl Default for ListBannersRequest {
 #[derive(
     PartialEq, Eq, Copy, Clone, Debug, serde::Serialize, serde::Deserialize, utoipa::ToSchema,
 )]
-pub enum Status {
+pub enum BannerStatus {
     Done,
     Active,
     Upcoming,
@@ -67,9 +67,9 @@ pub async fn list_banners(
                 OR ($3 AND start_date > NOW())
             ORDER BY start_date ASC
         "#,
-        request.status.contains(&Status::Done),
-        request.status.contains(&Status::Active),
-        request.status.contains(&Status::Upcoming),
+        request.status.contains(&BannerStatus::Done),
+        request.status.contains(&BannerStatus::Active),
+        request.status.contains(&BannerStatus::Upcoming),
     )
     .fetch_all(&mut *conn)
     .await
@@ -88,11 +88,10 @@ pub async fn list_banners(
 #[cfg(test)]
 mod tests {
     use crate::test::prelude::*;
-    use axum::body::Body;
     use axum::http::Request;
     use sqlx::PgPool;
 
-    use super::{ListBannersRequest, ListBannersResponse, Status};
+    use super::{BannerStatus, ListBannersRequest, ListBannersResponse};
 
     #[sqlx::test(
         migrator = "MIGRATOR",
@@ -101,9 +100,7 @@ mod tests {
     async fn list_banners_default_active(pool: PgPool) {
         let app = crate::app::Config::test(pool).into_router();
 
-        let request = Request::post("/api/v1/banners")
-            .body(Body::empty())
-            .unwrap();
+        let request = Request::post("/api/v1/banners").empty().unwrap();
 
         let Ok(response) = app.oneshot(request).await;
         assert_success!(response);
@@ -122,7 +119,11 @@ mod tests {
 
         let request = Request::post("/api/v1/banners")
             .json(ListBannersRequest {
-                status: vec![Status::Done, Status::Active, Status::Upcoming],
+                status: vec![
+                    BannerStatus::Done,
+                    BannerStatus::Active,
+                    BannerStatus::Upcoming,
+                ],
             })
             .unwrap();
 
@@ -145,7 +146,7 @@ mod tests {
 
         let request = Request::post("/api/v1/banners")
             .json(ListBannersRequest {
-                status: vec![Status::Done],
+                status: vec![BannerStatus::Done],
             })
             .unwrap();
 
@@ -166,7 +167,7 @@ mod tests {
 
         let request = Request::post("/api/v1/banners")
             .json(ListBannersRequest {
-                status: vec![Status::Upcoming],
+                status: vec![BannerStatus::Upcoming],
             })
             .unwrap();
 

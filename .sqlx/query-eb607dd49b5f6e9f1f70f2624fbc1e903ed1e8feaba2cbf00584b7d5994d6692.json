@@ -1,0 +1,49 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            WITH inserted_pack AS (\n                INSERT INTO packs (account_id, pack_banner_id, seed, algorithm)\n                VALUES ($1, $2, $3, 'xoshiro256++')\n                RETURNING id, account_id, pack_banner_id, opened_at\n            ),\n\n            inserted_tile_cards AS (\n                INSERT INTO cards (card_type_id)\n                VALUES (UNNEST($4::text []))\n                RETURNING *\n            ),\n\n            inserted_tiles AS (\n                INSERT INTO tiles (id, tile_type_id, name)\n                SELECT id, card_type_id, card_type_id\n                FROM inserted_tile_cards\n                RETURNING id\n            ),\n\n            inserted_citizen_cards AS (\n                INSERT INTO cards (card_type_id)\n                VALUES (UNNEST($5::text []))\n                RETURNING *\n            ),\n\n            inserted_citizens AS (\n                INSERT INTO citizens (id, species_id, name)\n                SELECT id, card_type_id, card_type_id\n                FROM inserted_citizen_cards\n                RETURNING id\n            ),\n\n            inserted_cards AS (\n                SELECT * FROM inserted_tile_cards\n                UNION ALL\n                SELECT * FROM inserted_citizen_cards\n            ),\n\n            inserted_pack_contents AS (\n                INSERT INTO pack_contents (pack_id, \"position\", card_id)\n                SELECT inserted_pack.id, ROW_NUMBER() OVER (), inserted_cards.id\n                FROM inserted_pack, inserted_cards\n                RETURNING *\n            )\n\n            SELECT\n                inserted_pack.id,\n                inserted_pack.pack_banner_id,\n                inserted_pack.opened_at,\n                JSONB_AGG(\n                    JSONB_BUILD_OBJECT(\n                        'id', inserted_cards.id,\n                        'card_type_id', inserted_cards.card_type_id\n                    )\n                ) AS \"pack_cards: sqlx::types::Json<Vec<Card>>\"\n            FROM inserted_pack, inserted_cards\n            GROUP BY\n                inserted_pack.id,\n                inserted_pack.pack_banner_id,\n                inserted_pack.opened_at\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "pack_banner_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "opened_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 3,
+        "name": "pack_cards: sqlx::types::Json<Vec<Card>>",
+        "type_info": "Jsonb"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        {
+          "Custom": {
+            "name": "citext",
+            "kind": "Simple"
+          }
+        },
+        "Text",
+        "Int8",
+        "TextArray",
+        "TextArray"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      null
+    ]
+  },
+  "hash": "eb607dd49b5f6e9f1f70f2624fbc1e903ed1e8feaba2cbf00584b7d5994d6692"
+}

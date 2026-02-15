@@ -22,6 +22,7 @@ pub struct PullBannerResponse {
     path = "/api/v1/banners/{banner_id}/pull",
     description = "Get full pack banner details.",
     tag = "Game",
+    security(("trust" = [])),
     params(
         ("banner_id" = String, Path, description = "Banner ID"),
     ),
@@ -143,7 +144,9 @@ pub async fn pull_banner(
             )
 
             SELECT
-                inserted_pack.*,
+                inserted_pack.id,
+                inserted_pack.pack_banner_id,
+                inserted_pack.opened_at,
                 JSONB_AGG(
                     JSONB_BUILD_OBJECT(
                         'id', inserted_cards.id,
@@ -153,7 +156,6 @@ pub async fn pull_banner(
             FROM inserted_pack, inserted_cards
             GROUP BY
                 inserted_pack.id,
-                inserted_pack.account_id,
                 inserted_pack.pack_banner_id,
                 inserted_pack.opened_at
         "#,
@@ -172,7 +174,6 @@ pub async fn pull_banner(
     Ok(Json(PullBannerResponse {
         pack: Pack {
             id: pack.id,
-            account_id: pack.account_id,
             pack_banner_id: pack.pack_banner_id,
             opened_at: pack.opened_at,
         },
@@ -208,7 +209,6 @@ mod tests {
 
         let response: PullBannerResponse = response.json().await.unwrap();
         assert_eq!(response.pack.pack_banner_id, "base-standard");
-        assert_eq!(response.pack.account_id, "foxfriends");
         assert_eq!(response.pack.opened_at, None);
         assert_eq!(response.pack_cards.len(), 5);
     }

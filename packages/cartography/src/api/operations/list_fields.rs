@@ -14,6 +14,7 @@ pub struct ListFieldsResponse {
     path = "/api/v1/players/{player_id}/fields",
     description = "List player fields.",
     tag = "Player",
+    security(("trust" = [])),
     responses(
         (status = OK, description = "Successfully listed all fields.", body = ListFieldsResponse),
     ),
