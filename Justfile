@@ -65,7 +65,7 @@ check:
 
 [group: "dev"]
 generate:
-    cargo sqlx prepare --workspace
+    cargo sqlx prepare --workspace -- --all-targets --all-features
     cargo run -- --openapi > openapi.json
     cd app && npx orval
     cd app && npx svelte-kit sync
@@ -73,11 +73,12 @@ generate:
 [group: "dev"]
 fmt: && generate
     RUST_LOG=off sqlx-fmt format
+    RUST_LOG=off sqruff fix packages
     cargo fmt
     cd app && npx prettier --write .
 
 [group: "dev"]
-test: up
+test: up generate
     SQLX_OFFLINE=true DATABASE_URL={{ROOT_DATABASE_URL}} cargo test
     cd app && npm test
 
@@ -91,7 +92,7 @@ migration-dev:
 
 [group: "database"]
 migration message:
-    npx prettier migrations -w
+    sqruff fix migrations/current.sql
     npx graphile-migrate commit -m {{message}}
 
 [group: "database"]

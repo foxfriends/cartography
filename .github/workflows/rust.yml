@@ -54,6 +54,7 @@ jobs:
         run: |
           cargo fmt -- --check
           sqlx-fmt check
+          sqruff lint
   build:
     name: build
     runs-on: ubuntu-latest

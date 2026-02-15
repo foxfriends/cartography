@@ -67,7 +67,9 @@ SET default_table_access_method = heap;
 
 CREATE TABLE public.accounts (
     id public.citext NOT NULL,
-    CONSTRAINT accounts_id_check CHECK (((0 < length((id)::text)) AND (length((id)::text) <= 64)))
+    CONSTRAINT accounts_id_check CHECK (
+        ((0 < length((id)::text)) AND (length((id)::text) <= 64))
+    )
 );
 
 
@@ -102,7 +104,9 @@ COMMENT ON TABLE public.card_accounts IS 'Records owners of card. Each card has 
 CREATE TABLE public.card_sets (
     id text NOT NULL,
     release_date timestamp with time zone NOT NULL,
-    CONSTRAINT card_sets_id_check CHECK (((0 < length(id)) AND (length(id) <= 64)))
+    CONSTRAINT card_sets_id_check CHECK (
+        ((0 < length(id)) AND (length(id) <= 64))
+    )
 );
 
 
@@ -121,7 +125,9 @@ CREATE TABLE public.card_types (
     id text NOT NULL,
     card_set_id text DEFAULT 'default'::text NOT NULL,
     class public.card_class NOT NULL,
-    CONSTRAINT card_types_id_check CHECK (((0 < length(id)) AND (length(id) <= 64)))
+    CONSTRAINT card_types_id_check CHECK (
+        ((0 < length(id)) AND (length(id) <= 64))
+    )
 );
 
 
@@ -172,7 +178,9 @@ CREATE TABLE public.citizens (
     name text NOT NULL,
     id bigint NOT NULL,
     home_tile_id bigint,
-    CONSTRAINT citizens_name_check CHECK (((0 < length(name)) AND (length(name) < 64)))
+    CONSTRAINT citizens_name_check CHECK (
+        ((0 < length(name)) AND (length(name) < 64))
+    )
 );
 
 
@@ -231,7 +239,9 @@ CREATE TABLE public.fields (
     id bigint NOT NULL,
     name text NOT NULL,
     account_id public.citext NOT NULL,
-    CONSTRAINT fields_name_check CHECK (((0 < length(name)) AND (length(name) <= 64)))
+    CONSTRAINT fields_name_check CHECK (
+        ((0 < length(name)) AND (length(name) <= 64))
+    )
 );
 
 
@@ -284,7 +294,9 @@ CREATE TABLE public.pack_banners (
     start_date timestamp with time zone NOT NULL,
     end_date timestamp with time zone,
     pack_size integer DEFAULT 5 NOT NULL,
-    CONSTRAINT pack_banners_id_check CHECK (((0 < length(id)) AND (length(id) <= 64)))
+    CONSTRAINT pack_banners_id_check CHECK (
+        ((0 < length(id)) AND (length(id) <= 64))
+    )
 );
 
 
@@ -368,7 +380,9 @@ ALTER TABLE public.packs ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 
 CREATE TABLE public.resources (
     id text NOT NULL,
-    CONSTRAINT resources_id_check CHECK (((0 < length(id)) AND (length(id) <= 64)))
+    CONSTRAINT resources_id_check CHECK (
+        ((0 < length(id)) AND (length(id) <= 64))
+    )
 );
 
 
@@ -385,8 +399,12 @@ COMMENT ON TABLE public.resources IS 'Definitions of all types of resources that
 
 CREATE TABLE public.species (
     id text NOT NULL,
-    class public.card_class GENERATED ALWAYS AS ('citizen'::public.card_class) STORED NOT NULL,
-    CONSTRAINT species_id_check CHECK (((0 < length(id)) AND (length(id) <= 64)))
+    class public.card_class GENERATED ALWAYS AS (
+        'citizen'::public.card_class
+    ) STORED NOT NULL,
+    CONSTRAINT species_id_check CHECK (
+        ((0 < length(id)) AND (length(id) <= 64))
+    )
 );
 
 
@@ -460,7 +478,9 @@ COMMENT ON TABLE public.tile_type_produces IS 'The types of resources that are p
 
 CREATE TABLE public.tile_types (
     id text NOT NULL,
-    class public.card_class GENERATED ALWAYS AS ('tile'::public.card_class) STORED NOT NULL,
+    class public.card_class GENERATED ALWAYS AS (
+        'tile'::public.card_class
+    ) STORED NOT NULL,
     category public.tile_category NOT NULL,
     houses integer NOT NULL,
     employs integer NOT NULL
@@ -482,7 +502,9 @@ CREATE TABLE public.tiles (
     id bigint NOT NULL,
     tile_type_id text NOT NULL,
     name text NOT NULL,
-    CONSTRAINT tiles_name_check CHECK (((0 < length(name)) AND (length(name) <= 64)))
+    CONSTRAINT tiles_name_check CHECK (
+        ((0 < length(name)) AND (length(name) <= 64))
+    )
 );
 
 
@@ -498,7 +520,7 @@ COMMENT ON TABLE public.tiles IS 'Contains tile-specific information, correspond
 --
 
 ALTER TABLE ONLY public.accounts
-    ADD CONSTRAINT accounts_pkey PRIMARY KEY (id);
+ADD CONSTRAINT accounts_pkey PRIMARY KEY (id);
 
 
 --
@@ -506,7 +528,9 @@ ALTER TABLE ONLY public.accounts
 --
 
 ALTER TABLE ONLY public.card_accounts
-    ADD CONSTRAINT card_accounts_card_id_account_id_key UNIQUE (card_id, account_id);
+ADD CONSTRAINT card_accounts_card_id_account_id_key UNIQUE (
+    card_id, account_id
+);
 
 
 --
@@ -514,7 +538,7 @@ ALTER TABLE ONLY public.card_accounts
 --
 
 ALTER TABLE ONLY public.card_accounts
-    ADD CONSTRAINT card_accounts_pkey PRIMARY KEY (card_id);
+ADD CONSTRAINT card_accounts_pkey PRIMARY KEY (card_id);
 
 
 --
@@ -522,7 +546,7 @@ ALTER TABLE ONLY public.card_accounts
 --
 
 ALTER TABLE ONLY public.card_sets
-    ADD CONSTRAINT card_sets_pkey PRIMARY KEY (id);
+ADD CONSTRAINT card_sets_pkey PRIMARY KEY (id);
 
 
 --
@@ -530,7 +554,7 @@ ALTER TABLE ONLY public.card_sets
 --
 
 ALTER TABLE ONLY public.card_types
-    ADD CONSTRAINT card_types_id_class_key UNIQUE (id, class);
+ADD CONSTRAINT card_types_id_class_key UNIQUE (id, class);
 
 
 --
@@ -538,7 +562,7 @@ ALTER TABLE ONLY public.card_types
 --
 
 ALTER TABLE ONLY public.card_types
-    ADD CONSTRAINT card_types_pkey PRIMARY KEY (id);
+ADD CONSTRAINT card_types_pkey PRIMARY KEY (id);
 
 
 --
@@ -546,7 +570,7 @@ ALTER TABLE ONLY public.card_types
 --
 
 ALTER TABLE ONLY public.cards
-    ADD CONSTRAINT cards_id_card_type_id_key UNIQUE (id, card_type_id);
+ADD CONSTRAINT cards_id_card_type_id_key UNIQUE (id, card_type_id);
 
 
 --
@@ -554,7 +578,7 @@ ALTER TABLE ONLY public.cards
 --
 
 ALTER TABLE ONLY public.cards
-    ADD CONSTRAINT cards_pkey PRIMARY KEY (id);
+ADD CONSTRAINT cards_pkey PRIMARY KEY (id);
 
 
 --
@@ -562,7 +586,7 @@ ALTER TABLE ONLY public.cards
 --
 
 ALTER TABLE ONLY public.citizens
-    ADD CONSTRAINT citizens_pkey PRIMARY KEY (id);
+ADD CONSTRAINT citizens_pkey PRIMARY KEY (id);
 
 
 --
@@ -570,7 +594,7 @@ ALTER TABLE ONLY public.citizens
 --
 
 ALTER TABLE ONLY public.field_citizens
-    ADD CONSTRAINT field_citizens_pkey PRIMARY KEY (citizen_id);
+ADD CONSTRAINT field_citizens_pkey PRIMARY KEY (citizen_id);
 
 
 --
@@ -578,7 +602,7 @@ ALTER TABLE ONLY public.field_citizens
 --
 
 ALTER TABLE ONLY public.field_tiles
-    ADD CONSTRAINT field_tiles_pkey PRIMARY KEY (tile_id);
+ADD CONSTRAINT field_tiles_pkey PRIMARY KEY (tile_id);
 
 
 --
@@ -586,7 +610,7 @@ ALTER TABLE ONLY public.field_tiles
 --
 
 ALTER TABLE ONLY public.fields
-    ADD CONSTRAINT fields_id_account_id_key UNIQUE (id, account_id);
+ADD CONSTRAINT fields_id_account_id_key UNIQUE (id, account_id);
 
 
 --
@@ -594,7 +618,7 @@ ALTER TABLE ONLY public.fields
 --
 
 ALTER TABLE ONLY public.fields
-    ADD CONSTRAINT fields_pkey PRIMARY KEY (id);
+ADD CONSTRAINT fields_pkey PRIMARY KEY (id);
 
 
 --
@@ -602,7 +626,9 @@ ALTER TABLE ONLY public.fields
 --
 
 ALTER TABLE ONLY public.pack_banner_cards
-    ADD CONSTRAINT pack_banner_cards_pkey PRIMARY KEY (pack_banner_id, card_type_id);
+ADD CONSTRAINT pack_banner_cards_pkey PRIMARY KEY (
+    pack_banner_id, card_type_id
+);
 
 
 --
@@ -610,7 +636,7 @@ ALTER TABLE ONLY public.pack_banner_cards
 --
 
 ALTER TABLE ONLY public.pack_banners
-    ADD CONSTRAINT pack_banners_pkey PRIMARY KEY (id);
+ADD CONSTRAINT pack_banners_pkey PRIMARY KEY (id);
 
 
 --
@@ -618,7 +644,7 @@ ALTER TABLE ONLY public.pack_banners
 --
 
 ALTER TABLE ONLY public.pack_contents
-    ADD CONSTRAINT pack_contents_pkey PRIMARY KEY (pack_id, "position");
+ADD CONSTRAINT pack_contents_pkey PRIMARY KEY (pack_id, "position");
 
 
 --
@@ -626,7 +652,7 @@ ALTER TABLE ONLY public.pack_contents
 --
 
 ALTER TABLE ONLY public.packs
-    ADD CONSTRAINT packs_pkey PRIMARY KEY (id);
+ADD CONSTRAINT packs_pkey PRIMARY KEY (id);
 
 
 --
@@ -634,7 +660,7 @@ ALTER TABLE ONLY public.packs
 --
 
 ALTER TABLE ONLY public.resources
-    ADD CONSTRAINT resources_pkey PRIMARY KEY (id);
+ADD CONSTRAINT resources_pkey PRIMARY KEY (id);
 
 
 --
@@ -642,7 +668,7 @@ ALTER TABLE ONLY public.resources
 --
 
 ALTER TABLE ONLY public.species_needs
-    ADD CONSTRAINT species_needs_pkey PRIMARY KEY (species_id, resource_id);
+ADD CONSTRAINT species_needs_pkey PRIMARY KEY (species_id, resource_id);
 
 
 --
@@ -650,7 +676,7 @@ ALTER TABLE ONLY public.species_needs
 --
 
 ALTER TABLE ONLY public.species
-    ADD CONSTRAINT species_pkey PRIMARY KEY (id);
+ADD CONSTRAINT species_pkey PRIMARY KEY (id);
 
 
 --
@@ -658,7 +684,7 @@ ALTER TABLE ONLY public.species
 --
 
 ALTER TABLE ONLY public.tile_type_consumes
-    ADD CONSTRAINT tile_type_consumes_pkey PRIMARY KEY (tile_type_id, resource_id);
+ADD CONSTRAINT tile_type_consumes_pkey PRIMARY KEY (tile_type_id, resource_id);
 
 
 --
@@ -666,7 +692,7 @@ ALTER TABLE ONLY public.tile_type_consumes
 --
 
 ALTER TABLE ONLY public.tile_type_produces
-    ADD CONSTRAINT tile_type_produces_pkey PRIMARY KEY (tile_type_id, resource_id);
+ADD CONSTRAINT tile_type_produces_pkey PRIMARY KEY (tile_type_id, resource_id);
 
 
 --
@@ -674,7 +700,7 @@ ALTER TABLE ONLY public.tile_type_produces
 --
 
 ALTER TABLE ONLY public.tile_types
-    ADD CONSTRAINT tile_types_pkey PRIMARY KEY (id);
+ADD CONSTRAINT tile_types_pkey PRIMARY KEY (id);
 
 
 --
@@ -682,14 +708,16 @@ ALTER TABLE ONLY public.tile_types
 --
 
 ALTER TABLE ONLY public.tiles
-    ADD CONSTRAINT tiles_pkey PRIMARY KEY (id);
+ADD CONSTRAINT tiles_pkey PRIMARY KEY (id);
 
 
 --
 -- Name: card_accounts_account_id_index; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX card_accounts_account_id_index ON public.card_accounts USING btree (account_id);
+CREATE INDEX card_accounts_account_id_index ON public.card_accounts USING btree (
+    account_id
+);
 
 
 --
@@ -697,7 +725,9 @@ CREATE INDEX card_accounts_account_id_index ON public.card_accounts USING btree 
 --
 
 ALTER TABLE ONLY public.card_accounts
-    ADD CONSTRAINT card_accounts_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.accounts(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ADD CONSTRAINT card_accounts_account_id_fkey FOREIGN KEY (
+    account_id
+) REFERENCES public.accounts (id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -705,7 +735,9 @@ ALTER TABLE ONLY public.card_accounts
 --
 
 ALTER TABLE ONLY public.card_accounts
-    ADD CONSTRAINT card_accounts_card_id_fkey FOREIGN KEY (card_id) REFERENCES public.cards(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ADD CONSTRAINT card_accounts_card_id_fkey FOREIGN KEY (
+    card_id
+) REFERENCES public.cards (id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -713,7 +745,9 @@ ALTER TABLE ONLY public.card_accounts
 --
 
 ALTER TABLE ONLY public.card_types
-    ADD CONSTRAINT card_types_card_set_id_fkey FOREIGN KEY (card_set_id) REFERENCES public.card_sets(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+ADD CONSTRAINT card_types_card_set_id_fkey FOREIGN KEY (
+    card_set_id
+) REFERENCES public.card_sets (id) ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 --
@@ -721,7 +755,9 @@ ALTER TABLE ONLY public.card_types
 --
 
 ALTER TABLE ONLY public.cards
-    ADD CONSTRAINT cards_card_type_id_fkey FOREIGN KEY (card_type_id) REFERENCES public.card_types(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+ADD CONSTRAINT cards_card_type_id_fkey FOREIGN KEY (
+    card_type_id
+) REFERENCES public.card_types (id) ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 --
@@ -729,7 +765,9 @@ ALTER TABLE ONLY public.cards
 --
 
 ALTER TABLE ONLY public.citizens
-    ADD CONSTRAINT citizens_home_tile_id_fkey FOREIGN KEY (home_tile_id) REFERENCES public.tiles(id) ON UPDATE CASCADE ON DELETE SET NULL;
+ADD CONSTRAINT citizens_home_tile_id_fkey FOREIGN KEY (
+    home_tile_id
+) REFERENCES public.tiles (id) ON UPDATE CASCADE ON DELETE SET NULL;
 
 
 --
@@ -737,7 +775,9 @@ ALTER TABLE ONLY public.citizens
 --
 
 ALTER TABLE ONLY public.citizens
-    ADD CONSTRAINT citizens_id_fkey FOREIGN KEY (id) REFERENCES public.cards(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ADD CONSTRAINT citizens_id_fkey FOREIGN KEY (id) REFERENCES public.cards (
+    id
+) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -745,7 +785,11 @@ ALTER TABLE ONLY public.citizens
 --
 
 ALTER TABLE ONLY public.citizens
-    ADD CONSTRAINT citizens_id_species_id_fkey FOREIGN KEY (id, species_id) REFERENCES public.cards(id, card_type_id) ON UPDATE CASCADE ON DELETE CASCADE;
+ADD CONSTRAINT citizens_id_species_id_fkey FOREIGN KEY (
+    id, species_id
+) REFERENCES public.cards (
+    id, card_type_id
+) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -753,7 +797,9 @@ ALTER TABLE ONLY public.citizens
 --
 
 ALTER TABLE ONLY public.citizens
-    ADD CONSTRAINT citizens_species_id_fkey FOREIGN KEY (species_id) REFERENCES public.species(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ADD CONSTRAINT citizens_species_id_fkey FOREIGN KEY (
+    species_id
+) REFERENCES public.species (id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -761,7 +807,11 @@ ALTER TABLE ONLY public.citizens
 --
 
 ALTER TABLE ONLY public.field_citizens
-    ADD CONSTRAINT field_citizens_account_id_citizen_id_fkey FOREIGN KEY (account_id, citizen_id) REFERENCES public.card_accounts(account_id, card_id) ON UPDATE CASCADE ON DELETE CASCADE;
+ADD CONSTRAINT field_citizens_account_id_citizen_id_fkey FOREIGN KEY (
+    account_id, citizen_id
+) REFERENCES public.card_accounts (
+    account_id, card_id
+) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -769,7 +819,9 @@ ALTER TABLE ONLY public.field_citizens
 --
 
 ALTER TABLE ONLY public.field_citizens
-    ADD CONSTRAINT field_citizens_account_id_field_id_fkey FOREIGN KEY (account_id, field_id) REFERENCES public.fields(account_id, id) ON UPDATE CASCADE ON DELETE CASCADE;
+ADD CONSTRAINT field_citizens_account_id_field_id_fkey FOREIGN KEY (
+    account_id, field_id
+) REFERENCES public.fields (account_id, id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -777,7 +829,9 @@ ALTER TABLE ONLY public.field_citizens
 --
 
 ALTER TABLE ONLY public.field_citizens
-    ADD CONSTRAINT field_citizens_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.accounts(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ADD CONSTRAINT field_citizens_account_id_fkey FOREIGN KEY (
+    account_id
+) REFERENCES public.accounts (id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -785,7 +839,9 @@ ALTER TABLE ONLY public.field_citizens
 --
 
 ALTER TABLE ONLY public.field_citizens
-    ADD CONSTRAINT field_citizens_citizen_id_fkey FOREIGN KEY (citizen_id) REFERENCES public.citizens(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ADD CONSTRAINT field_citizens_citizen_id_fkey FOREIGN KEY (
+    citizen_id
+) REFERENCES public.citizens (id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -793,7 +849,9 @@ ALTER TABLE ONLY public.field_citizens
 --
 
 ALTER TABLE ONLY public.field_citizens
-    ADD CONSTRAINT field_citizens_field_id_fkey FOREIGN KEY (field_id) REFERENCES public.fields(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ADD CONSTRAINT field_citizens_field_id_fkey FOREIGN KEY (
+    field_id
+) REFERENCES public.fields (id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -801,7 +859,9 @@ ALTER TABLE ONLY public.field_citizens
 --
 
 ALTER TABLE ONLY public.field_tiles
-    ADD CONSTRAINT field_tiles_account_id_field_id_fkey FOREIGN KEY (account_id, field_id) REFERENCES public.fields(account_id, id) ON UPDATE CASCADE ON DELETE CASCADE;
+ADD CONSTRAINT field_tiles_account_id_field_id_fkey FOREIGN KEY (
+    account_id, field_id
+) REFERENCES public.fields (account_id, id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -809,7 +869,9 @@ ALTER TABLE ONLY public.field_tiles
 --
 
 ALTER TABLE ONLY public.field_tiles
-    ADD CONSTRAINT field_tiles_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.accounts(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ADD CONSTRAINT field_tiles_account_id_fkey FOREIGN KEY (
+    account_id
+) REFERENCES public.accounts (id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -817,7 +879,11 @@ ALTER TABLE ONLY public.field_tiles
 --
 
 ALTER TABLE ONLY public.field_tiles
-    ADD CONSTRAINT field_tiles_account_id_tile_id_fkey FOREIGN KEY (account_id, tile_id) REFERENCES public.card_accounts(account_id, card_id) ON UPDATE CASCADE ON DELETE CASCADE;
+ADD CONSTRAINT field_tiles_account_id_tile_id_fkey FOREIGN KEY (
+    account_id, tile_id
+) REFERENCES public.card_accounts (
+    account_id, card_id
+) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -825,7 +891,9 @@ ALTER TABLE ONLY public.field_tiles
 --
 
 ALTER TABLE ONLY public.field_tiles
-    ADD CONSTRAINT field_tiles_field_id_fkey FOREIGN KEY (field_id) REFERENCES public.fields(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ADD CONSTRAINT field_tiles_field_id_fkey FOREIGN KEY (
+    field_id
+) REFERENCES public.fields (id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -833,7 +901,9 @@ ALTER TABLE ONLY public.field_tiles
 --
 
 ALTER TABLE ONLY public.field_tiles
-    ADD CONSTRAINT field_tiles_tile_id_fkey FOREIGN KEY (tile_id) REFERENCES public.tiles(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ADD CONSTRAINT field_tiles_tile_id_fkey FOREIGN KEY (
+    tile_id
+) REFERENCES public.tiles (id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -841,7 +911,9 @@ ALTER TABLE ONLY public.field_tiles
 --
 
 ALTER TABLE ONLY public.fields
-    ADD CONSTRAINT fields_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.accounts(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ADD CONSTRAINT fields_account_id_fkey FOREIGN KEY (
+    account_id
+) REFERENCES public.accounts (id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -849,7 +921,9 @@ ALTER TABLE ONLY public.fields
 --
 
 ALTER TABLE ONLY public.pack_banner_cards
-    ADD CONSTRAINT pack_banner_cards_card_type_id_fkey FOREIGN KEY (card_type_id) REFERENCES public.card_types(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+ADD CONSTRAINT pack_banner_cards_card_type_id_fkey FOREIGN KEY (
+    card_type_id
+) REFERENCES public.card_types (id) ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 --
@@ -857,7 +931,9 @@ ALTER TABLE ONLY public.pack_banner_cards
 --
 
 ALTER TABLE ONLY public.pack_banner_cards
-    ADD CONSTRAINT pack_banner_cards_pack_banner_id_fkey FOREIGN KEY (pack_banner_id) REFERENCES public.pack_banners(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ADD CONSTRAINT pack_banner_cards_pack_banner_id_fkey FOREIGN KEY (
+    pack_banner_id
+) REFERENCES public.pack_banners (id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -865,7 +941,9 @@ ALTER TABLE ONLY public.pack_banner_cards
 --
 
 ALTER TABLE ONLY public.pack_contents
-    ADD CONSTRAINT pack_contents_card_id_fkey FOREIGN KEY (card_id) REFERENCES public.cards(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ADD CONSTRAINT pack_contents_card_id_fkey FOREIGN KEY (
+    card_id
+) REFERENCES public.cards (id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -873,7 +951,9 @@ ALTER TABLE ONLY public.pack_contents
 --
 
 ALTER TABLE ONLY public.pack_contents
-    ADD CONSTRAINT pack_contents_pack_id_fkey FOREIGN KEY (pack_id) REFERENCES public.packs(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ADD CONSTRAINT pack_contents_pack_id_fkey FOREIGN KEY (
+    pack_id
+) REFERENCES public.packs (id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -881,7 +961,9 @@ ALTER TABLE ONLY public.pack_contents
 --
 
 ALTER TABLE ONLY public.packs
-    ADD CONSTRAINT packs_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.accounts(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ADD CONSTRAINT packs_account_id_fkey FOREIGN KEY (
+    account_id
+) REFERENCES public.accounts (id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -889,7 +971,9 @@ ALTER TABLE ONLY public.packs
 --
 
 ALTER TABLE ONLY public.packs
-    ADD CONSTRAINT packs_pack_banner_id_fkey FOREIGN KEY (pack_banner_id) REFERENCES public.pack_banners(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+ADD CONSTRAINT packs_pack_banner_id_fkey FOREIGN KEY (
+    pack_banner_id
+) REFERENCES public.pack_banners (id) ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 --
@@ -897,7 +981,9 @@ ALTER TABLE ONLY public.packs
 --
 
 ALTER TABLE ONLY public.species
-    ADD CONSTRAINT species_id_class_fkey FOREIGN KEY (id, class) REFERENCES public.card_types(id, class) ON UPDATE RESTRICT ON DELETE CASCADE;
+ADD CONSTRAINT species_id_class_fkey FOREIGN KEY (
+    id, class
+) REFERENCES public.card_types (id, class) ON UPDATE RESTRICT ON DELETE CASCADE;
 
 
 --
@@ -905,7 +991,9 @@ ALTER TABLE ONLY public.species
 --
 
 ALTER TABLE ONLY public.species
-    ADD CONSTRAINT species_id_fkey FOREIGN KEY (id) REFERENCES public.card_types(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ADD CONSTRAINT species_id_fkey FOREIGN KEY (id) REFERENCES public.card_types (
+    id
+) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -913,7 +1001,9 @@ ALTER TABLE ONLY public.species
 --
 
 ALTER TABLE ONLY public.species_needs
-    ADD CONSTRAINT species_needs_resource_id_fkey FOREIGN KEY (resource_id) REFERENCES public.resources(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+ADD CONSTRAINT species_needs_resource_id_fkey FOREIGN KEY (
+    resource_id
+) REFERENCES public.resources (id) ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 --
@@ -921,7 +1011,9 @@ ALTER TABLE ONLY public.species_needs
 --
 
 ALTER TABLE ONLY public.species_needs
-    ADD CONSTRAINT species_needs_species_id_fkey FOREIGN KEY (species_id) REFERENCES public.species(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ADD CONSTRAINT species_needs_species_id_fkey FOREIGN KEY (
+    species_id
+) REFERENCES public.species (id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -929,7 +1021,9 @@ ALTER TABLE ONLY public.species_needs
 --
 
 ALTER TABLE ONLY public.tile_type_consumes
-    ADD CONSTRAINT tile_type_consumes_resource_id_fkey FOREIGN KEY (resource_id) REFERENCES public.resources(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+ADD CONSTRAINT tile_type_consumes_resource_id_fkey FOREIGN KEY (
+    resource_id
+) REFERENCES public.resources (id) ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 --
@@ -937,7 +1031,9 @@ ALTER TABLE ONLY public.tile_type_consumes
 --
 
 ALTER TABLE ONLY public.tile_type_consumes
-    ADD CONSTRAINT tile_type_consumes_tile_type_id_fkey FOREIGN KEY (tile_type_id) REFERENCES public.tile_types(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ADD CONSTRAINT tile_type_consumes_tile_type_id_fkey FOREIGN KEY (
+    tile_type_id
+) REFERENCES public.tile_types (id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -945,7 +1041,9 @@ ALTER TABLE ONLY public.tile_type_consumes
 --
 
 ALTER TABLE ONLY public.tile_type_produces
-    ADD CONSTRAINT tile_type_produces_resource_id_fkey FOREIGN KEY (resource_id) REFERENCES public.resources(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+ADD CONSTRAINT tile_type_produces_resource_id_fkey FOREIGN KEY (
+    resource_id
+) REFERENCES public.resources (id) ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 --
@@ -953,7 +1051,9 @@ ALTER TABLE ONLY public.tile_type_produces
 --
 
 ALTER TABLE ONLY public.tile_type_produces
-    ADD CONSTRAINT tile_type_produces_tile_type_id_fkey FOREIGN KEY (tile_type_id) REFERENCES public.tile_types(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ADD CONSTRAINT tile_type_produces_tile_type_id_fkey FOREIGN KEY (
+    tile_type_id
+) REFERENCES public.tile_types (id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -961,7 +1061,9 @@ ALTER TABLE ONLY public.tile_type_produces
 --
 
 ALTER TABLE ONLY public.tile_types
-    ADD CONSTRAINT tile_types_id_class_fkey FOREIGN KEY (id, class) REFERENCES public.card_types(id, class) ON UPDATE RESTRICT ON DELETE CASCADE;
+ADD CONSTRAINT tile_types_id_class_fkey FOREIGN KEY (
+    id, class
+) REFERENCES public.card_types (id, class) ON UPDATE RESTRICT ON DELETE CASCADE;
 
 
 --
@@ -969,7 +1071,9 @@ ALTER TABLE ONLY public.tile_types
 --
 
 ALTER TABLE ONLY public.tile_types
-    ADD CONSTRAINT tile_types_id_fkey FOREIGN KEY (id) REFERENCES public.card_types(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ADD CONSTRAINT tile_types_id_fkey FOREIGN KEY (
+    id
+) REFERENCES public.card_types (id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -977,7 +1081,9 @@ ALTER TABLE ONLY public.tile_types
 --
 
 ALTER TABLE ONLY public.tiles
-    ADD CONSTRAINT tiles_id_fkey FOREIGN KEY (id) REFERENCES public.cards(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ADD CONSTRAINT tiles_id_fkey FOREIGN KEY (id) REFERENCES public.cards (
+    id
+) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -985,7 +1091,11 @@ ALTER TABLE ONLY public.tiles
 --
 
 ALTER TABLE ONLY public.tiles
-    ADD CONSTRAINT tiles_id_tile_type_id_fkey FOREIGN KEY (id, tile_type_id) REFERENCES public.cards(id, card_type_id) ON UPDATE CASCADE ON DELETE CASCADE;
+ADD CONSTRAINT tiles_id_tile_type_id_fkey FOREIGN KEY (
+    id, tile_type_id
+) REFERENCES public.cards (
+    id, card_type_id
+) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -993,7 +1103,9 @@ ALTER TABLE ONLY public.tiles
 --
 
 ALTER TABLE ONLY public.tiles
-    ADD CONSTRAINT tiles_tile_type_id_fkey FOREIGN KEY (tile_type_id) REFERENCES public.tile_types(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+ADD CONSTRAINT tiles_tile_type_id_fkey FOREIGN KEY (
+    tile_type_id
+) REFERENCES public.tile_types (id) ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 --
@@ -1001,4 +1113,3 @@ ALTER TABLE ONLY public.tiles
 --
 
 \unrestrict aa4b4bc410c5cacbd97fc326d0f62806
-

@@ -40,7 +40,11 @@ pub async fn pull_banner(
     let mut conn = db.begin().await.map_err(internal_server_error)?;
 
     let banner = sqlx::query!(
-        "SELECT pack_size FROM pack_banners WHERE id = $1",
+        r#"
+            SELECT pack_size
+            FROM pack_banners
+            WHERE id = $1 AND start_date <= now() AND (end_date IS NULL OR end_date > now())
+        "#,
         banner_id
     )
     .fetch_optional(&mut *conn)
@@ -213,6 +217,70 @@ mod tests {
     #[sqlx::test(
         migrator = "MIGRATOR",
         fixtures(path = "../../../fixtures", scripts("seed", "account"))
+    )]
+    async fn pull_banner_banner_not_found(pool: PgPool) {
+        let app = crate::app::Config::test(pool).into_router();
+
+        let request = Request::post("/api/v1/banners/fake-banner/pull")
+            .header("Authorization", "Trust foxfriends")
+            .body(Body::empty())
+            .unwrap();
+
+        let Ok(response) = app.oneshot(request).await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[sqlx::test(
+        migrator = "MIGRATOR",
+        fixtures(path = "../../../fixtures", scripts("future-banner", "account"))
+    )]
+    async fn pull_banner_future_banner_not_found(pool: PgPool) {
+        let app = crate::app::Config::test(pool).into_router();
+
+        let request = Request::post("/api/v1/banners/future-banner/pull")
+            .header("Authorization", "Trust foxfriends")
+            .body(Body::empty())
+            .unwrap();
+
+        let Ok(response) = app.oneshot(request).await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[sqlx::test(
+        migrator = "MIGRATOR",
+        fixtures(path = "../../../fixtures", scripts("past-banner", "account"))
+    )]
+    async fn pull_banner_past_banner_not_found(pool: PgPool) {
+        let app = crate::app::Config::test(pool).into_router();
+
+        let request = Request::post("/api/v1/banners/past-banner/pull")
+            .header("Authorization", "Trust foxfriends")
+            .body(Body::empty())
+            .unwrap();
+
+        let Ok(response) = app.oneshot(request).await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[sqlx::test(
+        migrator = "MIGRATOR",
+        fixtures(path = "../../../fixtures", scripts("empty-banner", "account"))
+    )]
+    async fn pull_banner_empty_banner_not_found(pool: PgPool) {
+        let app = crate::app::Config::test(pool).into_router();
+
+        let request = Request::post("/api/v1/banners/empty-banner/pull")
+            .header("Authorization", "Trust foxfriends")
+            .body(Body::empty())
+            .unwrap();
+
+        let Ok(response) = app.oneshot(request).await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[sqlx::test(
+        migrator = "MIGRATOR",
+        fixtures(path = "../../../fixtures", scripts("seed"))
     )]
     async fn pull_banner_requires_authorization(pool: PgPool) {
         let app = crate::app::Config::test(pool).into_router();
