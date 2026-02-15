@@ -47,7 +47,7 @@ INSERT INTO pack_banners (id, start_date, end_date)
 VALUES
 ('default', '2026-01-01T00:00:00Z', '2026-01-01T00:00:00Z'),
 ('base-standard', '2026-01-01T00:00:00Z', NULL),
-('halloween-2026', '2026-10-01T00:00:00Z', '2026-10-31T23:59:59Z')
+('upcoming-holiday', now() + '30 days'::interval, now() + '37 days'::interval)
 ON CONFLICT (id) DO UPDATE
 SET start_date = excluded.start_date,
 end_date = excluded.end_date;

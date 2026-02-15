@@ -186,7 +186,6 @@ pub async fn pull_banner(
 #[cfg(test)]
 mod tests {
     use crate::test::prelude::*;
-    use axum::body::Body;
     use axum::http::{Request, StatusCode};
     use sqlx::PgPool;
 
@@ -201,7 +200,7 @@ mod tests {
 
         let request = Request::post("/api/v1/banners/base-standard/pull")
             .header("Authorization", "Trust foxfriends")
-            .body(Body::empty())
+            .empty()
             .unwrap();
 
         let Ok(response) = app.oneshot(request).await;
@@ -223,7 +222,7 @@ mod tests {
 
         let request = Request::post("/api/v1/banners/fake-banner/pull")
             .header("Authorization", "Trust foxfriends")
-            .body(Body::empty())
+            .empty()
             .unwrap();
 
         let Ok(response) = app.oneshot(request).await;
@@ -239,7 +238,7 @@ mod tests {
 
         let request = Request::post("/api/v1/banners/future-banner/pull")
             .header("Authorization", "Trust foxfriends")
-            .body(Body::empty())
+            .empty()
             .unwrap();
 
         let Ok(response) = app.oneshot(request).await;
@@ -255,7 +254,7 @@ mod tests {
 
         let request = Request::post("/api/v1/banners/past-banner/pull")
             .header("Authorization", "Trust foxfriends")
-            .body(Body::empty())
+            .empty()
             .unwrap();
 
         let Ok(response) = app.oneshot(request).await;
@@ -271,7 +270,7 @@ mod tests {
 
         let request = Request::post("/api/v1/banners/empty-banner/pull")
             .header("Authorization", "Trust foxfriends")
-            .body(Body::empty())
+            .empty()
             .unwrap();
 
         let Ok(response) = app.oneshot(request).await;
@@ -286,7 +285,7 @@ mod tests {
         let app = crate::app::Config::test(pool).into_router();
 
         let request = Request::post("/api/v1/banners/base-standard/pull")
-            .body(Body::empty())
+            .empty()
             .unwrap();
 
         let Ok(response) = app.oneshot(request).await;

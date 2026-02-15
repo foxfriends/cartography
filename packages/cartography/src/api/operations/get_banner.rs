@@ -6,6 +6,7 @@ use axum::Json;
 use axum::extract::Path;
 
 #[derive(serde::Serialize, utoipa::ToSchema)]
+#[cfg_attr(test, derive(serde::Deserialize))]
 pub struct GetBannerResponse {
     banner: PackBanner,
     banner_cards: Vec<PackBannerCard>,
@@ -73,4 +74,92 @@ pub async fn get_banner(
         banner,
         banner_cards: row.distribution.unwrap().0,
     }))
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::api::errors::{ApiError, BannerNotFoundError, ErrorDetailResponse};
+    use crate::test::prelude::*;
+    use axum::http::Request;
+    use axum::{body::Body, http::StatusCode};
+    use sqlx::PgPool;
+    use time::{Date, Month, OffsetDateTime, Time};
+
+    use super::GetBannerResponse;
+
+    #[sqlx::test(
+        migrator = "MIGRATOR",
+        fixtures(path = "../../../fixtures", scripts("seed"))
+    )]
+    async fn get_banner_ok(pool: PgPool) {
+        let app = crate::app::Config::test(pool).into_router();
+
+        let request = Request::get("/api/v1/banners/base-standard")
+            .body(Body::empty())
+            .unwrap();
+
+        let Ok(response) = app.oneshot(request).await;
+        assert_success!(response);
+
+        let response: GetBannerResponse = response.json().await.unwrap();
+        assert_eq!(response.banner.id, "base-standard");
+        assert_eq!(
+            response.banner.start_date,
+            OffsetDateTime::new_utc(
+                Date::from_calendar_date(2026, Month::January, 1).unwrap(),
+                Time::MIDNIGHT,
+            )
+        );
+        assert_eq!(response.banner.end_date, None);
+        assert_eq!(response.banner_cards.len(), 14);
+    }
+
+    #[sqlx::test(
+        migrator = "MIGRATOR",
+        fixtures(path = "../../../fixtures", scripts("seed"))
+    )]
+    async fn get_banner_done(pool: PgPool) {
+        let app = crate::app::Config::test(pool).into_router();
+
+        let request = Request::get("/api/v1/banners/default").empty().unwrap();
+
+        let Ok(response) = app.oneshot(request).await;
+        assert_success!(response);
+
+        let response: GetBannerResponse = response.json().await.unwrap();
+        assert_eq!(response.banner.id, "default");
+        assert!(response.banner_cards.is_empty());
+    }
+
+    #[sqlx::test(
+        migrator = "MIGRATOR",
+        fixtures(path = "../../../fixtures", scripts("seed"))
+    )]
+    async fn get_banner_upcoming(pool: PgPool) {
+        let app = crate::app::Config::test(pool).into_router();
+
+        let request = Request::get("/api/v1/banners/upcoming-holiday")
+            .empty()
+            .unwrap();
+
+        let Ok(response) = app.oneshot(request).await;
+        assert_success!(response);
+
+        let response: GetBannerResponse = response.json().await.unwrap();
+        assert_eq!(response.banner.id, "upcoming-holiday");
+        assert!(response.banner_cards.is_empty());
+    }
+
+    #[sqlx::test(migrator = "MIGRATOR")]
+    async fn get_banner_not_found(pool: PgPool) {
+        let app = crate::app::Config::test(pool).into_router();
+
+        let request = Request::get("/api/v1/banners/fake-banner").empty().unwrap();
+
+        let Ok(response) = app.oneshot(request).await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+
+        let response: ErrorDetailResponse = response.json().await.unwrap();
+        assert_eq!(response.code, BannerNotFoundError::CODE);
+    }
 }

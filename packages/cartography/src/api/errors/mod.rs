@@ -36,14 +36,15 @@ impl<T: ApiError> From<T> for JsonError<T> {
 }
 
 #[derive(utoipa::ToSchema)]
-#[expect(
+#[cfg_attr(test, derive(serde::Deserialize))]
+#[allow(
     dead_code,
-    reason = "this is a stub type used for OpenAPI schema generation only"
+    reason = "this is a stub type used for OpenAPI schema generation and tests"
 )]
 pub struct ErrorDetailResponse {
-    code: &'static str,
-    message: String,
-    detail: Value,
+    pub code: String,
+    pub message: String,
+    pub detail: Value,
 }
 
 impl<T: ApiError> IntoResponse for JsonError<T> {

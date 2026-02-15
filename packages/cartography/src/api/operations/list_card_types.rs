@@ -3,6 +3,7 @@ use crate::dto::*;
 use axum::Json;
 
 #[derive(serde::Serialize, utoipa::ToSchema)]
+#[cfg_attr(test, derive(serde::Deserialize))]
 pub struct ListCardTypesResponse {
     card_types: Vec<CardType>,
 }
@@ -56,4 +57,32 @@ pub async fn list_card_types(
         .chain(species_types.into_iter().map(CardType::Citizen))
         .collect();
     Ok(Json(ListCardTypesResponse { card_types }))
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::test::prelude::*;
+    use axum::body::Body;
+    use axum::http::Request;
+    use sqlx::PgPool;
+
+    use super::ListCardTypesResponse;
+
+    #[sqlx::test(
+        migrator = "MIGRATOR",
+        fixtures(path = "../../../fixtures", scripts("seed"))
+    )]
+    async fn get_banner_ok(pool: PgPool) {
+        let app = crate::app::Config::test(pool).into_router();
+
+        let request = Request::get("/api/v1/cardtypes")
+            .body(Body::empty())
+            .unwrap();
+
+        let Ok(response) = app.oneshot(request).await;
+        assert_success!(response);
+
+        let response: ListCardTypesResponse = response.json().await.unwrap();
+        assert_eq!(response.card_types.len(), 14);
+    }
 }
