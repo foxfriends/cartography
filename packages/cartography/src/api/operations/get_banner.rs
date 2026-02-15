@@ -1,9 +1,9 @@
 use crate::api::errors::{
-    internal_server_error, BannerNotFoundError, ErrorDetailResponse, JsonError,
+    BannerNotFoundError, ErrorDetailResponse, JsonError, internal_server_error,
 };
 use crate::dto::*;
-use axum::extract::Path;
 use axum::Json;
+use axum::extract::Path;
 
 #[derive(serde::Serialize, utoipa::ToSchema)]
 pub struct GetBannerResponse {

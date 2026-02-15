@@ -1,15 +1,16 @@
 use crate::api::errors::{
-    internal_server_error, BannerNotFoundError, ErrorDetailResponse, JsonError,
+    BannerNotFoundError, ErrorDetailResponse, JsonError, internal_server_error,
 };
 use crate::db::CardClass;
 use crate::dto::*;
-use axum::extract::Path;
 use axum::Json;
+use axum::extract::Path;
 use rand::distr::weighted::WeightedIndex;
 use rand::rngs::Xoshiro256PlusPlus;
-use rand::{rng, Rng, RngExt, SeedableRng};
+use rand::{Rng, RngExt, SeedableRng, rng};
 
 #[derive(serde::Serialize, utoipa::ToSchema)]
+#[cfg_attr(test, derive(serde::Deserialize))]
 pub struct PullBannerResponse {
     pack: Pack,
     pack_cards: Vec<Card>,
@@ -172,4 +173,34 @@ pub async fn pull_banner(
             .expect("pack cards should have been correct JSON")
             .0,
     }))
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::test::prelude::*;
+    use axum::body::Body;
+    use axum::http::Request;
+    use sqlx::PgPool;
+
+    use super::PullBannerResponse;
+
+    #[sqlx::test(
+        migrator = "MIGRATOR",
+        fixtures(path = "../../../fixtures", scripts("seed", "account"))
+    )]
+    async fn pull_banner_standard(pool: PgPool) {
+        let app = crate::app::Config::test(pool).into_router();
+
+        let request = Request::post("/api/v1/banners/base-standard/pull")
+            .body(Body::empty())
+            .unwrap();
+
+        let Ok(response) = app.oneshot(request).await;
+        assert!(response.status().is_success(), "{}", response.json::<serde_json::Value>().await.unwrap());
+        let response: PullBannerResponse = response.json().await.unwrap();
+        assert_eq!(response.pack.pack_banner_id, "base-standard");
+        assert_eq!(response.pack.account_id, "foxfriends");
+        assert_eq!(response.pack.opened_at, None);
+        assert_eq!(response.pack_cards.len(), 5);
+    }
 }

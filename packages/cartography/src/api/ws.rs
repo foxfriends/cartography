@@ -1,6 +1,6 @@
 use crate::actor::player_socket::{PlayerSocket, Request, Response};
-use axum::extract::ws::{CloseFrame, Message, WebSocket, WebSocketUpgrade};
 use axum::Extension;
+use axum::extract::ws::{CloseFrame, Message, WebSocket, WebSocketUpgrade};
 use futures::StreamExt;
 use kameo::prelude::*;
 use serde::{Deserialize, Serialize};

@@ -1,5 +1,5 @@
-use super::super::field_state::FieldWatcher;
 use super::super::Unsubscribe;
+use super::super::field_state::FieldWatcher;
 use super::{PlayerSocket, Response};
 use kameo::actor::Spawn;
 use tokio::sync::mpsc::UnboundedSender;

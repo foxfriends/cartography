@@ -65,7 +65,7 @@ check:
 
 [group: "dev"]
 generate:
-    cargo sqlx prepare
+    cargo sqlx prepare --workspace
     cargo run -- --openapi > openapi.json
     cd app && npx orval
     cd app && npx svelte-kit sync
@@ -77,8 +77,8 @@ fmt: && generate
     cd app && npx prettier --write .
 
 [group: "dev"]
-test:
-    cargo test
+test: up
+    SQLX_OFFLINE=true DATABASE_URL={{ROOT_DATABASE_URL}} cargo test
     cd app && npm test
 
 [group: "database"]
@@ -90,9 +90,9 @@ migration-dev:
     npx graphile-migrate watch
 
 [group: "database"]
-migration:
+migration message:
     npx prettier migrations -w
-    npx graphile-migrate commit
+    npx graphile-migrate commit -m {{message}}
 
 [group: "database"]
 unmigration:
@@ -112,7 +112,7 @@ db: up
 
 [group: "database"]
 seed:
-    trilogy run ./seeds/seed.tri
+    RUST_LOG=off trilogy run ./seeds/seed.tri
 
 [group: "database"]
 apply-seed:

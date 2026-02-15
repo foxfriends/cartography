@@ -1,27 +1,7 @@
-.DS_Store
 node_modules
 /build
 /.svelte-kit
-/package
-.env
-.env.*
-!.env.example
+/src/lib/appserver/dto
+/src/lib/appserver/api.ts
 
-# Ignore files for PNPM, NPM and YARN
-pnpm-lock.yaml
 package-lock.json
-yarn.lock
-
-/src-tauri/target
-/src-tauri/gen/schemas
-
-/migrations/committed
-/generated
-
-/server/deps
-/server/_build
-/server/build
-
-/api/build
-
-/server-ex
