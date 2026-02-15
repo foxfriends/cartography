@@ -57,8 +57,9 @@ jobs:
         run: |
           set -e
           cargo run -- --openapi > openapi.json
-          cd app && npx svelte-kit sync
-          cd app && npx orval
+          cd app
+          npx svelte-kit sync
+          npx orval
       - name: Run lint
         run: npx eslint . --max-warnings 0
         working-directory: ./app
@@ -94,8 +95,9 @@ jobs:
         run: |
           set -e
           cargo run -- --openapi > openapi.json
-          cd app && npx svelte-kit sync
-          cd app && npx orval
+          cd app
+          npx svelte-kit sync
+          npx orval
       - name: Run check
         run: npx svelte-check --tsconfig ./tsconfig.json
         working-directory: ./app
@@ -131,8 +133,9 @@ jobs:
         run: |
           set -e
           cargo run -- --openapi > openapi.json
-          cd app && npx svelte-kit sync
-          cd app && npx orval
+          cd app
+          npx svelte-kit sync
+          npx orval
       - name: Run build
         run: npx vite build
         working-directory: ./app
@@ -168,8 +171,9 @@ jobs:
         run: |
           set -e
           cargo run -- --openapi > openapi.json
-          cd app && npx svelte-kit sync
-          cd app && npx orval
+          cd app
+          npx svelte-kit sync
+          npx orval
       - name: Run test
         run: npm test
         working-directory: ./app
