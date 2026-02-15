@@ -55,7 +55,9 @@ jobs:
           rustup default stable
       - name: Generate OpenAPI
         run: |
+          set -e
           cargo run -- --openapi > openapi.json
+          cd app && npx svelte-kit sync
           cd app && npx orval
       - name: Run lint
         run: npx eslint . --max-warnings 0
@@ -90,13 +92,12 @@ jobs:
           rustup default stable
       - name: Generate OpenAPI
         run: |
+          set -e
           cargo run -- --openapi > openapi.json
+          cd app && npx svelte-kit sync
           cd app && npx orval
       - name: Run check
-        run: |
-          set -e
-          cd app && npx svelte-kit sync
-          npx svelte-check --tsconfig ./tsconfig.json
+        run: npx svelte-check --tsconfig ./tsconfig.json
         working-directory: ./app
 
   build:
@@ -128,7 +129,9 @@ jobs:
           rustup default stable
       - name: Generate OpenAPI
         run: |
+          set -e
           cargo run -- --openapi > openapi.json
+          cd app && npx svelte-kit sync
           cd app && npx orval
       - name: Run build
         run: npx vite build
@@ -163,7 +166,9 @@ jobs:
           rustup default stable
       - name: Generate OpenAPI
         run: |
+          set -e
           cargo run -- --openapi > openapi.json
+          cd app && npx svelte-kit sync
           cd app && npx orval
       - name: Run test
         run: npm test
