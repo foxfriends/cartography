@@ -94,26 +94,26 @@ export type FieldTile = StaticDecode<typeof FieldTile>;
 export const FieldCitizen = Type.Object({ id: CitizenId, x: Type.Integer(), y: Type.Integer() });
 export type FieldCitizen = StaticDecode<typeof FieldCitizen>;
 
-export const GameStateField = Type.Object({
+export const FieldState = Type.Object({
   tiles: Type.Array(FieldTile),
   citizens: Type.Array(FieldCitizen),
 });
-export type GameStateField = StaticDecode<typeof GameStateField>;
+export type FieldState = StaticDecode<typeof FieldState>;
 
-export const GameState = Type.Object({
-  deck: Type.Object({
-    tiles: Type.Array(Tile),
-    citizens: Type.Array(Citizen),
-  }),
-  field: GameStateField,
+export const DeckState = Type.Object({
+  tiles: Type.Array(Tile),
+  citizens: Type.Array(Citizen),
 });
-export type GameState = StaticDecode<typeof GameState>;
+export type DeckState = StaticDecode<typeof DeckState>;
 
 export const Authenticate = Type.Object({
   type: Type.Literal("Authenticate"),
   data: Type.String(),
 });
 export type Authenticate = StaticDecode<typeof Authenticate>;
+
+export const WatchDeck = Type.Object({ type: Type.Literal("WatchDeck") });
+export type WatchDeck = StaticDecode<typeof WatchDeck>;
 
 export const WatchField = Type.Object({ type: Type.Literal("WatchField"), data: Type.Integer() });
 export type WatchField = StaticDecode<typeof WatchField>;
@@ -127,22 +127,25 @@ export const DebugAddCard = Type.Object({
 });
 export type DebugAddCard = StaticDecode<typeof DebugAddCard>;
 
-export const Request = Type.Union([Authenticate, WatchField, Unsubscribe, DebugAddCard]);
+export const Request = Type.Union([Authenticate, WatchDeck, WatchField, Unsubscribe, DebugAddCard]);
 export type Request = StaticDecode<typeof Request>;
 
 export const Authenticated = Type.Object({ type: Type.Literal("Authenticated"), data: Account });
 export type Authenticated = StaticDecode<typeof Authenticated>;
 
-export const PutFieldState = Type.Object({ type: Type.Literal("PutFieldState"), data: GameState });
+export const PutFieldState = Type.Object({ type: Type.Literal("PutFieldState"), data: FieldState });
 export type PutFieldState = StaticDecode<typeof PutFieldState>;
 
-export const PatchFieldState = Type.Object({
-  type: Type.Literal("PatchFieldState"),
+export const PutDeckState = Type.Object({ type: Type.Literal("PutDeckState"), data: DeckState });
+export type PutDeckState = StaticDecode<typeof PutDeckState>;
+
+export const PatchState = Type.Object({
+  type: Type.Literal("PatchState"),
   data: Type.Array(JsonPatch),
 });
-export type PatchFieldState = StaticDecode<typeof PatchFieldState>;
+export type PatchState = StaticDecode<typeof PatchState>;
 
-export const Response = Type.Union([Authenticated, PutFieldState, PatchFieldState]);
+export const Response = Type.Union([Authenticated, PutFieldState, PutDeckState, PatchState]);
 export type Response = StaticDecode<typeof Response>;
 
 export type Once<T> = Branded<"Once", T>;
@@ -153,7 +156,8 @@ export type StreamType<T> = T extends Stream<infer R> ? R : never;
 
 export interface SocketV1Protocol {
   Authenticate: Once<Authenticated>;
-  WatchField: Stream<PutFieldState | PatchFieldState>;
+  WatchDeck: Stream<PutDeckState | PatchState>;
+  WatchField: Stream<PutFieldState | PatchState>;
   Unsubscribe: never;
 }
 

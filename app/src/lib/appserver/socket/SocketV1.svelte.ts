@@ -5,7 +5,8 @@ import { ReactiveEventTarget } from "$lib/ReactiveEventTarget.svelte";
 import Value from "typebox/value";
 import {
   Account,
-  GameState,
+  DeckState,
+  FieldState,
   Request,
   RequestMessage,
   ResponseMessage,
@@ -100,16 +101,29 @@ export class SocketV1 extends ReactiveEventTarget<SocketV1EventMap> {
       });
   }
 
-  $watchField(data: { id: number }, subscriber: (gameState: GameState | undefined) => void) {
-    let gameState: GameState | undefined = undefined;
+  $watchField(data: { id: number }, subscriber: (fieldState: FieldState | undefined) => void) {
+    let fieldState: FieldState | undefined = undefined;
     this.#sendMessage({ type: "WatchField", data: data.id }).$subscribe((response) => {
       if (response.type === "PutFieldState") {
-        gameState = response.data;
-      } else if (response.type === "PatchFieldState") {
+        fieldState = response.data;
+      } else if (response.type === "PatchState") {
         const patches = response.data;
-        gameState = jsonpatch.apply(gameState, patches);
+        fieldState = jsonpatch.apply(fieldState, patches);
       }
-      subscriber(gameState);
+      subscriber(fieldState);
+    });
+  }
+
+  $watchDeck(subscriber: (deckState: DeckState | undefined) => void) {
+    let deckState: DeckState | undefined = undefined;
+    this.#sendMessage({ type: "WatchDeck" }).$subscribe((response) => {
+      if (response.type === "PutDeckState") {
+        deckState = response.data;
+      } else if (response.type === "PatchState") {
+        const patches = response.data;
+        deckState = jsonpatch.apply(deckState, patches);
+      }
+      subscriber(deckState);
     });
   }
 

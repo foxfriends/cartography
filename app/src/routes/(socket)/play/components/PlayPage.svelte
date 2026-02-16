@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { GameState } from "$lib/appserver/socket/SocketV1Protocol";
+  import type { FieldState } from "$lib/appserver/socket/SocketV1Protocol";
   import { getSocket } from "$lib/appserver/provideSocket.svelte";
   import DragTile from "$lib/components/DragTile.svelte";
   import DragWindow from "$lib/components/DragWindow.svelte";
@@ -12,11 +12,11 @@
   const fields = createListFields(() => "foxfriends");
 
   let fieldId: number | undefined = $state();
-  let gameState: GameState | undefined = $state();
+  let fieldState: FieldState | undefined = $state();
 
   $effect(() => {
     if (fieldId) {
-      socket.$watchField({ id: fieldId }, (state) => (gameState = state));
+      socket.$watchField({ id: fieldId }, (state) => (fieldState = state));
     }
   });
 </script>
@@ -45,8 +45,8 @@
       {:else}
         <div>Loading</div>
       {/if}
-    {:else if gameState}
-      <FieldView {gameState} />
+    {:else if fieldState}
+      <FieldView {fieldState} />
     {:else}
       <div>Loading</div>
     {/if}
