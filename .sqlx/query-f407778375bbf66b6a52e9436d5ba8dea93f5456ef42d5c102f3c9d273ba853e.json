@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT id, card_type_id\n                FROM cards\n                INNER JOIN pack_contents ON pack_contents.card_id = cards.id\n                WHERE pack_contents.pack_id = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "card_type_id",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "f407778375bbf66b6a52e9436d5ba8dea93f5456ef42d5c102f3c9d273ba853e"
+}

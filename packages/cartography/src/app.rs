@@ -17,6 +17,7 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, SecurityScheme};
         operations::list_fields,
 
         operations::list_packs,
+        operations::get_pack,
         operations::open_pack,
     ),
     components(
@@ -27,6 +28,7 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, SecurityScheme};
     tags(
         (name = "Global", description = "Publicly available global data about the Cartography game."),
         (name = "Player", description = "Player specific data; typically requires authorization."),
+        (name = "Pack", description = "Operations on packs."),
         (name = "Game", description = "Actions with effects on gameplay."),
     ),
     modifiers(&SecurityAddon)
@@ -102,6 +104,10 @@ impl Config {
             .route(
                 "/api/v1/players/{player_id}/packs",
                 axum::routing::post(operations::list_packs),
+            )
+            .route(
+                "/api/v1/packs/{pack_id}",
+                axum::routing::get(operations::get_pack),
             )
             .route(
                 "/api/v1/packs/{pack_id}/open",

@@ -1,1 +1,1 @@
-INSERT INTO accounts (id) VALUES ('foxfriends');
+INSERT INTO accounts (id) VALUES ('foxfriends'), ('not-foxfriends');
