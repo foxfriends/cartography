@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT packs.id, packs.pack_banner_id, packs.opened_at\n            FROM packs\n            WHERE id = $1 AND account_id = $2\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "pack_banner_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "opened_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        {
+          "Custom": {
+            "name": "citext",
+            "kind": "Simple"
+          }
+        }
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "c0eab268baac021bdf7600aa1a88e14c85a1062b71ddd94d16b0e60d4b74b128"
+}

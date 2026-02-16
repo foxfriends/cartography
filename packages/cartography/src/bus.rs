@@ -24,7 +24,7 @@ pub struct Bus {
 }
 
 impl Bus {
-    pub fn listen<T>(&mut self, recipient: Recipient<T>)
+    fn listen<T>(&mut self, recipient: Recipient<T>)
     where
         T: Any + Send + Sync,
     {
@@ -32,9 +32,9 @@ impl Bus {
         entry.push(Box::new(recipient))
     }
 
-    pub async fn notify<T>(&mut self, notification: T)
+    async fn notify<T>(&mut self, notification: T)
     where
-        T: Clone + Any + Send + Sync,
+        T: Any + Send + Sync + Clone,
     {
         for recipient in self
             .listeners
@@ -43,7 +43,7 @@ impl Bus {
             .flatten()
             .filter_map(|entry| entry.as_any().downcast_ref::<Recipient<T>>())
         {
-            if let Err(error) = recipient.tell(notification.clone()).await {
+            if let Err(error) = dbg!(recipient.tell(notification.clone()).await) {
                 tracing::error!("bus failed to notify: {}", error);
             }
         }
@@ -76,24 +76,24 @@ impl Actor for Bus {
     }
 }
 
-pub struct Listen<T: Send + Sync + 'static>(Recipient<T>);
-pub struct Notify<T: Send + Sync + Clone + 'static>(T);
+pub struct Listen<T: Any + Send + Sync>(Recipient<T>);
+pub struct Notify<T: Any + Send + Sync + Clone>(T);
 
-#[expect(dead_code)]
+#[cfg_attr(not(test), expect(dead_code))]
 pub trait BusExt {
-    async fn listen<T: Send + Sync + Clone + 'static, A: Actor + Message<T>>(
+    async fn listen<T: Any + Send + Sync, A: Actor + Message<T>>(
         &self,
         actor_ref: &ActorRef<A>,
     ) -> Result<(), SendError<Listen<T>, Infallible>>;
 
-    async fn notify<T: Send + Sync + Clone + 'static, A: Actor + Message<T>>(
+    async fn notify<T: Any + Send + Sync + Clone>(
         &self,
         notification: T,
     ) -> Result<(), SendError<Notify<T>, Infallible>>;
 }
 
 impl BusExt for ActorRef<Bus> {
-    async fn listen<T: Send + Sync + Clone + 'static, A: Actor + Message<T>>(
+    async fn listen<T: Any + Send + Sync, A: Actor + Message<T>>(
         &self,
         actor_ref: &ActorRef<A>,
     ) -> Result<(), SendError<Listen<T>, Infallible>> {
@@ -101,15 +101,15 @@ impl BusExt for ActorRef<Bus> {
         self.tell(Listen(actor_ref.clone().recipient())).await
     }
 
-    async fn notify<T: Send + Sync + Clone + 'static, A: Actor + Message<T>>(
+    async fn notify<T: Any + Send + Sync + Clone>(
         &self,
         notification: T,
     ) -> Result<(), SendError<Notify<T>, Infallible>> {
-        self.tell(Notify(notification)).await
+        self.ask(Notify(notification)).await
     }
 }
 
-impl<T: Send + Sync + 'static> Message<Listen<T>> for Bus {
+impl<T: Any + Send + Sync> Message<Listen<T>> for Bus {
     type Reply = ();
 
     async fn handle(
@@ -121,7 +121,7 @@ impl<T: Send + Sync + 'static> Message<Listen<T>> for Bus {
     }
 }
 
-impl<T: Send + Sync + Clone + 'static> Message<Notify<T>> for Bus {
+impl<T: Any + Send + Sync + Clone> Message<Notify<T>> for Bus {
     type Reply = ();
 
     async fn handle(

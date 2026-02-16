@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE packs SET opened_at = now() WHERE id = $1 RETURNING opened_at",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "opened_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "a960d5aeb0ebb03cc407ce092b002bb7c339d2b038e217e8d795795f2f92f7ab"
+}

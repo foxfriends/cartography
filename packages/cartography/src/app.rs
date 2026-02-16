@@ -1,7 +1,7 @@
 use crate::api::{middleware, operations, ws};
 use crate::bus::Bus;
 use axum::Router;
-use kameo::actor::Spawn as _;
+use kameo::actor::{ActorRef, Spawn as _};
 use utoipa::Modify;
 use utoipa::openapi::security::{ApiKey, ApiKeyValue, SecurityScheme};
 
@@ -17,6 +17,7 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, SecurityScheme};
         operations::list_fields,
 
         operations::list_packs,
+        operations::open_pack,
     ),
     components(
         schemas(
@@ -46,6 +47,7 @@ impl Modify for SecurityAddon {
 
 pub struct Config {
     pool: sqlx::PgPool,
+    bus: Option<ActorRef<Bus>>,
 }
 
 impl Config {
@@ -57,16 +59,24 @@ impl Config {
             .connect(&db_url)
             .await?;
 
-        Ok(Self { pool })
+        Ok(Self { pool, bus: None })
     }
 
     #[cfg(test)]
     pub fn test(pool: sqlx::PgPool) -> Self {
-        Self { pool }
+        Self { pool, bus: None }
+    }
+
+    #[cfg(test)]
+    pub fn with_bus(self, bus: ActorRef<Bus>) -> Self {
+        Self {
+            bus: Some(bus),
+            ..self
+        }
     }
 
     pub fn into_router(self) -> Router {
-        let bus = Bus::spawn(());
+        let bus = self.bus.unwrap_or_else(|| Bus::spawn(()));
 
         axum::Router::new()
             .route(
@@ -92,6 +102,10 @@ impl Config {
             .route(
                 "/api/v1/players/{player_id}/packs",
                 axum::routing::post(operations::list_packs),
+            )
+            .route(
+                "/api/v1/packs/{pack_id}/open",
+                axum::routing::post(operations::open_pack),
             )
             .route("/play/ws", axum::routing::any(ws::v1))
             .layer(axum::middleware::from_fn(middleware::authorization::trust))

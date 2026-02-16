@@ -7,12 +7,14 @@ use std::error::Error;
 mod banner_not_found_error;
 mod forbidden_error;
 mod internal_server_error;
+mod pack_not_found_error;
 mod unauthorized_error;
 
 pub use banner_not_found_error::BannerNotFoundError;
 pub use forbidden_error::ForbiddenError;
 #[allow(unused_imports)]
 pub(crate) use internal_server_error::{internal_server_error, respond_internal_server_error};
+pub use pack_not_found_error::PackNotFoundError;
 pub use unauthorized_error::UnauthorizedError;
 
 pub trait ApiError: Error {

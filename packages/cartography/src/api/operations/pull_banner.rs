@@ -32,9 +32,9 @@ pub struct PullBannerResponse {
     ),
 )]
 pub async fn pull_banner(
-    db: axum::Extension<sqlx::PgPool>,
+    db: Extension<sqlx::PgPool>,
+    authorization: Extension<Authorization>,
     Path(banner_id): Path<String>,
-    Extension(authorization): Extension<Authorization>,
 ) -> axum::response::Result<Json<PullBannerResponse>> {
     let account_id = authorization.authorized_account_id()?;
 

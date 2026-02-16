@@ -12,4 +12,6 @@ mod list_fields;
 pub use list_fields::*;
 
 mod list_packs;
+mod open_pack;
 pub use list_packs::*;
+pub use open_pack::*;

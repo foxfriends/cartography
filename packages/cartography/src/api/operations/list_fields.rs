@@ -23,8 +23,8 @@ pub struct ListFieldsResponse {
     )
 )]
 pub async fn list_fields(
-    db: axum::Extension<sqlx::PgPool>,
-    Extension(authorization): Extension<Authorization>,
+    db: Extension<sqlx::PgPool>,
+    authorization: Extension<Authorization>,
     Path(account_id): Path<AccountIdOrMe>,
 ) -> axum::response::Result<Json<ListFieldsResponse>> {
     let account_id = authorization.resolve_account_id(&account_id)?;

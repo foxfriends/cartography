@@ -44,15 +44,15 @@ pub enum PackStatus {
     request_body = Option<ListPacksRequest>,
     security(("trust" = [])),
     responses(
-        (status = OK, description = "Successfully listed all fields.", body = ListPacksResponse),
+        (status = OK, description = "Successfully listed all packs.", body = ListPacksResponse),
     ),
     params(
-        ("player_id" = AccountIdOrMe, Path, description = "The ID of the player whose fields to list.")
+        ("player_id" = AccountIdOrMe, Path, description = "The ID of the player whose packs to list.")
     )
 )]
 pub async fn list_packs(
-    db: axum::Extension<sqlx::PgPool>,
-    Extension(authorization): Extension<Authorization>,
+    db: Extension<sqlx::PgPool>,
+    authorization: Extension<Authorization>,
     Path(account_id): Path<AccountIdOrMe>,
     request: Option<Json<ListPacksRequest>>,
 ) -> axum::response::Result<Json<ListPacksResponse>> {
@@ -82,11 +82,11 @@ pub async fn list_packs(
 
 #[cfg(test)]
 mod tests {
-    use crate::{api::operations::PackStatus, test::prelude::*};
+    use crate::test::prelude::*;
     use axum::http::{Request, StatusCode};
     use sqlx::PgPool;
 
-    use super::{ListPacksRequest, ListPacksResponse};
+    use super::{ListPacksRequest, ListPacksResponse, PackStatus};
 
     #[sqlx::test(
         migrator = "MIGRATOR",

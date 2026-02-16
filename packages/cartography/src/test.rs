@@ -1,5 +1,8 @@
+use std::any::Any;
+
 use axum::{body::Body, http::Request};
 use http_body_util::BodyExt;
+use kameo::prelude::*;
 
 pub trait ResponseExt {
     async fn json<T: serde::de::DeserializeOwned>(self) -> anyhow::Result<T>;
@@ -53,7 +56,55 @@ macro_rules! assert_success {
 
 pub(crate) use assert_success;
 
+#[derive(Actor)]
+pub struct Collector<T: Any + Clone + Sync + Send>(Vec<T>);
+
+impl<T: Any + Clone + Sync + Send> Default for Collector<T> {
+    fn default() -> Self {
+        Self(vec![])
+    }
+}
+
+struct TakeCollection;
+
+impl<T: Any + Clone + Sync + Send> Message<T> for Collector<T> {
+    type Reply = ();
+
+    async fn handle(
+        &mut self,
+        msg: T,
+        _ctx: &mut kameo::prelude::Context<Self, Self::Reply>,
+    ) -> Self::Reply {
+        self.0.push(msg);
+    }
+}
+
+impl<T: Any + Clone + Sync + Send> Message<TakeCollection> for Collector<T> {
+    type Reply = Vec<T>;
+
+    async fn handle(
+        &mut self,
+        _msg: TakeCollection,
+        ctx: &mut kameo::prelude::Context<Self, Self::Reply>,
+    ) -> Self::Reply {
+        ctx.stop();
+        std::mem::take(&mut self.0)
+    }
+}
+
+pub trait CollectorExt<T> {
+    async fn collect(self) -> Vec<T>;
+}
+
+impl<T: Any + Clone + Sync + Send> CollectorExt<T> for ActorRef<Collector<T>> {
+    async fn collect(self) -> Vec<T> {
+        self.ask(TakeCollection).await.unwrap()
+    }
+}
+
 pub mod prelude {
+    pub use super::Collector;
+    pub use super::CollectorExt as _;
     pub use super::{RequestExt as _, ResponseExt as _};
     pub use tower::ServiceExt as _;
 
