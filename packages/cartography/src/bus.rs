@@ -79,7 +79,6 @@ impl Actor for Bus {
 pub struct Listen<T: Any + Send + Sync>(Recipient<T>);
 pub struct Notify<T: Any + Send + Sync + Clone>(T);
 
-#[cfg_attr(not(test), expect(dead_code))]
 pub trait BusExt {
     async fn listen<T: Any + Send + Sync, A: Actor + Message<T>>(
         &self,

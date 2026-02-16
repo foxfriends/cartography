@@ -1,21 +1,19 @@
 use super::super::Unsubscribe;
-use super::super::field_state::FieldWatcher;
+use super::super::deck_state::DeckWatcher;
 use super::{PlayerSocket, Response};
 use kameo::actor::Spawn;
 use tokio::sync::mpsc::UnboundedSender;
 use uuid::Uuid;
 
 impl PlayerSocket {
-    pub(super) async fn watch_field(
+    pub(super) async fn watch_deck(
         &mut self,
         tx: UnboundedSender<Response>,
         message_id: Uuid,
-        field_id: i64,
     ) -> anyhow::Result<()> {
         let account_id = self.require_authentication()?;
-        let actor = FieldWatcher::spawn(
-            FieldWatcher::build(self.db.clone(), tx, field_id, account_id).await?,
-        );
+        let actor =
+            DeckWatcher::spawn((self.db.clone(), tx, self.bus.clone(), account_id.to_owned()));
         let unsubscriber = actor.recipient::<Unsubscribe>();
         self.subscriptions.insert(message_id, unsubscriber);
         Ok(())

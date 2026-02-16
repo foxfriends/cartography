@@ -1,4 +1,5 @@
 use crate::actor::player_socket::{PlayerSocket, Request, Response};
+use crate::bus::Bus;
 use axum::Extension;
 use axum::extract::ws::{CloseFrame, Message, WebSocket, WebSocketUpgrade};
 use futures::StreamExt;
@@ -47,7 +48,11 @@ enum ProtocolV1Error {
     Closed(#[error(not(source))] CloseFrame),
 }
 
-pub async fn v1(ws: WebSocketUpgrade, db: Extension<PgPool>) -> axum::response::Response {
+pub async fn v1(
+    ws: WebSocketUpgrade,
+    db: Extension<PgPool>,
+    bus: Extension<ActorRef<Bus>>,
+) -> axum::response::Response {
     let ws = ws.protocols([JSON_PROTOCOL, MESSAGEPACK_PROTOCOL]);
     let protocol = ws
         .selected_protocol()
@@ -60,7 +65,7 @@ pub async fn v1(ws: WebSocketUpgrade, db: Extension<PgPool>) -> axum::response::
         let (ws_sender, ws_receiver) = socket.split();
         futures::pin_mut!(ws_sender);
 
-        let actor = PlayerSocket::spawn(PlayerSocket::build((*db).clone()));
+        let actor = PlayerSocket::spawn(PlayerSocket::build((*db).clone(), (*bus).clone()));
         let result = ws_receiver
             .filter_map(|msg| async move { msg.ok() })
             .map(|msg| match msg {

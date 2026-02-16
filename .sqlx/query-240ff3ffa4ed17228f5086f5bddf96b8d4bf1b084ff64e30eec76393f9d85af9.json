@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n                SELECT id, card_type_id\n                FROM cards\n                INNER JOIN pack_contents ON pack_contents.card_id = cards.id\n                WHERE pack_contents.pack_id = $1\n            ",
+  "query": "SELECT id, tile_type_id, name FROM tiles WHERE id = $1",
   "describe": {
     "columns": [
       {
@@ -10,7 +10,12 @@
       },
       {
         "ordinal": 1,
-        "name": "card_type_id",
+        "name": "tile_type_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
         "type_info": "Text"
       }
     ],
@@ -21,8 +26,9 @@
     },
     "nullable": [
       false,
+      false,
       false
     ]
   },
-  "hash": "f407778375bbf66b6a52e9436d5ba8dea93f5456ef42d5c102f3c9d273ba853e"
+  "hash": "240ff3ffa4ed17228f5086f5bddf96b8d4bf1b084ff64e30eec76393f9d85af9"
 }

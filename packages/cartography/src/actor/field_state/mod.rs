@@ -40,12 +40,17 @@ impl FieldWatcher {
         db: PgPool,
         tx: UnboundedSender<Response>,
         field_id: i64,
+        account_id: &str,
     ) -> anyhow::Result<Self> {
         let mut conn = db.acquire().await?;
 
-        let field = sqlx::query!("SELECT name FROM fields WHERE id = $1", field_id)
-            .fetch_one(&mut *conn)
-            .await?;
+        let field = sqlx::query!(
+            "SELECT name FROM fields WHERE id = $1 AND account_id = $2",
+            field_id,
+            account_id
+        )
+        .fetch_one(&mut *conn)
+        .await?;
         let tiles = sqlx::query_as!(
             FieldTile,
             r#"

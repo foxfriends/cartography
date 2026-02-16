@@ -1,0 +1,44 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT cards.card_type_id, card_types.class AS \"class: CardClass\"\n                FROM cards\n                INNER JOIN card_types ON card_types.id = cards.card_type_id\n                INNER JOIN card_accounts ON card_accounts.card_id = cards.id\n                WHERE cards.id = $1 AND card_accounts.account_id = $2\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "card_type_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "class: CardClass",
+        "type_info": {
+          "Custom": {
+            "name": "card_class",
+            "kind": {
+              "Enum": [
+                "tile",
+                "citizen"
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        {
+          "Custom": {
+            "name": "citext",
+            "kind": "Simple"
+          }
+        }
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "874cf1a7157ea7e92f38f15821d0bd2c0b87498ca3a7c2e5075da8ba21ac7598"
+}
