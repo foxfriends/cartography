@@ -60,7 +60,7 @@ pub async fn v1(
         .unwrap_or(JSON_PROTOCOL)
         .to_owned();
     ws.on_upgrade(move |socket: WebSocket| async move {
-        let _span = tracing::info_span!("websocket connection");
+        let _span = tracing::info_span!("websocket connection", protocol);
         tracing::debug!("websocket connected");
         let (ws_sender, ws_receiver) = socket.split();
         futures::pin_mut!(ws_sender);

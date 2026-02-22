@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                WITH inserted_card AS (\n                    INSERT INTO cards (card_type_id) VALUES ('rabbit') RETURNING *\n                ),\n\n                inserted_card_account AS (\n                    INSERT INTO card_accounts (card_id, account_id)\n                    SELECT id, 'foxfriends'\n                    FROM inserted_card\n                )\n\n                INSERT INTO citizens (id, species_id, name)\n                SELECT id, card_type_id, card_type_id\n                FROM inserted_card\n                RETURNING id, species_id, name\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "species_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "e94fb2129b480b98c28887db72173c4222b3475cfc445f85c911fadc3557e014"
+}

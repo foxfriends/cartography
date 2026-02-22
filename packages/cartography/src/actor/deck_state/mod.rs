@@ -3,25 +3,24 @@ use super::{AddCardToDeck, Unsubscribe};
 use crate::bus::{Bus, BusExt};
 use crate::db::CardClass;
 use kameo::prelude::*;
-use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use tokio::sync::mpsc::UnboundedSender;
 
-#[derive(PartialEq, Clone, Debug, Serialize, Deserialize)]
+#[derive(PartialEq, Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct Tile {
     pub id: i64,
     pub tile_type_id: String,
     pub name: String,
 }
 
-#[derive(PartialEq, Clone, Debug, Serialize, Deserialize)]
+#[derive(PartialEq, Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct Citizen {
     pub id: i64,
     pub species_id: String,
     pub name: String,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(PartialEq, Clone, Default, Debug, kameo::Reply, serde::Serialize, serde::Deserialize)]
 pub struct DeckState {
     pub tiles: Vec<Tile>,
     pub citizens: Vec<Citizen>,
@@ -166,5 +165,136 @@ impl Message<Unsubscribe> for DeckWatcher {
         ctx: &mut kameo::prelude::Context<Self, Self::Reply>,
     ) -> Self::Reply {
         ctx.stop();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::actor::AddCardToDeck;
+    use crate::actor::player_socket::Response;
+    use crate::bus::{Bus, BusExt};
+    use crate::test::prelude::*;
+    use kameo::actor::Spawn;
+    use sqlx::PgPool;
+    use tokio::sync::mpsc::unbounded_channel;
+
+    struct GetState;
+    impl Message<GetState> for DeckWatcher {
+        type Reply = DeckState;
+
+        async fn handle(
+            &mut self,
+            _msg: GetState,
+            _ctx: &mut Context<Self, Self::Reply>,
+        ) -> Self::Reply {
+            self.state.clone()
+        }
+    }
+
+    #[sqlx::test(
+        migrator = "MIGRATOR",
+        fixtures(path = "../../../fixtures", scripts("seed", "account"))
+    )]
+    async fn add_card_to_deck_tile(pool: PgPool) {
+        let (tx, mut rx) = unbounded_channel();
+        let bus = Bus::spawn_default();
+        let deck_watcher =
+            DeckWatcher::spawn((pool.clone(), tx, bus.clone(), "foxfriends".to_owned()));
+
+        matches!(rx.recv().await.unwrap(), Response::PutDeckState(..));
+
+        let card = sqlx::query_as!(
+            Tile,
+            r#"
+                WITH inserted_card AS (
+                    INSERT INTO cards (card_type_id) VALUES ('bread-bakery') RETURNING *
+                ),
+
+                inserted_card_account AS (
+                    INSERT INTO card_accounts (card_id, account_id)
+                    SELECT id, 'foxfriends'
+                    FROM inserted_card
+                )
+
+                INSERT INTO tiles (id, tile_type_id, name)
+                SELECT id, card_type_id, card_type_id
+                FROM inserted_card
+                RETURNING id, tile_type_id, name
+            "#
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+
+        bus.notify(AddCardToDeck {
+            account_id: "foxfriends".to_owned(),
+            card_id: card.id,
+        })
+        .await
+        .unwrap();
+
+        matches!(rx.recv().await.unwrap(), Response::PatchState(..));
+
+        assert_eq!(
+            deck_watcher.ask(GetState).await.unwrap(),
+            DeckState {
+                tiles: vec![card],
+                citizens: vec![],
+            }
+        )
+    }
+
+    #[sqlx::test(
+        migrator = "MIGRATOR",
+        fixtures(path = "../../../fixtures", scripts("seed", "account"))
+    )]
+    async fn add_card_to_deck_citizen(pool: PgPool) {
+        let (tx, mut rx) = unbounded_channel();
+        let bus = Bus::spawn_default();
+        let deck_watcher =
+            DeckWatcher::spawn((pool.clone(), tx, bus.clone(), "foxfriends".to_owned()));
+
+        matches!(rx.recv().await.unwrap(), Response::PutDeckState(..));
+
+        let card = sqlx::query_as!(
+            Citizen,
+            r#"
+                WITH inserted_card AS (
+                    INSERT INTO cards (card_type_id) VALUES ('rabbit') RETURNING *
+                ),
+
+                inserted_card_account AS (
+                    INSERT INTO card_accounts (card_id, account_id)
+                    SELECT id, 'foxfriends'
+                    FROM inserted_card
+                )
+
+                INSERT INTO citizens (id, species_id, name)
+                SELECT id, card_type_id, card_type_id
+                FROM inserted_card
+                RETURNING id, species_id, name
+            "#
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+
+        bus.notify(AddCardToDeck {
+            account_id: "foxfriends".to_owned(),
+            card_id: card.id,
+        })
+        .await
+        .unwrap();
+
+        matches!(rx.recv().await.unwrap(), Response::PatchState(..));
+
+        assert_eq!(
+            deck_watcher.ask(GetState).await.unwrap(),
+            DeckState {
+                tiles: vec![],
+                citizens: vec![card],
+            }
+        )
     }
 }

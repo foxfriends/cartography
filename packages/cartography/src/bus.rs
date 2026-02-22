@@ -43,7 +43,7 @@ impl Bus {
             .flatten()
             .filter_map(|entry| entry.as_any().downcast_ref::<Recipient<T>>())
         {
-            if let Err(error) = dbg!(recipient.tell(notification.clone()).await) {
+            if let Err(error) = recipient.tell(notification.clone()).await {
                 tracing::error!("bus failed to notify: {}", error);
             }
         }
