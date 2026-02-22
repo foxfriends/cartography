@@ -159,7 +159,7 @@ mod tests {
         .unwrap();
 
         let collector = Collector::<AddCardToDeck>::spawn_default();
-        let bus = Bus::spawn(());
+        let bus = Bus::spawn_default();
         bus.listen::<AddCardToDeck, _>(&collector).await.unwrap();
 
         let app = crate::app::Config::test(pool).with_bus(bus).into_router();

@@ -87,17 +87,16 @@ impl<T: Any + Clone + Sync + Send> Message<TakeCollection> for Collector<T> {
         _msg: TakeCollection,
         ctx: &mut kameo::prelude::Context<Self, Self::Reply>,
     ) -> Self::Reply {
-        ctx.stop();
         std::mem::take(&mut self.0)
     }
 }
 
 pub trait CollectorExt<T> {
-    async fn collect(self) -> Vec<T>;
+    async fn collect(&self) -> Vec<T>;
 }
 
 impl<T: Any + Clone + Sync + Send> CollectorExt<T> for ActorRef<Collector<T>> {
-    async fn collect(self) -> Vec<T> {
+    async fn collect(&self) -> Vec<T> {
         self.ask(TakeCollection).await.unwrap()
     }
 }

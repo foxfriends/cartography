@@ -131,3 +131,42 @@ impl<T: Any + Send + Sync + Clone> Message<Notify<T>> for Bus {
         self.notify(msg.0).await;
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test::prelude::*;
+
+    #[derive(Clone, Copy, Debug)]
+    struct MsgA;
+
+    #[derive(Clone, Copy, Debug)]
+    struct MsgB;
+
+    #[tokio::test]
+    async fn bus_test() {
+        let bus = Bus::spawn_default();
+        let recv_a = Collector::<MsgA>::spawn_default();
+        let recv_b = Collector::<MsgA>::spawn_default();
+        let recv_c = Collector::<MsgB>::spawn_default();
+        bus.listen::<MsgA, _>(&recv_a).await.unwrap();
+        bus.listen::<MsgA, _>(&recv_b).await.unwrap();
+        bus.listen::<MsgA, _>(&recv_b).await.unwrap(); // Subscribed twice = received twice
+        bus.listen::<MsgB, _>(&recv_c).await.unwrap();
+
+        bus.notify(MsgA).await.unwrap();
+        bus.notify(MsgB).await.unwrap();
+        bus.notify(MsgA).await.unwrap();
+
+        assert_eq!(recv_a.collect().await.len(), 2);
+        assert_eq!(recv_b.collect().await.len(), 4);
+        assert_eq!(recv_c.collect().await.len(), 1);
+
+        recv_b.stop_gracefully().await.unwrap();
+
+        bus.notify(MsgA).await.unwrap();
+
+        assert_eq!(recv_a.collect().await.len(), 1);
+        assert_eq!(recv_c.collect().await.len(), 0);
+    }
+}
