@@ -12,8 +12,13 @@ use clap::Parser as _;
 use tracing_subscriber::prelude::*;
 use utoipa::OpenApi as _;
 
+/// Cartography (city building trading card game) game server.
+///
+/// Run with no arguments to run the server in standard mode.
 #[derive(clap::Parser)]
+#[command(version)]
 struct Args {
+    /// Print the OpenAPI spec and exit, instead of running the server.
     #[clap(long)]
     openapi: bool,
 }

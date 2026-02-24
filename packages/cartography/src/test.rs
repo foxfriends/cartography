@@ -1,5 +1,6 @@
-use std::any::Any;
+//! Helpers for tests.
 
+use std::any::Any;
 use axum::{body::Body, http::Request};
 use http_body_util::BodyExt;
 use kameo::prelude::*;
