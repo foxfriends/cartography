@@ -12,7 +12,7 @@ authors.workspace = true
 
 [dependencies]
 anyhow = "1.0.101"
-axum = { version = "0.8.8", features = ["ws"] }
+axum = { version = "0.8.8", features = ["ws", "macros"] }
 axum-extra = { version = "0.12.5", features = ["typed-header"] }
 clap = { version = "4.5.58", features = ["derive"] }
 derive_more = { version = "2.1.1", features = ["error", "display"] }

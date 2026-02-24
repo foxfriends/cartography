@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO fields (account_id, name) VALUES ('foxfriends', 'Field 1')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "4cdc9fb57670878f0024a6b490079ac90dcdc9631e3444399bc82d72e6d24fa2"
+}

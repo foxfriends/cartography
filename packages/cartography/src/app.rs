@@ -15,6 +15,7 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, SecurityScheme};
         operations::list_card_types,
 
         operations::list_fields,
+        operations::create_field,
 
         operations::list_packs,
         operations::get_pack,
@@ -100,6 +101,10 @@ impl Config {
             .route(
                 "/api/v1/players/{player_id}/fields",
                 axum::routing::get(operations::list_fields),
+            )
+            .route(
+                "/api/v1/players/{player_id}/fields",
+                axum::routing::post(operations::create_field),
             )
             .route(
                 "/api/v1/players/{player_id}/packs",

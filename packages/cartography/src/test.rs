@@ -86,7 +86,7 @@ impl<T: Any + Clone + Sync + Send> Message<TakeCollection> for Collector<T> {
     async fn handle(
         &mut self,
         _msg: TakeCollection,
-        ctx: &mut kameo::prelude::Context<Self, Self::Reply>,
+        _ctx: &mut kameo::prelude::Context<Self, Self::Reply>,
     ) -> Self::Reply {
         std::mem::take(&mut self.0)
     }
